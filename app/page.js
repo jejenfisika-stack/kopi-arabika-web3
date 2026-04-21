@@ -4,15 +4,12 @@ import { useState, useRef } from 'react'
 import { ethers } from 'ethers'
 
 // ============================================================
-// KONFIGURASI — sesuaikan dengan data riset Anda
+// KONFIGURASI
 // ============================================================
-const CONFIG = {
-  HF_API_URL: 'https://jejenFis06-kopi-arabika-classifier.hf.space',
-  PINATA_GATEWAY: 'rose-casual-warbler-710.mypinata.cloud',
-  CONTRACT_ADDRESS: '0x53ff81292ea345d13da906e0f27794f8d5402853',
-  POLYGON_AMOY_CHAIN_ID: '0x13882', // 80002 dalam hex
-  ALCHEMY_RPC: 'https://polygon-amoy.g.alchemy.com/v2/coqrH17Ei58tkxqr3rIy4',
-}
+const HF_SPACE_URL   = 'https://jejenFis06-kopi-arabika-classifier.hf.space'
+const CONTRACT_ADDRESS = '0x53ff81292ea345d13da906e0f27794f8d5402853'
+const PINATA_GATEWAY   = 'rose-casual-warbler-710.mypinata.cloud'
+const AMOY_CHAIN_ID    = '0x13882'
 
 const CONTRACT_ABI = [
   {
@@ -33,205 +30,196 @@ const CONTRACT_ABI = [
   },
 ]
 
-// Warna grade
 const GRADE_STYLE = {
-  Premium:  { bg: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-300', emoji: '🏆' },
-  'Grade A': { bg: 'bg-blue-100',   text: 'text-blue-800',   border: 'border-blue-300',   emoji: '⭐' },
-  'Grade B': { bg: 'bg-green-100',  text: 'text-green-800',  border: 'border-green-300',  emoji: '✅' },
-  'Grade C': { bg: 'bg-gray-100',   text: 'text-gray-800',   border: 'border-gray-300',   emoji: '⚠️' },
+  'Premium':  { bg: 'bg-yellow-50', border: 'border-yellow-400', text: 'text-yellow-800', emoji: '🏆' },
+  'Grade A':  { bg: 'bg-blue-50',   border: 'border-blue-400',   text: 'text-blue-800',   emoji: '⭐' },
+  'Grade B':  { bg: 'bg-green-50',  border: 'border-green-400',  text: 'text-green-800',  emoji: '✅' },
+  'Grade C':  { bg: 'bg-gray-50',   border: 'border-gray-400',   text: 'text-gray-700',   emoji: '⚠️' },
 }
 
 export default function HomePage() {
-  // State
   const [foto, setFoto]               = useState(null)
-  const [fotoPreview, setFotoPreview] = useState(null)
+  const [preview, setPreview]         = useState(null)
+  const [namaPetani, setNamaPetani]   = useState('')
+  const [lokasi, setLokasi]           = useState('')
   const [loading, setLoading]         = useState(false)
+  const [status, setStatus]           = useState('')
   const [hasilCNN, setHasilCNN]       = useState(null)
-  const [mintStatus, setMintStatus]   = useState('')
   const [txHash, setTxHash]           = useState('')
   const [cidFoto, setCidFoto]         = useState('')
-  const [namaPetani, setNamaPetani]   = useState('')
-  const [lokasiKebun, setLokasiKebun] = useState('')
-  const [walletAddr, setWalletAddr]   = useState('')
-  const [step, setStep]               = useState(1)
+  const [errorMsg, setErrorMsg]       = useState('')
   const fileRef = useRef()
 
   // ============================================================
-  // STEP 1: Pilih foto
+  // Pilih foto
   // ============================================================
-  function handleFotoChange(e) {
+  function handleFoto(e) {
     const file = e.target.files[0]
     if (!file) return
     setFoto(file)
-    setFotoPreview(URL.createObjectURL(file))
+    setPreview(URL.createObjectURL(file))
     setHasilCNN(null)
-    setMintStatus('')
     setTxHash('')
+    setCidFoto('')
+    setErrorMsg('')
+    setStatus('')
   }
 
   // ============================================================
-  // STEP 2: Klasifikasi CNN via Hugging Face API
+  // Konversi file ke base64
   // ============================================================
-  async function klasifikasiCNN() {
-    if (!foto) return alert('Pilih foto kopi terlebih dahulu!')
-    setLoading(true)
-    setHasilCNN(null)
-    setMintStatus('Mengklasifikasi foto dengan CNN RepViT...')
-
-    try {
-      const formData = new FormData()
-      formData.append('data', foto)
-
-      const response = await fetch(`${CONFIG.HF_API_URL}/run/predict`, {
-        method: 'POST',
-        body: JSON.stringify({
-          data: [{ path: await fileToBase64(foto), mime_type: foto.type }]
-        }),
-        headers: { 'Content-Type': 'application/json' },
-      })
-
-      if (!response.ok) throw new Error(`API error: ${response.status}`)
-      const result = await response.json()
-
-      // Parse hasil dari Gradio API
-      let hasilText = result.data?.[0] || ''
-      let parsed = parseHasilCNN(hasilText)
-      setHasilCNN(parsed)
-      setStep(3)
-      setMintStatus('')
-    } catch (err) {
-      console.error(err)
-      setMintStatus('Error CNN: ' + err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  function fileToBase64(file) {
-    return new Promise((resolve) => {
+  function toBase64(file) {
+    return new Promise((res, rej) => {
       const reader = new FileReader()
-      reader.onload = (e) => resolve(e.target.result)
+      reader.onload  = e => res(e.target.result)
+      reader.onerror = rej
       reader.readAsDataURL(file)
     })
   }
 
-  function parseHasilCNN(text) {
-    const jenisMatch      = text.match(/JENIS KOPI\s+:\s+(.+)/)
-    const confidenceMatch = text.match(/CONFIDENCE\s+:\s+([\d.]+)%/)
-    const gradeMatch      = text.match(/GRADE\s+:\s+(.+)/)
-    return {
-      jenis_kopi:  jenisMatch?.[1]?.trim()      || 'Unknown',
-      confidence:  parseFloat(confidenceMatch?.[1]) || 0,
-      grade:       gradeMatch?.[1]?.trim()?.replace(/[^A-Za-z\s]/g, '').trim() || 'Grade B',
-      raw:         text,
-    }
-  }
-
   // ============================================================
-  // STEP 3: Upload ke IPFS via API route
+  // Klasifikasi CNN via Hugging Face Gradio API
   // ============================================================
-  async function uploadIPFS() {
+  async function klasifikasiCNN() {
+    if (!foto) { alert('Pilih foto kopi terlebih dahulu!'); return }
     setLoading(true)
-    setMintStatus('Mengupload foto ke IPFS Pinata...')
+    setHasilCNN(null)
+    setErrorMsg('')
+    setStatus('Menghubungi model CNN di Hugging Face...')
+
     try {
-      const b64 = await fileToBase64(foto)
-      const res = await fetch('/api/upload-ipfs', {
+      // Konversi foto ke base64
+      const b64full = await toBase64(foto)
+
+      // Panggil Gradio API — endpoint /run/predict
+      const response = await fetch(`${HF_SPACE_URL}/run/predict`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          imageBase64: b64,
-          fileName: foto.name,
-          hasilCNN,
-          namaPetani,
-          lokasiKebun,
+          fn_index: 0,           // fungsi pertama = klasifikasi_kopi
+          data: [{ data: b64full, mime_type: foto.type, name: foto.name }]
         }),
       })
-      const data = await res.json()
-      if (!data.cidFoto) throw new Error(data.error || 'Upload gagal')
-      setCidFoto(data.cidFoto)
-      return data
+
+      if (!response.ok) {
+        const errText = await response.text()
+        throw new Error(`Hugging Face API error ${response.status}: ${errText.slice(0, 200)}`)
+      }
+
+      const result = await response.json()
+      console.log('HF Response:', result)
+
+      // Ambil teks hasil dari Gradio
+      const outputText = result?.data?.[0] ?? ''
+      if (!outputText) throw new Error('Tidak ada output dari model CNN')
+
+      // Parse hasil teks
+      const parsed = parseOutput(outputText)
+      setHasilCNN(parsed)
+      setStatus('')
+    } catch (err) {
+      console.error('Klasifikasi error:', err)
+      setErrorMsg(`Error klasifikasi: ${err.message}`)
+      setStatus('')
     } finally {
       setLoading(false)
     }
   }
 
-  // ============================================================
-  // STEP 4: Connect MetaMask
-  // ============================================================
-  async function connectWallet() {
-    if (!window.ethereum) {
-      alert('MetaMask tidak ditemukan! Install MetaMask di browser Anda.')
-      return null
-    }
-    try {
-      // Minta koneksi
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+  function parseOutput(text) {
+    const jenisMatch      = text.match(/JENIS KOPI\s*:\s*(.+)/i)
+    const confMatch       = text.match(/CONFIDENCE\s*:\s*([\d.]+)%/i)
+    const gradeMatch      = text.match(/GRADE\s*:\s*([A-Za-z\s]+)/i)
 
-      // Cek jaringan — harus Polygon Amoy
-      const chainId = await window.ethereum.request({ method: 'eth_chainId' })
-      if (chainId !== CONFIG.POLYGON_AMOY_CHAIN_ID) {
-        // Auto switch ke Amoy
-        try {
-          await window.ethereum.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: CONFIG.POLYGON_AMOY_CHAIN_ID }],
-          })
-        } catch {
-          // Tambah jaringan Amoy jika belum ada
-          await window.ethereum.request({
-            method: 'wallet_addEthereumChain',
-            params: [{
-              chainId: CONFIG.POLYGON_AMOY_CHAIN_ID,
-              chainName: 'Polygon Amoy Testnet',
-              nativeCurrency: { name: 'POL', symbol: 'POL', decimals: 18 },
-              rpcUrls: ['https://rpc-amoy.polygon.technology'],
-              blockExplorerUrls: ['https://amoy.polygonscan.com'],
-            }],
-          })
-        }
-      }
+    const jenis      = jenisMatch?.[1]?.trim() || 'Tidak Terdeteksi'
+    const confidence = parseFloat(confMatch?.[1]) || 0
+    let   grade      = gradeMatch?.[1]?.trim() || 'Grade B'
 
-      setWalletAddr(accounts[0])
-      return accounts[0]
-    } catch (err) {
-      alert('Gagal connect wallet: ' + err.message)
-      return null
-    }
+    // Bersihkan emoji dari grade
+    grade = grade.replace(/[^\w\s]/g, '').trim()
+    if (!GRADE_STYLE[grade]) grade = 'Grade B'
+
+    return { jenis_kopi: jenis, confidence, grade, raw: text }
   }
 
   // ============================================================
-  // STEP 5: Mint NFT
+  // Upload ke IPFS via API route Vercel
+  // ============================================================
+  async function uploadIPFS() {
+    setStatus('Mengupload foto ke IPFS...')
+    const b64 = await toBase64(foto)
+    const res = await fetch('/api/upload-ipfs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        imageBase64: b64,
+        fileName: foto.name,
+        hasilCNN,
+        namaPetani,
+        lokasiKebun: lokasi,
+      }),
+    })
+    const data = await res.json()
+    if (!data.cidFoto) throw new Error(data.error || 'Upload IPFS gagal')
+    setCidFoto(data.cidFoto)
+    return data
+  }
+
+  // ============================================================
+  // Connect MetaMask & switch ke Amoy
+  // ============================================================
+  async function connectWallet() {
+    if (!window.ethereum) {
+      alert('MetaMask tidak ditemukan! Install MetaMask terlebih dahulu dari metamask.io')
+      return null
+    }
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+    const chainId  = await window.ethereum.request({ method: 'eth_chainId' })
+
+    if (chainId !== AMOY_CHAIN_ID) {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: AMOY_CHAIN_ID }],
+        })
+      } catch {
+        await window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: AMOY_CHAIN_ID,
+            chainName: 'Polygon Amoy Testnet',
+            nativeCurrency: { name: 'POL', symbol: 'POL', decimals: 18 },
+            rpcUrls: ['https://rpc-amoy.polygon.technology'],
+            blockExplorerUrls: ['https://amoy.polygonscan.com'],
+          }],
+        })
+      }
+    }
+    return accounts[0]
+  }
+
+  // ============================================================
+  // Mint NFT ke Blockchain
   // ============================================================
   async function mintNFT() {
-    if (!namaPetani || !lokasiKebun) {
-      alert('Isi nama petani dan lokasi kebun terlebih dahulu!')
-      return
-    }
-    if (!hasilCNN) {
-      alert('Lakukan klasifikasi CNN terlebih dahulu!')
-      return
-    }
+    if (!namaPetani.trim()) { alert('Isi Nama Petani!');  return }
+    if (!lokasi.trim())     { alert('Isi Lokasi Kebun!'); return }
+    if (!hasilCNN)          { alert('Klasifikasi CNN dulu!'); return }
 
     setLoading(true)
+    setErrorMsg('')
     try {
-      // Connect wallet
-      setMintStatus('Menghubungkan MetaMask...')
+      setStatus('Menghubungkan MetaMask...')
       const address = await connectWallet()
       if (!address) return
 
-      // Upload IPFS
-      setMintStatus('Mengupload foto ke IPFS...')
+      setStatus('Mengupload ke IPFS...')
       const ipfsData = await uploadIPFS()
 
-      // Mint NFT
-      setMintStatus('Mengirim NFT ke Polygon Amoy...')
+      setStatus('Mengirim transaksi ke Polygon Amoy...')
       const provider = new ethers.BrowserProvider(window.ethereum)
       const signer   = await provider.getSigner()
-      const contract = new ethers.Contract(
-        CONFIG.CONTRACT_ADDRESS,
-        CONTRACT_ABI,
-        signer
-      )
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
 
       const tx = await contract.mintKopiNFT(
         address,
@@ -240,18 +228,18 @@ export default function HomePage() {
         hasilCNN.jenis_kopi,
         hasilCNN.grade,
         namaPetani,
-        lokasiKebun,
+        lokasi,
         Math.round(hasilCNN.confidence)
       )
 
-      setMintStatus('Menunggu konfirmasi blockchain...')
+      setStatus('Menunggu konfirmasi blockchain (~5 detik)...')
       const receipt = await tx.wait()
       setTxHash(receipt.hash)
-      setStep(5)
-      setMintStatus('NFT berhasil di-mint!')
+      setStatus('NFT berhasil di-mint!')
     } catch (err) {
       console.error(err)
-      setMintStatus('Error: ' + (err.reason || err.message))
+      setErrorMsg('Error mint NFT: ' + (err.reason || err.message))
+      setStatus('')
     } finally {
       setLoading(false)
     }
@@ -260,62 +248,44 @@ export default function HomePage() {
   // ============================================================
   // RENDER
   // ============================================================
-  const gradeStyle = hasilCNN ? (GRADE_STYLE[hasilCNN.grade] || GRADE_STYLE['Grade B']) : null
+  const gs = hasilCNN ? (GRADE_STYLE[hasilCNN.grade] || GRADE_STYLE['Grade B']) : null
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-amber-50">
 
       {/* Header */}
-      <header className="bg-green-800 text-white py-5 px-4 text-center shadow-lg">
+      <header className="bg-green-800 text-white py-5 px-4 text-center shadow">
         <h1 className="text-2xl font-bold">☕ Kopi Arabika Web3</h1>
-        <p className="text-green-200 text-sm mt-1">
-          Klasifikasi CNN RepViT + Sertifikasi Blockchain Polygon
-        </p>
-        <p className="text-green-300 text-xs mt-1">Universitas Jember</p>
+        <p className="text-green-200 text-sm mt-1">Klasifikasi CNN RepViT + Sertifikasi Blockchain Polygon</p>
+        <p className="text-green-300 text-xs mt-0.5">Universitas Jember</p>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-5">
+      <main className="max-w-lg mx-auto px-4 py-6 space-y-4">
 
-        {/* Step 1 & 2: Upload & Data Petani */}
-        <div className="bg-white rounded-2xl shadow-md p-5">
-          <h2 className="text-lg font-semibold text-green-800 mb-4">
-            📸 Step 1 — Upload Foto Biji Kopi
-          </h2>
+        {/* Card Upload */}
+        <div className="bg-white rounded-2xl shadow p-5">
+          <h2 className="text-base font-semibold text-green-800 mb-3">📸 Step 1 — Upload Foto Biji Kopi</h2>
 
-          {/* Area upload foto */}
+          {/* Area foto */}
           <div
             onClick={() => fileRef.current.click()}
-            className="border-2 border-dashed border-green-300 rounded-xl p-6 text-center cursor-pointer hover:bg-green-50 transition mb-4"
+            className="border-2 border-dashed border-green-300 rounded-xl p-4 text-center cursor-pointer hover:bg-green-50 transition mb-4 min-h-[160px] flex items-center justify-center"
           >
-            {fotoPreview ? (
-              <img
-                src={fotoPreview}
-                alt="Preview"
-                className="mx-auto max-h-48 rounded-lg object-cover"
-              />
-            ) : (
-              <div className="text-green-600">
-                <div className="text-4xl mb-2">📷</div>
-                <p className="font-medium">Klik untuk pilih foto</p>
-                <p className="text-sm text-gray-500 mt-1">JPG, PNG — foto biji kopi</p>
-              </div>
-            )}
+            {preview
+              ? <img src={preview} alt="Preview" className="max-h-48 rounded-lg object-contain mx-auto" />
+              : <div className="text-green-500">
+                  <div className="text-5xl mb-2">📷</div>
+                  <p className="font-medium text-sm">Klik untuk pilih foto biji kopi</p>
+                  <p className="text-xs text-gray-400 mt-1">Bisa dari kamera HP atau galeri foto</p>
+                </div>
+            }
           </div>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleFotoChange}
-            capture="environment"
-          />
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFoto} capture="environment" />
 
-          {/* Data petani */}
+          {/* Form petani */}
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                👤 Nama Petani
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">👤 Nama Petani</label>
               <input
                 type="text"
                 placeholder="Contoh: Pak Ahmad Fauzi"
@@ -325,14 +295,12 @@ export default function HomePage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                📍 Lokasi Kebun
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">📍 Lokasi Kebun</label>
               <input
                 type="text"
                 placeholder="Contoh: Desa Tugusari, Bondowoso, Jawa Timur"
-                value={lokasiKebun}
-                onChange={e => setLokasiKebun(e.target.value)}
+                value={lokasi}
+                onChange={e => setLokasi(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
               />
             </div>
@@ -342,99 +310,101 @@ export default function HomePage() {
           <button
             onClick={klasifikasiCNN}
             disabled={!foto || loading}
-            className="w-full mt-4 bg-green-700 hover:bg-green-800 disabled:bg-gray-300 text-white font-semibold py-3 rounded-xl transition text-sm"
+            className="w-full mt-4 bg-green-700 hover:bg-green-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition text-sm flex items-center justify-center gap-2"
           >
-            {loading && step <= 2 ? '⏳ Mengklasifikasi...' : '🔍 Klasifikasi dengan CNN'}
+            {loading && !hasilCNN
+              ? <><span className="animate-spin">⏳</span> {status || 'Memproses...'}</>
+              : '🔍 Klasifikasi dengan CNN'
+            }
           </button>
+
+          {/* Error message */}
+          {errorMsg && (
+            <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700">
+              {errorMsg}
+            </div>
+          )}
         </div>
 
         {/* Hasil CNN */}
         {hasilCNN && (
-          <div className={`rounded-2xl shadow-md p-5 border ${gradeStyle.border} ${gradeStyle.bg}`}>
-            <h2 className={`text-lg font-semibold mb-3 ${gradeStyle.text}`}>
-              {gradeStyle.emoji} Hasil Klasifikasi CNN
+          <div className={`rounded-2xl shadow p-5 border-2 ${gs.border} ${gs.bg}`}>
+            <h2 className={`text-base font-semibold mb-3 ${gs.text}`}>
+              {gs.emoji} Hasil Klasifikasi CNN RepViT-M1.1
             </h2>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Jenis Kopi</span>
-                <span className="font-semibold text-sm">{hasilCNN.jenis_kopi.replace(/_/g, ' ')}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Confidence CNN</span>
-                <span className="font-semibold text-sm">{hasilCNN.confidence.toFixed(2)}%</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Grade Kualitas</span>
-                <span className={`font-bold text-sm ${gradeStyle.text}`}>
-                  {gradeStyle.emoji} {hasilCNN.grade}
-                </span>
-              </div>
-              {/* Bar confidence */}
-              <div className="mt-2">
-                <div className="bg-white rounded-full h-3 overflow-hidden">
-                  <div
-                    className="h-3 rounded-full bg-green-500 transition-all"
-                    style={{ width: `${hasilCNN.confidence}%` }}
-                  />
-                </div>
-              </div>
+
+            <div className="space-y-2 mb-4">
+              <Row label="Jenis Kopi"     value={hasilCNN.jenis_kopi.replace(/_/g,' ')} bold />
+              <Row label="Confidence CNN" value={`${hasilCNN.confidence.toFixed(2)}%`} />
+              <Row label="Grade Kualitas" value={`${gs.emoji} ${hasilCNN.grade}`} bold />
+            </div>
+
+            {/* Progress bar */}
+            <div className="bg-white rounded-full h-2.5 mb-4 overflow-hidden">
+              <div
+                className="h-2.5 rounded-full bg-green-500 transition-all duration-500"
+                style={{ width: `${hasilCNN.confidence}%` }}
+              />
             </div>
 
             {/* Tombol Mint NFT */}
-            <button
-              onClick={mintNFT}
-              disabled={loading}
-              className="w-full mt-4 bg-purple-700 hover:bg-purple-800 disabled:bg-gray-300 text-white font-semibold py-3 rounded-xl transition text-sm"
-            >
-              {loading ? '⏳ ' + mintStatus : '🔗 Mint NFT ke Blockchain Polygon'}
-            </button>
+            {!txHash && (
+              <button
+                onClick={mintNFT}
+                disabled={loading}
+                className="w-full bg-purple-700 hover:bg-purple-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition text-sm flex items-center justify-center gap-2"
+              >
+                {loading
+                  ? <><span className="animate-spin">⏳</span> {status}</>
+                  : '🔗 Mint NFT ke Blockchain Polygon'
+                }
+              </button>
+            )}
 
-            {mintStatus && !txHash && (
-              <p className="text-xs text-center mt-2 text-gray-600">{mintStatus}</p>
+            {status && !txHash && !loading && (
+              <p className="text-xs text-center mt-2 text-gray-500">{status}</p>
             )}
           </div>
         )}
 
-        {/* Sukses NFT */}
+        {/* Sukses */}
         {txHash && (
-          <div className="bg-white rounded-2xl shadow-md p-5 border border-green-400">
-            <h2 className="text-lg font-semibold text-green-800 mb-3">
-              🎉 NFT Berhasil Di-mint!
-            </h2>
-            <div className="space-y-3">
+          <div className="bg-white rounded-2xl shadow p-5 border-2 border-green-500">
+            <h2 className="text-base font-semibold text-green-800 mb-3">🎉 NFT Berhasil Di-mint!</h2>
+            <div className="space-y-2">
               <div className="bg-green-50 rounded-lg p-3">
-                <p className="text-xs text-gray-500 mb-1">Transaction Hash</p>
+                <p className="text-xs text-gray-400 mb-1">Transaction Hash</p>
                 <p className="text-xs font-mono break-all text-green-700">{txHash}</p>
               </div>
               {cidFoto && (
                 <div className="bg-blue-50 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 mb-1">Foto di IPFS</p>
+                  <p className="text-xs text-gray-400 mb-1">CID Foto IPFS</p>
                   <p className="text-xs font-mono break-all text-blue-700">{cidFoto}</p>
                 </div>
               )}
               <a
                 href={`https://amoy.polygonscan.com/tx/${txHash}`}
-                target="_blank"
-                rel="noreferrer"
-                className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 rounded-lg transition"
+                target="_blank" rel="noreferrer"
+                className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2.5 rounded-lg transition"
               >
-                🔍 Lihat di Polygonscan
+                🔍 Verifikasi di Polygonscan
               </a>
-              <a
-                href={`https://${CONFIG.PINATA_GATEWAY}/ipfs/${cidFoto}`}
-                target="_blank"
-                rel="noreferrer"
-                className="block w-full text-center bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium py-2 rounded-lg transition"
-              >
-                🖼️ Lihat Foto di IPFS
-              </a>
+              {cidFoto && (
+                <a
+                  href={`https://${PINATA_GATEWAY}/ipfs/${cidFoto}`}
+                  target="_blank" rel="noreferrer"
+                  className="block w-full text-center bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium py-2.5 rounded-lg transition"
+                >
+                  🖼️ Lihat Foto di IPFS
+                </a>
+              )}
               <button
                 onClick={() => {
-                  setFoto(null); setFotoPreview(null); setHasilCNN(null)
-                  setMintStatus(''); setTxHash(''); setCidFoto('')
-                  setNamaPetani(''); setLokasiKebun(''); setStep(1)
+                  setFoto(null); setPreview(null); setHasilCNN(null)
+                  setTxHash(''); setCidFoto(''); setNamaPetani(''); setLokasi('')
+                  setStatus(''); setErrorMsg('')
                 }}
-                className="w-full border border-gray-300 text-gray-600 text-sm py-2 rounded-lg hover:bg-gray-50 transition"
+                className="w-full border border-gray-200 text-gray-500 text-sm py-2.5 rounded-lg hover:bg-gray-50 transition"
               >
                 ↩️ Klasifikasi Kopi Baru
               </button>
@@ -442,15 +412,24 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Info sistem */}
-        <div className="bg-white rounded-2xl shadow-sm p-4 text-xs text-gray-500 space-y-1">
+        {/* Footer info */}
+        <div className="bg-white rounded-xl shadow-sm p-4 text-xs text-gray-400 space-y-1">
           <p>🤖 Model: RepViT-M1.1 (CVPR 2024)</p>
-          <p>⛓️ Blockchain: Polygon Amoy Testnet</p>
+          <p>⛓️ Blockchain: Polygon Amoy Testnet (Chain ID: 80002)</p>
           <p>📦 Storage: IPFS via Pinata</p>
-          <p>🔬 Riset: Universitas Jember — Scopus Q1</p>
+          <p>🔬 Universitas Jember — Riset Scopus Q1</p>
         </div>
 
       </main>
+    </div>
+  )
+}
+
+function Row({ label, value, bold }) {
+  return (
+    <div className="flex justify-between items-center">
+      <span className="text-sm text-gray-500">{label}</span>
+      <span className={`text-sm ${bold ? 'font-semibold' : ''}`}>{value}</span>
     </div>
   )
 }
