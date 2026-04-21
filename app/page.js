@@ -473,7 +473,7 @@ export default function HomePage() {
           <p>🤖 Model: RepViT-M1.1 (CVPR 2024)</p>
           <p>⛓️ Blockchain: Polygon Amoy Testnet (Chain ID: 80002)</p>
           <p>📦 Storage: IPFS via Pinata</p>
-          <p>🔬 Universitas Jember — Riset Scopus Q1</p>
+          <p>🔬 Universitas Jember — Riset CNN_Blockchain BFT</p>
         </div>
 
       </main>
