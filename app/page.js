@@ -100,62 +100,86 @@ export default function HomePage() {
   }
 
   // ============================================================
-  // Klasifikasi CNN via Hugging Face Gradio API
+  // Klasifikasi CNN via Hugging Face Gradio v4 API (3-step)
   // ============================================================
   async function klasifikasiCNN() {
     if (!foto) { alert('Pilih foto kopi terlebih dahulu!'); return }
     setLoading(true)
     setHasilCNN(null)
     setErrorMsg('')
-    setStatus('Menghubungi model CNN...')
 
     try {
-      const b64full = await toBase64(foto)
-      
-      // Gradio v4+ menggunakan endpoint baru
-      const endpoints = [
-        `${HF_SPACE_URL}/gradio_api/run/predict`,
-        `${HF_SPACE_URL}/api/predict`,
-        `${HF_SPACE_URL}/run/predict`,
-      ]
+      const BASE = 'https://jejenFis06-kopi-arabika-classifier.hf.space'
 
-      let response = null
-      let lastError = ''
+      // STEP A: Upload foto ke Gradio, dapat path file
+      setStatus('Mengunggah foto ke Hugging Face...')
+      const formData = new FormData()
+      formData.append('files', foto, foto.name)
+      const uploadRes = await fetch(`${BASE}/gradio_api/upload`, {
+        method: 'POST',
+        body: formData,
+      })
+      if (!uploadRes.ok) throw new Error(`Upload foto gagal: ${uploadRes.status}`)
+      const uploadedPaths = await uploadRes.json()
+      const filePath = uploadedPaths?.[0]
+      if (!filePath) throw new Error('Path file tidak ditemukan setelah upload')
+      console.log('File path:', filePath)
 
-      for (const endpoint of endpoints) {
-        try {
-          setStatus(`Mencoba endpoint: ${endpoint.split('/').pop()}...`)
-          response = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              fn_index: 0,
-              data: [{ data: b64full, mime_type: foto.type, name: foto.name }]
-            }),
-          })
-          if (response.ok) break
-          lastError = `${endpoint}: ${response.status}`
-          response = null
-        } catch (e) {
-          lastError = e.message
-          response = null
+      // STEP B: Panggil endpoint klasifikasi_kopi dengan path file
+      setStatus('Mengklasifikasi dengan CNN RepViT...')
+      const predictRes = await fetch(`${BASE}/gradio_api/call/klasifikasi_kopi`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          data: [{ path: filePath, mime_type: foto.type, orig_name: foto.name }]
+        }),
+      })
+      if (!predictRes.ok) {
+        const errText = await predictRes.text()
+        throw new Error(`Predict gagal ${predictRes.status}: ${errText.slice(0, 200)}`)
+      }
+      const { event_id } = await predictRes.json()
+      if (!event_id) throw new Error('event_id tidak ditemukan')
+      console.log('Event ID:', event_id)
+
+      // STEP C: Ambil hasil via SSE stream
+      setStatus('Menunggu hasil CNN...')
+      const resultRes = await fetch(`${BASE}/gradio_api/call/klasifikasi_kopi/${event_id}`)
+      if (!resultRes.ok) throw new Error(`Gagal ambil hasil: ${resultRes.status}`)
+
+      const reader  = resultRes.body.getReader()
+      const decoder = new TextDecoder()
+      let outputText = ''
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
+        for (const line of lines) {
+          if (line.startsWith('data:')) {
+            const raw = line.slice(5).trim()
+            if (raw === '[DONE]') continue
+            try {
+              const arr = JSON.parse(raw)
+              if (Array.isArray(arr) && typeof arr[0] === 'string') {
+                outputText = arr[0]
+              }
+            } catch { /* skip */ }
+          }
         }
       }
 
-      if (!response) throw new Error(`Semua endpoint gagal. Error terakhir: ${lastError}`)
+      if (!outputText) throw new Error('Tidak ada output teks dari CNN')
+      console.log('Hasil CNN:', outputText)
 
-      const result = await response.json()
-      console.log('HF Response:', result)
-
-      const outputText = result?.data?.[0] ?? ''
-      if (!outputText) throw new Error('Tidak ada output dari model CNN')
-
-      const parsed = parseOutput(outputText)
-      setHasilCNN(parsed)
+      setHasilCNN(parseOutput(outputText))
       setStatus('')
     } catch (err) {
-      console.error('Klasifikasi error:', err)
-      setErrorMsg(`Error: ${err.message}`)
+      console.error('Error:', err)
+      setErrorMsg(`Error klasifikasi: ${err.message}`)
       setStatus('')
     } finally {
       setLoading(false)
