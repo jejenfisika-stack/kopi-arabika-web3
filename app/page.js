@@ -175,6 +175,18 @@ export default function HomePage() {
       if (!outputText) throw new Error('Tidak ada output teks dari CNN')
       console.log('Hasil CNN:', outputText)
 
+      // Parse hasil teks CNN
+      function parseOutput(text) {
+        const jenisMatch = text.match(/JENIS KOPI\s*:\s*(.+)/i)
+        const confMatch  = text.match(/CONFIDENCE\s*:\s*([\d.]+)%/i)
+        const gradeMatch = text.match(/GRADE\s*:\s*([A-Za-z\s]+)/i)
+        const jenis      = jenisMatch?.[1]?.trim() || 'Tidak Terdeteksi'
+        const confidence = parseFloat(confMatch?.[1]) || 0
+        let grade        = gradeMatch?.[1]?.trim()?.replace(/[^\w\s]/g,'').trim() || 'Grade B'
+        if (!GRADE_STYLE[grade]) grade = 'Grade B'
+        return { jenis_kopi: jenis, confidence, grade, raw: text }
+      }
+      
       setHasilCNN(parseOutput(outputText))
       setStatus('')
     } catch (err) {
