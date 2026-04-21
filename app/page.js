@@ -3,6 +3,28 @@
 import { useState, useRef } from 'react'
 import { ethers } from 'ethers'
 
+// Gradio v4+ client
+async function callGradioAPI(imageFile) {
+  const b64 = await toBase64(imageFile)
+  
+  // Format data untuk Gradio v4
+  const body = {
+    data: [b64]  // langsung base64 string
+  }
+  
+  const res = await fetch(
+    `https://jejenFis06-kopi-arabika-classifier.hf.space/gradio_api/run/predict`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }
+  )
+  
+  if (!res.ok) throw new Error(`API error: ${res.status}`)
+  return await res.json()
+}
+
 // ============================================================
 // KONFIGURASI
 // ============================================================
