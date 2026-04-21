@@ -107,61 +107,59 @@ export default function HomePage() {
     setLoading(true)
     setHasilCNN(null)
     setErrorMsg('')
-    setStatus('Menghubungi model CNN di Hugging Face...')
+    setStatus('Menghubungi model CNN...')
 
     try {
-      // Konversi foto ke base64
       const b64full = await toBase64(foto)
+      
+      // Gradio v4+ menggunakan endpoint baru
+      const endpoints = [
+        `${HF_SPACE_URL}/gradio_api/run/predict`,
+        `${HF_SPACE_URL}/api/predict`,
+        `${HF_SPACE_URL}/run/predict`,
+      ]
 
-      // Panggil Gradio API — endpoint /run/predict
-      const response = await fetch(`${HF_SPACE_URL}/run/predict`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fn_index: 0,           // fungsi pertama = klasifikasi_kopi
-          data: [{ data: b64full, mime_type: foto.type, name: foto.name }]
-        }),
-      })
+      let response = null
+      let lastError = ''
 
-      if (!response.ok) {
-        const errText = await response.text()
-        throw new Error(`Hugging Face API error ${response.status}: ${errText.slice(0, 200)}`)
+      for (const endpoint of endpoints) {
+        try {
+          setStatus(`Mencoba endpoint: ${endpoint.split('/').pop()}...`)
+          response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fn_index: 0,
+              data: [{ data: b64full, mime_type: foto.type, name: foto.name }]
+            }),
+          })
+          if (response.ok) break
+          lastError = `${endpoint}: ${response.status}`
+          response = null
+        } catch (e) {
+          lastError = e.message
+          response = null
+        }
       }
+
+      if (!response) throw new Error(`Semua endpoint gagal. Error terakhir: ${lastError}`)
 
       const result = await response.json()
       console.log('HF Response:', result)
 
-      // Ambil teks hasil dari Gradio
       const outputText = result?.data?.[0] ?? ''
       if (!outputText) throw new Error('Tidak ada output dari model CNN')
 
-      // Parse hasil teks
       const parsed = parseOutput(outputText)
       setHasilCNN(parsed)
       setStatus('')
     } catch (err) {
       console.error('Klasifikasi error:', err)
-      setErrorMsg(`Error klasifikasi: ${err.message}`)
+      setErrorMsg(`Error: ${err.message}`)
       setStatus('')
     } finally {
       setLoading(false)
     }
-  }
-
-  function parseOutput(text) {
-    const jenisMatch      = text.match(/JENIS KOPI\s*:\s*(.+)/i)
-    const confMatch       = text.match(/CONFIDENCE\s*:\s*([\d.]+)%/i)
-    const gradeMatch      = text.match(/GRADE\s*:\s*([A-Za-z\s]+)/i)
-
-    const jenis      = jenisMatch?.[1]?.trim() || 'Tidak Terdeteksi'
-    const confidence = parseFloat(confMatch?.[1]) || 0
-    let   grade      = gradeMatch?.[1]?.trim() || 'Grade B'
-
-    // Bersihkan emoji dari grade
-    grade = grade.replace(/[^\w\s]/g, '').trim()
-    if (!GRADE_STYLE[grade]) grade = 'Grade B'
-
-    return { jenis_kopi: jenis, confidence, grade, raw: text }
   }
 
   // ============================================================
