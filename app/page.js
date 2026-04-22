@@ -235,8 +235,12 @@ export default function HomePage() {
   const [cidFoto, setCidFoto]       = useState('')
   const [errorMsg, setErrorMsg]     = useState('')
   const [activeTab, setActiveTab]   = useState(0)
+  const [tokenId, setTokenId]       = useState(null)
+  const [addingNFT, setAddingNFT]   = useState(false)
+  const [nftAdded, setNftAdded]     = useState(false)
   const [walletAddr, setWalletAddr] = useState('')
   const [walletLoading, setWalletLoading] = useState(false)
+  const [tokenId, setTokenId]           = useState(null)
   const fileRef = useRef()
 
   // ============================================================
@@ -369,11 +373,112 @@ export default function HomePage() {
       const provider = new ethers.BrowserProvider(window.ethereum)
       const signer   = await provider.getSigner()
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
-      const tx = await contract.mintKopiNFT(address, ipfsData.cidFoto, `ipfs://${ipfsData.cidMetadata}`, hasilCNN.jenis_kopi, hasilCNN.grade, namaPetani, lokasi, Math.round(hasilCNN.confidence))
+      const tx = await contract.mintKopiNFT(
+        address, ipfsData.cidFoto, `ipfs://${ipfsData.cidMetadata}`,
+        hasilCNN.jenis_kopi, hasilCNN.grade, namaPetani, lokasi,
+        Math.round(hasilCNN.confidence)
+      )
       setStatus('Menunggu konfirmasi blockchain...')
-      const receipt = await tx.wait(); setTxHash(receipt.hash); setStatus('')
+      const receipt = await tx.wait()
+      setTxHash(receipt.hash)
+
+      // ============================================================
+      // Ambil Token ID dari event log transaksi
+      // ============================================================
+      let mintedTokenId = null
+      try {
+        // Decode event Transfer(from, to, tokenId) dari receipt
+        const transferTopic = ethers.id('Transfer(address,address,uint256)')
+        const transferLog = receipt.logs.find(log =>
+          log.topics[0] === transferTopic &&
+          log.address.toLowerCase() === CONTRACT_ADDRESS.toLowerCase()
+        )
+        if (transferLog) {
+          mintedTokenId = parseInt(transferLog.topics[3], 16)
+          setTokenId(mintedTokenId)
+        }
+      } catch(e) { console.warn('Gagal ambil tokenId:', e) }
+
+      // ============================================================
+      // Auto import NFT ke MetaMask wallet user
+      // ============================================================
+      if (mintedTokenId !== null && window.ethereum) {
+        setStatus('Menambahkan NFT ke MetaMask...')
+        try {
+          await window.ethereum.request({
+            method: 'wallet_watchAsset',
+            params: {
+              type: 'ERC721',
+              options: {
+                address: CONTRACT_ADDRESS,
+                tokenId: String(mintedTokenId),
+              },
+            },
+          })
+        } catch(e) {
+          console.warn('wallet_watchAsset tidak didukung:', e)
+          // Tidak apa-apa jika gagal — NFT tetap ada di blockchain
+        }
+      }
+
+      setStatus('')
     } catch(err) { setErrorMsg('Error: '+(err.reason||err.message)); setStatus('') }
     finally { setLoading(false) }
+  }
+
+  // ============================================================
+  // Tambah NFT ke MetaMask Wallet
+  // ============================================================
+  async function addNFTtoWallet() {
+    if (!window.ethereum) {
+      alert('MetaMask tidak ditemukan!')
+      return
+    }
+    if (!tokenId && tokenId !== 0) {
+      alert('Token ID tidak ditemukan. Coba import manual.')
+      return
+    }
+    setAddingNFT(true)
+    try {
+      // Pastikan di jaringan Amoy
+      const chainId = await window.ethereum.request({ method: 'eth_chainId' })
+      if (chainId !== AMOY_CHAIN_ID) {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: AMOY_CHAIN_ID }]
+        })
+      }
+
+      // Minta MetaMask untuk import NFT
+      const wasAdded = await window.ethereum.request({
+        method: 'wallet_watchAsset',
+        params: {
+          type: 'ERC721',
+          options: {
+            address: CONTRACT_ADDRESS,
+            tokenId: String(tokenId),
+          },
+        },
+      })
+
+      if (wasAdded) {
+        setNftAdded(true)
+      } else {
+        alert('NFT tidak ditambahkan. Coba import manual.')
+      }
+    } catch (err) {
+      console.error(err)
+      // Fallback: arahkan ke Polygonscan
+      if (err.code === 4001) {
+        alert('Ditolak user.')
+      } else {
+        alert('Gunakan cara manual: MetaMask → NFTs → Import NFT\n' +
+              'Contract: ' + CONTRACT_ADDRESS + '\n' +
+              'Token ID: ' + tokenId)
+      }
+    } finally {
+      setAddingNFT(false)
+    }
   }
 
   const gs = hasilCNN ? (GRADE_STYLE[hasilCNN.grade] || GRADE_STYLE['Grade B']) : null
@@ -638,7 +743,7 @@ export default function HomePage() {
             </div>
             <div className="hdr-text">
               <div className="hdr-title">Kopi Arabika <span>Web3</span></div>
-              <div className="hdr-sub">Universitas Jember</div>
+              <div className="hdr-sub">Universitas Jember · Riset Scopus Q1</div>
             </div>
           </div>
           <div className="hdr-right">
@@ -810,11 +915,58 @@ export default function HomePage() {
           {txHash && (
             <div className="sukses">
               <div className="sukses-title">🎉 NFT Berhasil Di-mint!</div>
+
+              {/* Token ID */}
+              {tokenId !== null && (
+                <div className="hash-box" style={{background:'#F0FDF4',borderColor:'#86EFAC'}}>
+                  <div className="hash-lbl">🏷️ Token ID NFT Anda</div>
+                  <div style={{fontSize:20,fontWeight:700,color:'#14532D',fontFamily:'monospace'}}>#{tokenId}</div>
+                </div>
+              )}
+
               <div className="hash-box"><div className="hash-lbl">Transaction Hash</div><div className="hash-val">{txHash}</div></div>
               {cidFoto && <div className="hash-box"><div className="hash-lbl">CID Foto IPFS</div><div className="hash-val">{cidFoto}</div></div>}
+
+              {/* Tombol Tambah ke MetaMask */}
+              {!nftAdded ? (
+                <button onClick={addNFTtoWallet} disabled={addingNFT}
+                  style={{width:'100%',padding:'13px',background:addingNFT?'#D1D5DB':'linear-gradient(135deg,#F97316,#EA580C)',
+                    color:'#FFF',border:'none',borderRadius:11,fontSize:13,fontWeight:700,
+                    fontFamily:'Lato,sans-serif',cursor:addingNFT?'wait':'pointer',
+                    display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginBottom:8
+                  }}
+                >
+                  {addingNFT ? '⏳ Menambahkan ke wallet...' : '🦊 Tambah NFT ke MetaMask Wallet'}
+                </button>
+              ) : (
+                <div style={{background:'#F0FDF4',border:'1.5px solid #86EFAC',borderRadius:11,
+                  padding:'14px',marginBottom:8,textAlign:'center'}}>
+                  <div style={{fontSize:24,marginBottom:4}}>✅</div>
+                  <div style={{fontSize:13,fontWeight:700,color:'#14532D'}}>NFT berhasil masuk ke MetaMask!</div>
+                  <div style={{fontSize:11,color:'#6B7280',marginTop:3}}>Buka MetaMask → tab <strong>NFTs</strong> untuk melihat</div>
+                </div>
+              )}
+
               <a href={`https://amoy.polygonscan.com/tx/${txHash}`} target="_blank" rel="noreferrer" className="btn-a a-blue">🔍 Verifikasi di Polygonscan</a>
               {cidFoto && <a href={`https://${PINATA_GATEWAY}/ipfs/${cidFoto}`} target="_blank" rel="noreferrer" className="btn-a a-orange">🖼️ Lihat Foto di IPFS</a>}
-              <button className="btn-a a-ghost" onClick={()=>{setFoto(null);setPreview(null);setHasilCNN(null);setTxHash('');setCidFoto('');setNamaPetani('');setLokasi('');setStatus('');setErrorMsg('')}}>↩️ Klasifikasi Kopi Baru</button>
+
+              {/* Panduan import manual */}
+              {tokenId !== null && (
+                <div style={{background:'#FFF7ED',border:'1px solid #FED7AA',borderRadius:11,
+                  padding:'12px 14px',marginBottom:8,fontSize:11,color:'#92400E',lineHeight:1.6}}>
+                  <strong>📋 Import Manual ke MetaMask (jika tombol di atas gagal):</strong><br/>
+                  1. Buka MetaMask → tab <strong>NFTs</strong><br/>
+                  2. Klik <strong>Import NFT</strong><br/>
+                  3. Contract Address: <code style={{fontSize:9,wordBreak:'break-all',display:'block',marginTop:2}}>{CONTRACT_ADDRESS}</code>
+                  4. Token ID: <strong>#{tokenId}</strong>
+                </div>
+              )}
+
+              <button className="btn-a a-ghost" onClick={()=>{
+                setFoto(null);setPreview(null);setHasilCNN(null);
+                setTxHash('');setCidFoto('');setNamaPetani('');setLokasi('');
+                setStatus('');setErrorMsg('');setTokenId(null);setNftAdded(false);
+              }}>↩️ Klasifikasi Kopi Baru</button>
             </div>
           )}
         </div>
