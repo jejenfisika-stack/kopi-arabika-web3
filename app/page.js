@@ -34,6 +34,195 @@ const CARA_PAKAI = [
   { no:'05', judul:'Sertifikat Digital', isi:'NFT tersimpan permanen di blockchain sebagai bukti keaslian dan kualitas kopi Anda.' },
 ]
 
+
+// ============================================================
+// BLOCKCHAIN DOODLE BACKGROUND
+// ============================================================
+function BlockchainDoodle() {
+  return (
+    <div className="bg-doodle" aria-hidden="true">
+      <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+            <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#C8E6C9" strokeWidth="0.5" opacity="0.6"/>
+          </pattern>
+        </defs>
+
+        {/* Base background gradient */}
+        <rect width="1440" height="900" fill="url(#bgGrad)"/>
+        <defs>
+          <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#F1F8E9"/>
+            <stop offset="40%" stopColor="#E8F5E9"/>
+            <stop offset="100%" stopColor="#F3E5F5"/>
+          </linearGradient>
+        </defs>
+
+        {/* Grid dots pattern */}
+        <rect width="1440" height="900" fill="url(#grid)" opacity="0.5"/>
+
+        {/* ===== BLOCKCHAIN NODES & CONNECTIONS ===== */}
+
+        {/* Connection lines - main chain */}
+        <g stroke="#81C784" strokeWidth="1.5" strokeDasharray="6,4" opacity="0.5" fill="none">
+          <line x1="120" y1="180" x2="280" y2="260"/>
+          <line x1="280" y1="260" x2="480" y2="200"/>
+          <line x1="480" y1="200" x2="650" y2="310"/>
+          <line x1="650" y1="310" x2="850" y2="240"/>
+          <line x1="850" y1="240" x2="1050" y2="320"/>
+          <line x1="1050" y1="320" x2="1240" y2="210"/>
+          <line x1="1240" y1="210" x2="1380" y2="280"/>
+          <line x1="200" y1="500" x2="400" y2="580"/>
+          <line x1="400" y1="580" x2="600" y2="510"/>
+          <line x1="600" y1="510" x2="800" y2="600"/>
+          <line x1="800" y1="600" x2="1000" y2="520"/>
+          <line x1="1000" y1="520" x2="1200" y2="620"/>
+          <line x1="1200" y1="620" x2="1400" y2="550"/>
+        </g>
+
+        {/* Cross connections */}
+        <g stroke="#A5D6A7" strokeWidth="1" strokeDasharray="4,6" opacity="0.3" fill="none">
+          <line x1="280" y1="260" x2="400" y2="580"/>
+          <line x1="650" y1="310" x2="600" y2="510"/>
+          <line x1="850" y1="240" x2="800" y2="600"/>
+          <line x1="1050" y1="320" x2="1000" y2="520"/>
+        </g>
+
+        {/* ===== BLOCK NODES — kotak blockchain ===== */}
+        {/* Node 1 */}
+        <g transform="translate(80,150)">
+          <rect width="80" height="60" rx="8" fill="#FFFFFF" stroke="#4CAF50" strokeWidth="1.5" filter="url(#shadow)"/>
+          <rect width="80" height="16" rx="8" fill="#4CAF50" opacity="0.15"/>
+          <text x="40" y="11" textAnchor="middle" fontSize="8" fill="#2E7D32" fontWeight="700" fontFamily="monospace">BLOCK #001</text>
+          <text x="40" y="30" textAnchor="middle" fontSize="7" fill="#666" fontFamily="monospace">Hash: 0xa3f...</text>
+          <text x="40" y="42" textAnchor="middle" fontSize="7" fill="#666" fontFamily="monospace">Kopi: Arabika</text>
+          <text x="40" y="54" textAnchor="middle" fontSize="7" fill="#4CAF50" fontFamily="monospace">✓ Valid</text>
+        </g>
+
+        {/* Node 2 */}
+        <g transform="translate(240,230)">
+          <rect width="80" height="60" rx="8" fill="#FFFFFF" stroke="#388E3C" strokeWidth="1.5"/>
+          <rect width="80" height="16" rx="8" fill="#388E3C" opacity="0.15"/>
+          <text x="40" y="11" textAnchor="middle" fontSize="8" fill="#2E7D32" fontWeight="700" fontFamily="monospace">BLOCK #002</text>
+          <text x="40" y="30" textAnchor="middle" fontSize="7" fill="#666" fontFamily="monospace">Hash: 0xb7c...</text>
+          <text x="40" y="42" textAnchor="middle" fontSize="7" fill="#666" fontFamily="monospace">NFT: #0042</text>
+          <text x="40" y="54" textAnchor="middle" fontSize="7" fill="#4CAF50" fontFamily="monospace">✓ Minted</text>
+        </g>
+
+        {/* Node 3 */}
+        <g transform="translate(440,170)">
+          <rect width="80" height="60" rx="8" fill="#FFFFFF" stroke="#66BB6A" strokeWidth="1.5"/>
+          <rect width="80" height="16" rx="8" fill="#66BB6A" opacity="0.15"/>
+          <text x="40" y="11" textAnchor="middle" fontSize="8" fill="#2E7D32" fontWeight="700" fontFamily="monospace">BLOCK #003</text>
+          <text x="40" y="30" textAnchor="middle" fontSize="7" fill="#666" fontFamily="monospace">Hash: 0xd2e...</text>
+          <text x="40" y="42" textAnchor="middle" fontSize="7" fill="#666" fontFamily="monospace">Grade: A+</text>
+          <text x="40" y="54" textAnchor="middle" fontSize="7" fill="#4CAF50" fontFamily="monospace">✓ Verified</text>
+        </g>
+
+        {/* Node 4 */}
+        <g transform="translate(1200,180)">
+          <rect width="80" height="60" rx="8" fill="#FFFFFF" stroke="#4CAF50" strokeWidth="1.5"/>
+          <rect width="80" height="16" rx="8" fill="#4CAF50" opacity="0.15"/>
+          <text x="40" y="11" textAnchor="middle" fontSize="8" fill="#2E7D32" fontWeight="700" fontFamily="monospace">BLOCK #009</text>
+          <text x="40" y="30" textAnchor="middle" fontSize="7" fill="#666" fontFamily="monospace">Hash: 0xf1a...</text>
+          <text x="40" y="42" textAnchor="middle" fontSize="7" fill="#666" fontFamily="monospace">Polygon ✓</text>
+          <text x="40" y="54" textAnchor="middle" fontSize="7" fill="#4CAF50" fontFamily="monospace">✓ On-chain</text>
+        </g>
+
+        {/* ===== COFFEE DOODLE ICONS (sederhana, sketch style) ===== */}
+
+        {/* Cangkir kopi - kiri bawah */}
+        <g transform="translate(50,680)" opacity="0.25">
+          <ellipse cx="35" cy="50" rx="30" ry="8" fill="none" stroke="#5D4037" strokeWidth="2"/>
+          <path d="M5,20 L65,20 L58,50 L12,50 Z" fill="none" stroke="#5D4037" strokeWidth="2" strokeLinejoin="round"/>
+          <path d="M65,28 Q80,28 80,38 Q80,48 65,48" fill="none" stroke="#5D4037" strokeWidth="2"/>
+          <path d="M25,20 Q28,8 35,5 Q42,8 45,20" fill="none" stroke="#8D6E63" strokeWidth="1.5"/>
+          <path d="M30,12 Q30,4 35,2" fill="none" stroke="#8D6E63" strokeWidth="1.5" strokeLinecap="round"/>
+          <text x="35" y="43" textAnchor="middle" fontSize="9" fill="#5D4037" fontFamily="serif">☕</text>
+        </g>
+
+        {/* Biji kopi - kanan atas */}
+        <g transform="translate(1320,60)" opacity="0.2">
+          <ellipse cx="30" cy="25" rx="28" ry="18" fill="none" stroke="#6D4C41" strokeWidth="2"/>
+          <path d="M30,7 Q35,25 30,43" fill="none" stroke="#6D4C41" strokeWidth="1.5"/>
+          <ellipse cx="80" cy="45" rx="22" ry="14" fill="none" stroke="#6D4C41" strokeWidth="2" transform="rotate(-20,80,45)"/>
+          <path d="M71,34 Q80,45 89,56" fill="none" stroke="#6D4C41" strokeWidth="1.5" transform="rotate(-20,80,45)"/>
+        </g>
+
+        {/* ===== FLOATING CIRCUIT NODES ===== */}
+        {/* Kecil di berbagai sudut */}
+        <g opacity="0.35">
+          {/* Hexagon nodes */}
+          <polygon points="1350,400 1368,390 1386,400 1386,420 1368,430 1350,420" fill="none" stroke="#4CAF50" strokeWidth="1.5"/>
+          <text x="1368" y="413" textAnchor="middle" fontSize="9" fill="#2E7D32">⛓</text>
+
+          <polygon points="60,400 78,390 96,400 96,420 78,430 60,420" fill="none" stroke="#66BB6A" strokeWidth="1.5"/>
+          <text x="78" y="413" textAnchor="middle" fontSize="9" fill="#388E3C">🔗</text>
+
+          <polygon points="700,60 718,50 736,60 736,80 718,90 700,80" fill="none" stroke="#81C784" strokeWidth="1.5"/>
+          <text x="718" y="73" textAnchor="middle" fontSize="9" fill="#2E7D32">◈</text>
+
+          <polygon points="700,800 718,790 736,800 736,820 718,830 700,820" fill="none" stroke="#4CAF50" strokeWidth="1.5"/>
+          <text x="718" y="813" textAnchor="middle" fontSize="9" fill="#2E7D32">◈</text>
+        </g>
+
+        {/* ===== FLOATING LABELS / TAGS ===== */}
+        <g fontFamily="monospace" opacity="0.3">
+          {/* Top area */}
+          <rect x="620" y="50" width="90" height="22" rx="11" fill="#E8F5E9" stroke="#81C784" strokeWidth="1"/>
+          <text x="665" y="65" textAnchor="middle" fontSize="9" fill="#2E7D32" fontWeight="700">ERC-721 NFT</text>
+
+          <rect x="850" y="70" width="80" height="22" rx="11" fill="#FFF8E1" stroke="#FFD54F" strokeWidth="1"/>
+          <text x="890" y="85" textAnchor="middle" fontSize="9" fill="#F57F17" fontWeight="700">RepViT CNN</text>
+
+          <rect x="1070" y="50" width="90" height="22" rx="11" fill="#E3F2FD" stroke="#90CAF9" strokeWidth="1"/>
+          <text x="1115" y="65" textAnchor="middle" fontSize="9" fill="#1565C0" fontWeight="700">Polygon Amoy</text>
+
+          {/* Bottom area */}
+          <rect x="300" y="820" width="80" height="22" rx="11" fill="#F3E5F5" stroke="#CE93D8" strokeWidth="1"/>
+          <text x="340" y="835" textAnchor="middle" fontSize="9" fill="#6A1B9A" fontWeight="700">IPFS Pinata</text>
+
+          <rect x="800" y="840" width="90" height="22" rx="11" fill="#E8F5E9" stroke="#81C784" strokeWidth="1"/>
+          <text x="845" y="855" textAnchor="middle" fontSize="9" fill="#2E7D32" fontWeight="700">Smart Contract</text>
+
+          <rect x="1100" y="820" width="80" height="22" rx="11" fill="#FFF3E0" stroke="#FFCC02" strokeWidth="1"/>
+          <text x="1140" y="835" textAnchor="middle" fontSize="9" fill="#E65100" fontWeight="700">MetaMask🦊</text>
+        </g>
+
+        {/* ===== DOTS/NODES ALONG CHAIN ===== */}
+        <g fill="#4CAF50" opacity="0.6">
+          <circle cx="120" cy="180" r="5"/>
+          <circle cx="280" cy="260" r="5"/>
+          <circle cx="480" cy="200" r="5"/>
+          <circle cx="650" cy="310" r="5"/>
+          <circle cx="850" cy="240" r="5"/>
+          <circle cx="1050" cy="320" r="5"/>
+          <circle cx="1240" cy="210" r="5"/>
+          <circle cx="200" cy="500" r="4"/>
+          <circle cx="400" cy="580" r="4"/>
+          <circle cx="600" cy="510" r="4"/>
+          <circle cx="800" cy="600" r="4"/>
+          <circle cx="1000" cy="520" r="4"/>
+          <circle cx="1200" cy="620" r="4"/>
+        </g>
+        <g fill="#81C784" opacity="0.4">
+          <circle cx="120" cy="180" r="10" fillOpacity="0.2"/>
+          <circle cx="480" cy="200" r="10" fillOpacity="0.2"/>
+          <circle cx="850" cy="240" r="10" fillOpacity="0.2"/>
+          <circle cx="1240" cy="210" r="10" fillOpacity="0.2"/>
+          <circle cx="400" cy="580" r="10" fillOpacity="0.2"/>
+          <circle cx="800" cy="600" r="10" fillOpacity="0.2"/>
+        </g>
+
+        {/* ===== LARGE DECORATIVE CIRCLES (subtle) ===== */}
+        <circle cx="200" cy="450" r="180" fill="none" stroke="#C8E6C9" strokeWidth="1" opacity="0.4" strokeDasharray="8,8"/>
+        <circle cx="1250" cy="450" r="150" fill="none" stroke="#BBDEFB" strokeWidth="1" opacity="0.3" strokeDasharray="6,6"/>
+        <circle cx="720" cy="450" r="300" fill="none" stroke="#E1BEE7" strokeWidth="0.5" opacity="0.2" strokeDasharray="10,10"/>
+      </svg>
+    </div>
+  )
+}
+
 export default function HomePage() {
   const [foto, setFoto]             = useState(null)
   const [preview, setPreview]       = useState(null)
@@ -191,6 +380,7 @@ export default function HomePage() {
 
   return (
     <>
+      <BlockchainDoodle/>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lato:wght@300;400;700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
@@ -198,51 +388,20 @@ export default function HomePage() {
           font-family:'Lato',sans-serif;
           min-height:100vh;
           position:relative;
-          background-color:#1C3A1C;
+          background-color:#F0F7F0;
         }
 
-        /* BACKGROUND KEBUN KOPI — layer bertumpuk */
-        body::before{
-          content:'';
-          position:fixed;inset:0;
-          background-image:
-            /* Lapisan 1: foto kebun kopi via unsplash */
-            url('https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=1920&q=80&fit=crop');
-          background-size:cover;
-          background-position:center;
-          background-attachment:fixed;
-          filter:brightness(.45) saturate(1.2);
-          z-index:0;
+        /* BACKGROUND DOODLE BLOCKCHAIN — SVG inline cerah */
+        .bg-doodle{
+          position:fixed;inset:0;z-index:0;
+          overflow:hidden;pointer-events:none;
         }
-        body::after{
-          content:'';
-          position:fixed;inset:0;
-          background:
-            linear-gradient(
-              to bottom,
-              rgba(8,20,8,.55) 0%,
-              rgba(15,30,12,.3) 30%,
-              rgba(15,30,12,.3) 70%,
-              rgba(8,20,8,.65) 100%
-            );
-          z-index:0;
-        }
+        .bg-doodle svg{width:100%;height:100%}
+
         .layout{position:relative;z-index:1}
-
-        /* GLASS MORPHISM untuk cards di atas kebun kopi */
-        .card{
-          background:rgba(255,255,255,.94) !important;
-          backdrop-filter:blur(12px);
-          -webkit-backdrop-filter:blur(12px);
-        }
+        .card{background:#FFFFFF !important;}
         .hero-card{
-          background:linear-gradient(160deg,rgba(10,26,8,.92) 0%,rgba(20,41,15,.90) 50%,rgba(26,56,16,.88) 100%) !important;
-          backdrop-filter:blur(10px);
-          border:1px solid rgba(74,222,128,.2) !important;
-        }
-        .tab-body-wrap{
-          background:rgba(255,255,255,.94) !important;
-          backdrop-filter:blur(12px);
+          background:linear-gradient(160deg,#0A1A08 0%,#14290F 50%,#1A3810 100%) !important;
         }
 
         /* HEADER */
@@ -520,7 +679,7 @@ export default function HomePage() {
               ))}
             </div>
           </div>
-          <div className="tab-body-wrap" style={{background:'rgba(255,255,255,.94)',borderRadius:'0 0 18px 18px',padding:'22px',marginTop:'-18px',boxShadow:'0 4px 24px rgba(0,0,0,.12)',border:'1px solid rgba(200,210,190,.6)',borderTop:'none',marginBottom:'20px',backdropFilter:'blur(12px)'}}>
+          <div className="tab-body-wrap" style={{background:'#FFFFFF',borderRadius:'0 0 18px 18px',padding:'22px',marginTop:'-18px',boxShadow:'0 2px 16px rgba(0,0,0,.06)',border:'1px solid #E4E4DC',borderTop:'none',marginBottom:'20px'}}>
             <div className="tab-emoji">{INFO_KOPI[activeTab].emoji}</div>
             <div className="tab-title">{INFO_KOPI[activeTab].judul}</div>
             <div className="tab-text">{INFO_KOPI[activeTab].isi}</div>
