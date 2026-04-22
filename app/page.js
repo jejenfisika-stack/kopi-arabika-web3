@@ -194,15 +194,69 @@ export default function HomePage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lato:wght@300;400;700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:'Lato',sans-serif;background:#F7F7F2;min-height:100vh}
+        body{font-family:'Lato',sans-serif;background:#F4F5F0;min-height:100vh;position:relative}
+        body::before{
+          content:'';
+          position:fixed;inset:0;
+          background:
+            radial-gradient(ellipse 800px 600px at 0% 0%,rgba(46,125,50,.04) 0%,transparent 60%),
+            radial-gradient(ellipse 600px 500px at 100% 100%,rgba(96,165,250,.03) 0%,transparent 60%),
+            radial-gradient(ellipse 500px 400px at 50% 50%,rgba(180,130,70,.02) 0%,transparent 70%);
+          pointer-events:none;z-index:0;
+        }
+        .layout{position:relative;z-index:1}
 
         /* HEADER */
-        .hdr{background:linear-gradient(135deg,#14290F 0%,#1E3E16 50%,#2A5520 100%);padding:0}
-        .hdr-in{max-width:1380px;margin:0 auto;padding:22px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+        .hdr{
+          background:linear-gradient(135deg,#0A1A08 0%,#14290F 40%,#1A3810 100%);
+          padding:0;position:relative;overflow:hidden;
+          border-bottom:1px solid rgba(74,222,128,.15);
+        }
+        .hdr::before{
+          content:'';position:absolute;inset:0;
+          background:
+            radial-gradient(ellipse 600px 300px at 20% 50%,rgba(74,222,128,.06) 0%,transparent 70%),
+            radial-gradient(ellipse 400px 200px at 80% 50%,rgba(96,165,250,.05) 0%,transparent 70%);
+          pointer-events:none;
+        }
+        .hdr-in{max-width:1380px;margin:0 auto;padding:18px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:relative;z-index:1}
         .hdr-brand{display:flex;align-items:center;gap:14px}
-        .hdr-ico{width:48px;height:48px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
-        .hdr-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:#FFF;letter-spacing:-0.5px}
-        .hdr-sub{font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+
+        /* LOGO PROFESIONAL */
+        .logo-wrap{position:relative;width:52px;height:52px;flex-shrink:0}
+        .logo-hex{
+          width:52px;height:52px;
+          background:linear-gradient(135deg,#1A4A1A,#2E7D32);
+          clip-path:polygon(50% 0%,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);
+          display:flex;align-items:center;justify-content:center;
+          position:relative;
+          box-shadow:0 4px 20px rgba(46,125,50,.4);
+        }
+        .logo-hex::before{
+          content:'';position:absolute;inset:2px;
+          background:linear-gradient(135deg,#0D2B0D,#1B5E20);
+          clip-path:polygon(50% 0%,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);
+        }
+        .logo-inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
+        .logo-bean{font-size:18px;line-height:1}
+        .logo-chain{font-size:9px;line-height:1;opacity:.8}
+        .logo-ring{
+          position:absolute;inset:-3px;
+          border-radius:50%;
+          border:1px solid rgba(74,222,128,.3);
+          animation:spin 8s linear infinite;
+        }
+        .logo-ring::after{
+          content:'';position:absolute;top:-2px;left:50%;transform:translateX(-50%);
+          width:5px;height:5px;background:#4ADE80;border-radius:50%;
+          box-shadow:0 0 6px #4ADE80;
+        }
+        @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+        .hdr-text{}
+        .hdr-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:900;color:#FFF;letter-spacing:-0.5px;line-height:1.1}
+        .hdr-title span{color:#4ADE80}
+        .hdr-sub{font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2.5px;text-transform:uppercase;margin-top:3px}
         .hdr-badges{display:flex;gap:7px;flex-wrap:wrap}
         .bdg{padding:5px 11px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
         .bdg-g{background:rgba(234,179,8,.15);color:#FCD34D;border:1px solid rgba(234,179,8,.25)}
@@ -229,11 +283,30 @@ export default function HomePage() {
         @media(max-width:900px){.layout{grid-template-columns:1fr}}
 
         /* CARDS */
-        .card{background:#FFF;border-radius:18px;border:1px solid #E4E4DC;box-shadow:0 2px 12px rgba(0,0,0,.04);overflow:hidden;margin-bottom:20px}
+        .card{
+          background:#FFF;border-radius:18px;
+          border:1px solid rgba(200,210,190,.6);
+          box-shadow:0 2px 20px rgba(0,0,0,.05),0 1px 4px rgba(0,0,0,.03);
+          overflow:hidden;margin-bottom:20px;
+          transition:box-shadow .2s;
+        }
+        .card:hover{box-shadow:0 4px 28px rgba(0,0,0,.08),0 2px 6px rgba(0,0,0,.04)}
 
         /* HERO CARD */
-        .hero-card{background:linear-gradient(160deg,#14290F,#2A5520);border-radius:18px;padding:28px 24px 0;overflow:hidden;position:relative;margin-bottom:20px}
-        .hero-card::after{content:'☕';position:absolute;right:16px;top:16px;font-size:90px;opacity:.08;pointer-events:none}
+        .hero-card{
+          background:linear-gradient(160deg,#0A1A08 0%,#14290F 50%,#1A3810 100%);
+          border-radius:18px;padding:28px 24px 0;overflow:hidden;position:relative;margin-bottom:20px;
+          border:1px solid rgba(74,222,128,.15);
+        }
+        .hero-card::before{
+          content:'';position:absolute;inset:0;
+          background:
+            radial-gradient(circle 120px at 80% 30%,rgba(74,222,128,.08) 0%,transparent 70%),
+            radial-gradient(circle 80px at 20% 70%,rgba(96,165,250,.06) 0%,transparent 70%);
+          pointer-events:none;
+        }
+        .hero-card::after{content:'🫘';position:absolute;right:16px;top:12px;font-size:80px;opacity:.12;pointer-events:none;filter:grayscale(1)}
+        .hero-nodes{position:absolute;inset:0;pointer-events:none;overflow:hidden}
         .hero-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:#FFF;line-height:1.2;position:relative;z-index:1}
         .hero-sub{font-size:12px;color:rgba(255,255,255,.5);margin-top:6px;margin-bottom:20px;position:relative;z-index:1}
 
@@ -323,9 +396,18 @@ export default function HomePage() {
       <header className="hdr">
         <div className="hdr-in">
           <div className="hdr-brand">
-            <div className="hdr-ico">☕</div>
-            <div>
-              <div className="hdr-title">Kopi Arabika Web3</div>
+            {/* LOGO PROFESIONAL */}
+            <div className="logo-wrap">
+              <div className="logo-hex">
+                <div className="logo-inner">
+                  <span className="logo-bean">🫘</span>
+                  <span className="logo-chain">⛓</span>
+                </div>
+              </div>
+              <div className="logo-ring"/>
+            </div>
+            <div className="hdr-text">
+              <div className="hdr-title">Kopi Arabika <span>Web3</span></div>
               <div className="hdr-sub">Universitas Jember · Riset Scopus Q1</div>
             </div>
           </div>
