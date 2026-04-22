@@ -274,7 +274,7 @@ export default function HomePage() {
           <div className="hdr-brand">
             <div className="hdr-ico">☕</div>
             <div>
-              <div className="hdr-title">Coffee Arabica CNN Web3</div>
+              <div className="hdr-title">Kopi Arabika CNN Web3</div>
               <div className="hdr-sub">Universitas Jember</div>
             </div>
           </div>
@@ -362,7 +362,7 @@ export default function HomePage() {
           <div className="card">
             <div className="card-head">
               <div className="head-ico">📸</div>
-              <div className="head-title">Klasifikasi Biji Kopi dengan AI</div>
+              <div className="head-title">Klasifikasi Biji Kopi dengan CNN</div>
             </div>
             <div style={{padding:'20px'}}>
               <p className="sec-label">Foto Biji Kopi</p>
