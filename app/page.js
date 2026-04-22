@@ -238,6 +238,9 @@ export default function HomePage() {
   const [tokenId, setTokenId]       = useState(null)
   const [addingNFT, setAddingNFT]   = useState(false)
   const [nftAdded, setNftAdded]     = useState(false)
+  const [fotoHash, setFotoHash]     = useState('')
+  const [duplikat, setDuplikat]     = useState(null)
+  const [verifying, setVerifying]   = useState(false)
   const [walletAddr, setWalletAddr] = useState('')
   const [walletLoading, setWalletLoading] = useState(false)
   const [tokenId, setTokenId]           = useState(null)
@@ -277,11 +280,118 @@ export default function HomePage() {
     return addr ? `${addr.slice(0,6)}...${addr.slice(-4)}` : ''
   }
 
+  // ============================================================
+  // Hitung SHA-256 hash dari file foto (fingerprint unik)
+  // ============================================================
+  async function hitungHashFoto(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = async (e) => {
+        try {
+          const buffer   = e.target.result
+          const hashBuf  = await crypto.subtle.digest('SHA-256', buffer)
+          const hashArr  = Array.from(new Uint8Array(hashBuf))
+          const hashHex  = hashArr.map(b => b.toString(16).padStart(2, '0')).join('')
+          resolve(hashHex)
+        } catch(err) { reject(err) }
+      }
+      reader.onerror = reject
+      reader.readAsArrayBuffer(file)
+    })
+  }
+
+  // ============================================================
+  // Cek duplikat via smart contract (hashFoto sudah pernah di-mint?)
+  // ============================================================
+  async function cekDuplikatOnChain(hashHex) {
+    try {
+      const { ethers } = await import('ethers')
+      const provider = new ethers.JsonRpcProvider(
+        'https://polygon-amoy.g.alchemy.com/v2/coqrH17Ei58tkxqr3rIy4'
+      )
+      // ABI fungsi cekHashFoto
+      const abiCek = [
+        {
+          inputs: [{ name: 'hashFoto', type: 'string' }],
+          name: 'cekHashFoto',
+          outputs: [
+            { name: 'sudahAda', type: 'bool' },
+            { name: 'tokenIdLama', type: 'uint256' }
+          ],
+          stateMutability: 'view',
+          type: 'function',
+        }
+      ]
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, abiCek, provider)
+      const [sudahAda, tokenIdLama] = await contract.cekHashFoto(hashHex)
+      return { sudahAda, tokenIdLama: Number(tokenIdLama) }
+    } catch(err) {
+      console.log('cekDuplikat error (contract mungkin belum punya fungsi ini):', err.message)
+      // Jika contract lama belum ada fungsi ini, skip cek on-chain
+      return { sudahAda: false, tokenIdLama: 0 }
+    }
+  }
+
+  // ============================================================
+  // Hitung Perceptual Hash sederhana (untuk deteksi foto serupa)
+  // Menggunakan canvas untuk resize + average hash
+  // ============================================================
+  async function hitungPHash(file) {
+    return new Promise((resolve) => {
+      const img = new Image()
+      img.onload = () => {
+        try {
+          const SIZE = 16
+          const canvas = document.createElement('canvas')
+          canvas.width = SIZE; canvas.height = SIZE
+          const ctx = canvas.getContext('2d')
+          ctx.drawImage(img, 0, 0, SIZE, SIZE)
+          const data  = ctx.getImageData(0, 0, SIZE, SIZE).data
+          const grays = []
+          for (let i = 0; i < data.length; i += 4) {
+            grays.push(0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2])
+          }
+          const avg  = grays.reduce((a, b) => a + b, 0) / grays.length
+          const bits = grays.map(g => g >= avg ? '1' : '0').join('')
+          // Convert bits to hex string
+          let hex = ''
+          for (let i = 0; i < bits.length; i += 4) {
+            hex += parseInt(bits.slice(i, i+4), 2).toString(16)
+          }
+          resolve(hex)
+        } catch(e) { resolve('') }
+      }
+      img.onerror = () => resolve('')
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
+  // ============================================================
+  // Hitung jarak Hamming antara 2 pHash (0 = identik, >10 = berbeda)
+  // ============================================================
+  function hammingDistance(h1, h2) {
+    if (!h1 || !h2 || h1.length !== h2.length) return 999
+    let dist = 0
+    for (let i = 0; i < h1.length; i++) {
+      const b1 = parseInt(h1[i], 16).toString(2).padStart(4,'0')
+      const b2 = parseInt(h2[i], 16).toString(2).padStart(4,'0')
+      for (let j = 0; j < 4; j++) if (b1[j] !== b2[j]) dist++
+    }
+    return dist
+  }
+
   function handleFoto(e) {
     const file = e.target.files[0]
     if (!file) return
     setFoto(file); setPreview(URL.createObjectURL(file))
-    setHasilCNN(null); setTxHash(''); setCidFoto(''); setErrorMsg(''); setStatus('')
+    setHasilCNN(null); setTxHash(''); setCidFoto(''); setErrorMsg('')
+    setStatus(''); setDuplikat(null); setFotoHash('')
+
+    // Hitung hash foto otomatis saat dipilih
+    hitungHashFoto(file).then(hash => {
+      setFotoHash(hash)
+      console.log('SHA-256 foto:', hash)
+    }).catch(err => console.log('Hash error:', err))
   }
 
   function parseOutput(text) {
@@ -297,7 +407,60 @@ export default function HomePage() {
 
   async function klasifikasiCNN() {
     if (!foto) { alert('Pilih foto kopi terlebih dahulu!'); return }
-    setLoading(true); setHasilCNN(null); setErrorMsg('')
+    setLoading(true); setHasilCNN(null); setErrorMsg(''); setDuplikat(null)
+
+    // ── Verifikasi foto sebelum klasifikasi ──
+    try {
+      setStatus('🔍 Memverifikasi keaslian foto...')
+      const hash = fotoHash || await hitungHashFoto(foto)
+      if (!fotoHash) setFotoHash(hash)
+
+      // Cek duplikat on-chain
+      setVerifying(true)
+      const { sudahAda, tokenIdLama } = await cekDuplikatOnChain(hash)
+      setVerifying(false)
+
+      if (sudahAda) {
+        setDuplikat({
+          tipe: 'IDENTIK',
+          tokenId: tokenIdLama,
+          hash,
+          pesan: `Foto ini IDENTIK dengan NFT #${tokenIdLama} yang sudah ada di blockchain!`,
+          warna: '#FEF2F2',
+          border: '#FECACA',
+          icon: '🚫'
+        })
+        setLoading(false)
+        return // Hentikan proses
+      }
+
+      // Hitung pHash untuk deteksi foto serupa
+      const pHash = await hitungPHash(foto)
+      const pHashLama = localStorage.getItem('lastPHash')
+      if (pHashLama && pHash) {
+        const dist = hammingDistance(pHash, pHashLama)
+        console.log('Hamming distance:', dist)
+        if (dist <= 5) {
+          // Sangat mirip — peringatan
+          setDuplikat({
+            tipe: 'MIRIP',
+            dist,
+            hash,
+            pesan: `Foto ini SANGAT MIRIP dengan foto yang baru-baru ini diproses (jarak: ${dist}/64). Pastikan ini foto yang berbeda!`,
+            warna: '#FFFBEB',
+            border: '#FDE68A',
+            icon: '⚠️'
+          })
+          // Tidak hentikan proses, hanya peringatan
+        }
+      }
+      // Simpan pHash foto ini untuk perbandingan berikutnya
+      if (pHash) localStorage.setItem('lastPHash', pHash)
+
+    } catch(err) {
+      console.log('Verifikasi error:', err)
+      setVerifying(false)
+    }
     try {
       const BASE = 'https://jejenFis06-kopi-arabika-classifier.hf.space'
       setStatus('Mengunggah foto ke model AI...')
@@ -343,7 +506,7 @@ export default function HomePage() {
   async function uploadIPFS() {
     setStatus('Mengupload foto ke IPFS...')
     const b64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(foto) })
-    const res = await fetch('/api/upload-ipfs', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ imageBase64:b64, fileName:foto.name, hasilCNN, namaPetani, lokasiKebun:lokasi }) })
+    const res = await fetch('/api/upload-ipfs', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ imageBase64:b64, fileName:foto.name, hasilCNN, namaPetani, lokasiKebun:lokasi, hashFoto:fotoHash }) })
     const data = await res.json()
     if (!data.cidFoto) throw new Error(data.error||'Upload IPFS gagal')
     setCidFoto(data.cidFoto); return data
@@ -871,6 +1034,37 @@ export default function HomePage() {
                 {loading&&!hasilCNN ? <><span>⏳</span>{status||'Memproses...'}</> : <><span>🔍</span>Klasifikasi dengan CNN</>}
               </button>
               {errorMsg && <div className="err">{errorMsg}</div>}
+
+              {/* Info hash foto */}
+              {fotoHash && !duplikat && (
+                <div style={{marginTop:10,background:'#F0FDF4',border:'1px solid #BBF7D0',borderRadius:10,padding:'8px 12px',fontSize:11}}>
+                  <div style={{color:'#166534',fontWeight:700,marginBottom:2}}>🔐 Fingerprint SHA-256 Foto</div>
+                  <div style={{fontFamily:'monospace',color:'#166534',wordBreak:'break-all',fontSize:10}}>{fotoHash.slice(0,32)}...{fotoHash.slice(-8)}</div>
+                  <div style={{color:'#6B7280',marginTop:2,fontSize:10}}>Hash unik ini membuktikan keaslian foto Anda di blockchain</div>
+                </div>
+              )}
+
+              {/* Peringatan / blokir duplikat */}
+              {duplikat && (
+                <div style={{marginTop:10,background:duplikat.warna,border:`1.5px solid ${duplikat.border}`,borderRadius:10,padding:'12px 14px'}}>
+                  <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>
+                    {duplikat.icon} {duplikat.tipe === 'IDENTIK' ? 'FOTO TERDETEKSI DUPLIKAT!' : 'PERINGATAN: Foto Sangat Mirip'}
+                  </div>
+                  <div style={{fontSize:12,lineHeight:1.6,color:'#374151'}}>{duplikat.pesan}</div>
+                  {duplikat.tokenId && (
+                    <a href={`https://amoy.polygonscan.com/token/${CONTRACT_ADDRESS}?a=${duplikat.tokenId}`}
+                       target="_blank" rel="noreferrer"
+                       style={{display:'block',marginTop:8,fontSize:11,color:'#1D4ED8',fontWeight:700}}>
+                      🔍 Lihat NFT Asli #{duplikat.tokenId} di Polygonscan →
+                    </a>
+                  )}
+                  {duplikat.tipe === 'IDENTIK' && (
+                    <div style={{marginTop:8,fontSize:11,color:'#B91C1C',fontWeight:700}}>
+                      ❌ Foto ini tidak dapat di-mint ulang — sudah terdaftar di blockchain
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
