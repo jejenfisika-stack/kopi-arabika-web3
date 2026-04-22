@@ -194,17 +194,56 @@ export default function HomePage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lato:wght@300;400;700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:'Lato',sans-serif;background:#F4F5F0;min-height:100vh;position:relative}
+        body{
+          font-family:'Lato',sans-serif;
+          min-height:100vh;
+          position:relative;
+          background-color:#1C3A1C;
+        }
+
+        /* BACKGROUND KEBUN KOPI — layer bertumpuk */
         body::before{
           content:'';
           position:fixed;inset:0;
+          background-image:
+            /* Lapisan 1: foto kebun kopi via unsplash */
+            url('https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=1920&q=80&fit=crop');
+          background-size:cover;
+          background-position:center;
+          background-attachment:fixed;
+          filter:brightness(.45) saturate(1.2);
+          z-index:0;
+        }
+        body::after{
+          content:'';
+          position:fixed;inset:0;
           background:
-            radial-gradient(ellipse 800px 600px at 0% 0%,rgba(46,125,50,.04) 0%,transparent 60%),
-            radial-gradient(ellipse 600px 500px at 100% 100%,rgba(96,165,250,.03) 0%,transparent 60%),
-            radial-gradient(ellipse 500px 400px at 50% 50%,rgba(180,130,70,.02) 0%,transparent 70%);
-          pointer-events:none;z-index:0;
+            linear-gradient(
+              to bottom,
+              rgba(8,20,8,.55) 0%,
+              rgba(15,30,12,.3) 30%,
+              rgba(15,30,12,.3) 70%,
+              rgba(8,20,8,.65) 100%
+            );
+          z-index:0;
         }
         .layout{position:relative;z-index:1}
+
+        /* GLASS MORPHISM untuk cards di atas kebun kopi */
+        .card{
+          background:rgba(255,255,255,.94) !important;
+          backdrop-filter:blur(12px);
+          -webkit-backdrop-filter:blur(12px);
+        }
+        .hero-card{
+          background:linear-gradient(160deg,rgba(10,26,8,.92) 0%,rgba(20,41,15,.90) 50%,rgba(26,56,16,.88) 100%) !important;
+          backdrop-filter:blur(10px);
+          border:1px solid rgba(74,222,128,.2) !important;
+        }
+        .tab-body-wrap{
+          background:rgba(255,255,255,.94) !important;
+          backdrop-filter:blur(12px);
+        }
 
         /* HEADER */
         .hdr{
@@ -222,34 +261,62 @@ export default function HomePage() {
         .hdr-in{max-width:1380px;margin:0 auto;padding:18px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:relative;z-index:1}
         .hdr-brand{display:flex;align-items:center;gap:14px}
 
-        /* LOGO PROFESIONAL */
-        .logo-wrap{position:relative;width:52px;height:52px;flex-shrink:0}
-        .logo-hex{
-          width:52px;height:52px;
-          background:linear-gradient(135deg,#1A4A1A,#2E7D32);
-          clip-path:polygon(50% 0%,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);
-          display:flex;align-items:center;justify-content:center;
+        /* LOGO BARU — latar putih, gambar kopi estetik di tengah */
+        .logo-wrap{
           position:relative;
-          box-shadow:0 4px 20px rgba(46,125,50,.4);
+          width:56px;height:56px;
+          flex-shrink:0;
         }
-        .logo-hex::before{
-          content:'';position:absolute;inset:2px;
-          background:linear-gradient(135deg,#0D2B0D,#1B5E20);
-          clip-path:polygon(50% 0%,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);
-        }
-        .logo-inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
-        .logo-bean{font-size:18px;line-height:1}
-        .logo-chain{font-size:9px;line-height:1;opacity:.8}
-        .logo-ring{
-          position:absolute;inset:-3px;
+        .logo-circle{
+          width:56px;height:56px;
           border-radius:50%;
-          border:1px solid rgba(74,222,128,.3);
-          animation:spin 8s linear infinite;
+          background:#FFFFFF;
+          box-shadow:
+            0 0 0 2px rgba(255,255,255,.3),
+            0 4px 20px rgba(0,0,0,.35),
+            inset 0 1px 0 rgba(255,255,255,.8);
+          display:flex;align-items:center;justify-content:center;
+          position:relative;overflow:hidden;
+        }
+        .logo-circle::before{
+          content:'';
+          position:absolute;inset:0;
+          background:linear-gradient(135deg,#FFFFFF 0%,#F0EDE8 100%);
+        }
+        .logo-img-wrap{
+          position:relative;z-index:1;
+          width:38px;height:38px;
+          border-radius:50%;
+          overflow:hidden;
+          border:2px solid rgba(139,90,43,.15);
+          box-shadow:0 2px 8px rgba(0,0,0,.12);
+        }
+        .logo-img{
+          width:100%;height:100%;
+          object-fit:cover;
+          object-position:center;
+          filter:saturate(1.3) contrast(1.05);
+        }
+        .logo-badge{
+          position:absolute;bottom:-1px;right:-1px;
+          width:18px;height:18px;
+          background:linear-gradient(135deg,#1A4A1A,#2E7D32);
+          border-radius:50%;
+          border:2px solid #FFF;
+          display:flex;align-items:center;justify-content:center;
+          font-size:8px;
+          box-shadow:0 2px 6px rgba(0,0,0,.2);
+        }
+        .logo-ring{
+          position:absolute;inset:-4px;
+          border-radius:50%;
+          border:1.5px solid rgba(255,255,255,.25);
+          animation:spin 10s linear infinite;
         }
         .logo-ring::after{
-          content:'';position:absolute;top:-2px;left:50%;transform:translateX(-50%);
-          width:5px;height:5px;background:#4ADE80;border-radius:50%;
-          box-shadow:0 0 6px #4ADE80;
+          content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+          width:4px;height:4px;background:#FFF;border-radius:50%;
+          box-shadow:0 0 6px rgba(255,255,255,.8);
         }
         @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 
@@ -396,13 +463,17 @@ export default function HomePage() {
       <header className="hdr">
         <div className="hdr-in">
           <div className="hdr-brand">
-            {/* LOGO PROFESIONAL */}
+            {/* LOGO BARU — putih dengan foto kopi estetik */}
             <div className="logo-wrap">
-              <div className="logo-hex">
-                <div className="logo-inner">
-                  <span className="logo-bean">🫘</span>
-                  <span className="logo-chain">⛓</span>
+              <div className="logo-circle">
+                <div className="logo-img-wrap">
+                  <img
+                    className="logo-img"
+                    src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=120&h=120&fit=crop&q=90"
+                    alt="Kopi Arabika"
+                  />
                 </div>
+                <div className="logo-badge">⛓</div>
               </div>
               <div className="logo-ring"/>
             </div>
@@ -449,7 +520,7 @@ export default function HomePage() {
               ))}
             </div>
           </div>
-          <div className="tab-body" style={{background:'#FFF',borderRadius:'0 0 18px 18px',padding:'22px',marginTop:'-18px',boxShadow:'0 2px 12px rgba(0,0,0,.04)',border:'1px solid #E4E4DC',borderTop:'none',marginBottom:'20px'}}>
+          <div className="tab-body-wrap" style={{background:'rgba(255,255,255,.94)',borderRadius:'0 0 18px 18px',padding:'22px',marginTop:'-18px',boxShadow:'0 4px 24px rgba(0,0,0,.12)',border:'1px solid rgba(200,210,190,.6)',borderTop:'none',marginBottom:'20px',backdropFilter:'blur(12px)'}}>
             <div className="tab-emoji">{INFO_KOPI[activeTab].emoji}</div>
             <div className="tab-title">{INFO_KOPI[activeTab].judul}</div>
             <div className="tab-text">{INFO_KOPI[activeTab].isi}</div>
