@@ -243,7 +243,6 @@ export default function HomePage() {
   const [verifying, setVerifying]   = useState(false)
   const [walletAddr, setWalletAddr] = useState('')
   const [walletLoading, setWalletLoading] = useState(false)
-  const [tokenId, setTokenId]           = useState(null)
   const fileRef = useRef()
 
   // ============================================================
