@@ -46,7 +46,43 @@ export default function HomePage() {
   const [cidFoto, setCidFoto]       = useState('')
   const [errorMsg, setErrorMsg]     = useState('')
   const [activeTab, setActiveTab]   = useState(0)
+  const [walletAddr, setWalletAddr] = useState('')
+  const [walletLoading, setWalletLoading] = useState(false)
   const fileRef = useRef()
+
+  // ============================================================
+  // Connect / Disconnect Wallet
+  // ============================================================
+  async function handleConnectWallet() {
+    if (walletAddr) { setWalletAddr(''); return }
+    if (!window.ethereum) {
+      alert('MetaMask tidak ditemukan!\nInstall MetaMask dari metamask.io')
+      return
+    }
+    setWalletLoading(true)
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+      const chainId  = await window.ethereum.request({ method: 'eth_chainId' })
+      if (chainId !== AMOY_CHAIN_ID) {
+        try {
+          await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: AMOY_CHAIN_ID }] })
+        } catch {
+          await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{ chainId: AMOY_CHAIN_ID, chainName: 'Polygon Amoy Testnet', nativeCurrency: { name: 'POL', symbol: 'POL', decimals: 18 }, rpcUrls: ['https://rpc-amoy.polygon.technology'], blockExplorerUrls: ['https://amoy.polygonscan.com'] }] })
+        }
+      }
+      setWalletAddr(accounts[0])
+      window.ethereum.on('accountsChanged', accs => setWalletAddr(accs[0] || ''))
+      window.ethereum.on('chainChanged', () => window.location.reload())
+    } catch (err) {
+      alert('Gagal connect: ' + err.message)
+    } finally {
+      setWalletLoading(false)
+    }
+  }
+
+  function shortAddr(addr) {
+    return addr ? `${addr.slice(0,6)}...${addr.slice(-4)}` : ''
+  }
 
   function handleFoto(e) {
     const file = e.target.files[0]
@@ -173,6 +209,21 @@ export default function HomePage() {
         .bdg-gr{background:rgba(74,222,128,.12);color:#86EFAC;border:1px solid rgba(74,222,128,.2)}
         .bdg-b{background:rgba(96,165,250,.12);color:#93C5FD;border:1px solid rgba(96,165,250,.2)}
 
+        /* WALLET BUTTON */
+        .hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+        .btn-wallet{display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:24px;font-size:12px;font-weight:700;font-family:'Lato',sans-serif;cursor:pointer;border:none;transition:all .25s;letter-spacing:.3px;white-space:nowrap}
+        .btn-wallet-off{background:rgba(255,255,255,.1);color:#FFF;border:1.5px solid rgba(255,255,255,.25)}
+        .btn-wallet-off:hover{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.45);transform:translateY(-1px)}
+        .btn-wallet-on{background:rgba(74,222,128,.15);color:#86EFAC;border:1.5px solid rgba(74,222,128,.3)}
+        .btn-wallet-on:hover{background:rgba(239,68,68,.15);color:#FCA5A5;border-color:rgba(239,68,68,.3)}
+        .btn-wallet-on:hover .w-addr{display:none}
+        .btn-wallet-on:hover .w-disc{display:inline}
+        .w-disc{display:none}
+        .w-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+        .w-dot-on{background:#4ADE80;animation:blink 2s infinite}
+        .w-dot-off{background:rgba(255,255,255,.4)}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+
         /* LAYOUT */
         .layout{max-width:1380px;margin:0 auto;padding:28px 24px;display:grid;grid-template-columns:400px 1fr;gap:24px;align-items:start}
         @media(max-width:900px){.layout{grid-template-columns:1fr}}
@@ -274,14 +325,29 @@ export default function HomePage() {
           <div className="hdr-brand">
             <div className="hdr-ico">☕</div>
             <div>
-              <div className="hdr-title">Kopi Arabika CNN Web3</div>
-              <div className="hdr-sub">Universitas Jember</div>
+              <div className="hdr-title">Kopi Arabika Web3</div>
+              <div className="hdr-sub">Universitas Jember · Riset Scopus Q1</div>
             </div>
           </div>
-          <div className="hdr-badges">
-            <span className="bdg bdg-g">🏆 RepViT-M1.1 CNN</span>
-            <span className="bdg bdg-gr">⛓️ Polygon Amoy</span>
-            <span className="bdg bdg-b">📦 IPFS Pinata</span>
+          <div className="hdr-right">
+            <div className="hdr-badges">
+              <span className="bdg bdg-g">🏆 RepViT-M1.1 CNN</span>
+              <span className="bdg bdg-gr">⛓️ Polygon Amoy</span>
+              <span className="bdg bdg-b">📦 IPFS Pinata</span>
+            </div>
+            <button
+              className={`btn-wallet ${walletAddr ? 'btn-wallet-on' : 'btn-wallet-off'} ${walletLoading ? 'w-loading' : ''}`}
+              onClick={handleConnectWallet}
+              disabled={walletLoading}
+            >
+              <span className={`w-dot ${walletAddr ? 'w-dot-on' : 'w-dot-off'}`}/>
+              {walletLoading
+                ? '⏳ Menghubungkan...'
+                : walletAddr
+                  ? <><span className="w-addr">🦊 {shortAddr(walletAddr)}</span><span className="w-disc">✕ Disconnect</span></>
+                  : '🦊 Connect Wallet'
+              }
+            </button>
           </div>
         </div>
       </header>
@@ -336,7 +402,7 @@ export default function HomePage() {
           <div className="card">
             <div className="card-head">
               <div className="head-ico">⚙️</div>
-              <div className="head-title">Teknologi CNN Web3</div>
+              <div className="head-title">Teknologi yang Digunakan</div>
             </div>
             <div className="tech-grid">
               {[
@@ -362,7 +428,7 @@ export default function HomePage() {
           <div className="card">
             <div className="card-head">
               <div className="head-ico">📸</div>
-              <div className="head-title">Klasifikasi Biji Kopi dengan CNN</div>
+              <div className="head-title">Klasifikasi Biji Kopi dengan AI</div>
             </div>
             <div style={{padding:'20px'}}>
               <p className="sec-label">Foto Biji Kopi</p>
