@@ -3,12 +3,65 @@
 import { useState, useRef } from 'react'
 import { ethers } from 'ethers'
 
-const CONTRACT_ADDRESS = '0x53ff81292ea345d13da906e0f27794f8d5402853'
+const CONTRACT_ADDRESS = '0x85e774FBab2cE074D8A292fDF758a3d291Dcf7ad'
 const PINATA_GATEWAY   = 'rose-casual-warbler-710.mypinata.cloud'
 const AMOY_CHAIN_ID    = '0x13882'
 
 const CONTRACT_ABI = [
-  { inputs: [{ name: 'petani', type: 'address' },{ name: 'cid', type: 'string' },{ name: 'metadataURI', type: 'string' },{ name: 'jenisKopi', type: 'string' },{ name: 'grade', type: 'string' },{ name: 'namaPetani', type: 'string' },{ name: 'lokasiKebun', type: 'string' },{ name: 'confidencePersen', type: 'uint256' }], name: 'mintKopiNFT', outputs: [{ name: '', type: 'uint256' }], stateMutability: 'nonpayable', type: 'function' },
+  // mintKopiNFT v2 — 9 parameter (tambah hashFoto)
+  {
+    inputs: [
+      { name: 'petani',           type: 'address' },
+      { name: 'cid',              type: 'string'  },
+      { name: 'metadataURI',      type: 'string'  },
+      { name: 'jenisKopi',        type: 'string'  },
+      { name: 'grade',            type: 'string'  },
+      { name: 'namaPetani',       type: 'string'  },
+      { name: 'lokasiKebun',      type: 'string'  },
+      { name: 'confidencePersen', type: 'uint256' },
+      { name: 'hashFoto',         type: 'string'  }, // ← BARU di v2
+    ],
+    name: 'mintKopiNFT',
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  // cekHashFoto — BARU di v2 (anti-duplikat)
+  {
+    inputs: [{ name: 'hashFoto', type: 'string' }],
+    name: 'cekHashFoto',
+    outputs: [
+      { name: 'sudahAda',    type: 'bool'    },
+      { name: 'tokenIdLama', type: 'uint256' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  // getDataKopi v2 — tambah hashFoto di output
+  {
+    inputs: [{ name: 'tokenId', type: 'uint256' }],
+    name: 'getDataKopi',
+    outputs: [
+      { name: 'ipfsCID',     type: 'string'  },
+      { name: 'jenisKopi',   type: 'string'  },
+      { name: 'grade',       type: 'string'  },
+      { name: 'namaPetani',  type: 'string'  },
+      { name: 'lokasiKebun', type: 'string'  },
+      { name: 'timestamp',   type: 'uint256' },
+      { name: 'confidence',  type: 'uint256' },
+      { name: 'hashFoto',    type: 'string'  },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  // totalNFT
+  {
+    inputs: [],
+    name: 'totalNFT',
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
 ]
 
 const GRADE_STYLE = {
@@ -309,19 +362,8 @@ export default function HomePage() {
         'https://polygon-amoy.g.alchemy.com/v2/coqrH17Ei58tkxqr3rIy4'
       )
       // ABI fungsi cekHashFoto
-      const abiCek = [
-        {
-          inputs: [{ name: 'hashFoto', type: 'string' }],
-          name: 'cekHashFoto',
-          outputs: [
-            { name: 'sudahAda', type: 'bool' },
-            { name: 'tokenIdLama', type: 'uint256' }
-          ],
-          stateMutability: 'view',
-          type: 'function',
-        }
-      ]
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, abiCek, provider)
+      // Gunakan CONTRACT_ABI yang sudah include cekHashFoto
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider)
       const [sudahAda, tokenIdLama] = await contract.cekHashFoto(hashHex)
       return { sudahAda, tokenIdLama: Number(tokenIdLama) }
     } catch(err) {
@@ -538,7 +580,8 @@ export default function HomePage() {
       const tx = await contract.mintKopiNFT(
         address, ipfsData.cidFoto, `ipfs://${ipfsData.cidMetadata}`,
         hasilCNN.jenis_kopi, hasilCNN.grade, namaPetani, lokasi,
-        Math.round(hasilCNN.confidence)
+        Math.round(hasilCNN.confidence),
+        fotoHash    // ← SHA-256 hash foto — anti-duplikat v2
       )
       setStatus('Menunggu konfirmasi blockchain...')
       const receipt = await tx.wait()
