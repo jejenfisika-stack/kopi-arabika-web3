@@ -794,9 +794,9 @@ export default function HomePage() {
         .hdr-title span{color:#4ADE80}
         .hdr-sub{font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2.5px;text-transform:uppercase;margin-top:3px}
         .hdr-badges{display:flex;gap:7px;flex-wrap:wrap}
-        .bdg{padding:5px 11px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
-        .bdg-g{background:rgba(234,179,8,.15);color:#FCD34D;border:1px solid rgba(234,179,8,.25)}
-        .bdg-gr{background:rgba(74,222,128,.12);color:#86EFAC;border:1px solid rgba(74,222,128,.2)}
+        .bdg{padding:4px 10px;border-radius:4px;font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;font-family:'DM Mono',monospace}
+        .bdg-g{background:rgba(201,168,76,.12);color:var(--gold-light);border:1px solid rgba(201,168,76,.25)}
+        .bdg-gr{background:rgba(76,175,80,.1);color:#A5D6A7;border:1px solid rgba(76,175,80,.2)}
         .bdg-b{background:rgba(96,165,250,.12);color:#93C5FD;border:1px solid rgba(96,165,250,.2)}
 
         /* WALLET BUTTON */
@@ -815,41 +815,53 @@ export default function HomePage() {
         @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
 
         /* LAYOUT */
-        .layout{max-width:1380px;margin:0 auto;padding:28px 24px;display:grid;grid-template-columns:400px 1fr;gap:24px;align-items:start}
-        @media(max-width:900px){.layout{grid-template-columns:1fr}}
+        .layout{max-width:1380px;margin:0 auto;padding:32px 28px;display:grid;grid-template-columns:380px 1fr;gap:28px;align-items:start}
+        @media(max-width:900px){.layout{grid-template-columns:1fr;padding:20px 16px}}
 
         /* CARDS */
         .card{
-          background:#FFF;border-radius:18px;
-          border:1px solid rgba(200,210,190,.6);
-          box-shadow:0 2px 20px rgba(0,0,0,.05),0 1px 4px rgba(0,0,0,.03);
+          background:#FFFFFF;border-radius:3px;
+          border:1px solid rgba(200,210,190,.5);
+          border-top:3px solid var(--green-600);
+          box-shadow:0 2px 24px rgba(12,31,12,.06);
           overflow:hidden;margin-bottom:20px;
-          transition:box-shadow .2s;
+          transition:all .25s ease;
+          position:relative;
         }
-        .card:hover{box-shadow:0 4px 28px rgba(0,0,0,.08),0 2px 6px rgba(0,0,0,.04)}
+        .card:hover{
+          box-shadow:0 8px 40px rgba(12,31,12,.1);
+          transform:translateY(-1px);
+          border-top-color:var(--gold);
+        }
 
         /* HERO CARD */
         .hero-card{
-          background:linear-gradient(160deg,#0A1A08 0%,#14290F 50%,#1A3810 100%);
-          border-radius:18px;padding:28px 24px 0;overflow:hidden;position:relative;margin-bottom:20px;
-          border:1px solid rgba(74,222,128,.15);
+          background:var(--green-900);
+          border-radius:3px;padding:28px 24px 0;overflow:hidden;position:relative;margin-bottom:20px;
+          border:1px solid rgba(201,168,76,.12);
+          border-top:3px solid var(--gold);
         }
         .hero-card::before{
           content:'';position:absolute;inset:0;
           background:
-            radial-gradient(circle 120px at 80% 30%,rgba(74,222,128,.08) 0%,transparent 70%),
-            radial-gradient(circle 80px at 20% 70%,rgba(96,165,250,.06) 0%,transparent 70%);
+            radial-gradient(ellipse 200px 150px at 90% 20%,rgba(201,168,76,.06) 0%,transparent 70%),
+            radial-gradient(ellipse 150px 100px at 10% 80%,rgba(76,175,80,.05) 0%,transparent 70%);
           pointer-events:none;
         }
-        .hero-card::after{content:'🫘';position:absolute;right:16px;top:12px;font-size:80px;opacity:.12;pointer-events:none;filter:grayscale(1)}
+        .hero-card::after{
+          content:'';position:absolute;right:0;top:0;bottom:0;width:120px;
+          background:linear-gradient(90deg,transparent,rgba(201,168,76,.03));
+          pointer-events:none;
+        }
         .hero-nodes{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-        .hero-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:#FFF;line-height:1.2;position:relative;z-index:1}
-        .hero-sub{font-size:12px;color:rgba(255,255,255,.5);margin-top:6px;margin-bottom:20px;position:relative;z-index:1}
+        .hero-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:#FFF;line-height:1.2;position:relative;z-index:1;letter-spacing:.3px}
+        .hero-sub{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.4);margin-top:8px;margin-bottom:20px;position:relative;z-index:1;letter-spacing:2px;text-transform:uppercase}
 
         /* TABS */
-        .tabs{display:flex;border-bottom:1px solid rgba(255,255,255,.1);gap:2px;position:relative;z-index:1}
-        .tab{padding:10px 16px;font-size:20px;cursor:pointer;border-bottom:2px solid transparent;opacity:.45;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none}
-        .tab.on{opacity:1;border-bottom-color:#FCD34D}
+        .tabs{display:flex;border-bottom:1px solid rgba(201,168,76,.15);gap:0;position:relative;z-index:1}
+        .tab{padding:10px 18px;font-size:18px;cursor:pointer;border-bottom:2px solid transparent;opacity:.4;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none}
+        .tab.on{opacity:1;border-bottom-color:var(--gold)}
+        .tab:hover{opacity:.75}
         .tab-body{background:#FFF;border-radius:0 0 18px 18px;padding:22px}
         .tab-emoji{font-size:32px;margin-bottom:10px}
         .tab-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:#14290F;margin-bottom:8px}
@@ -860,12 +872,12 @@ export default function HomePage() {
         .stat-k{font-size:10px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
 
         /* CARA PAKAI */
-        .card-head{padding:14px 20px;border-bottom:1px solid #F0EFE8;display:flex;align-items:center;gap:10px}
-        .head-ico{width:30px;height:30px;background:#F0F5F0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
-        .head-title{font-size:13px;font-weight:700;color:#14290F}
+        .card-head{padding:14px 20px;border-bottom:1px solid #F0EFE8;display:flex;align-items:center;gap:10px;background:#FAFAF5}
+        .head-ico{width:28px;height:28px;background:var(--green-50);border:1px solid var(--green-100);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:13px}
+        .head-title{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:var(--green-700);letter-spacing:1px;text-transform:uppercase}
         .cara-list{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
         .cara-item{display:flex;gap:12px;align-items:flex-start}
-        .cara-no{width:30px;height:30px;flex-shrink:0;background:#14290F;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#FFF;font-family:'Playfair Display',serif}
+        .cara-no{width:28px;height:28px;flex-shrink:0;background:var(--green-800);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:var(--gold-light);font-family:'DM Mono',monospace;letter-spacing:0}
         .cara-title{font-size:13px;font-weight:700;color:#1F2937;margin-bottom:2px}
         .cara-text{font-size:12px;color:#9CA3AF;line-height:1.5}
 
@@ -877,7 +889,7 @@ export default function HomePage() {
         .tech-desc{font-size:10px;color:#9CA3AF}
 
         /* RIGHT COLUMN */
-        .sec-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#9CA3AF;margin-bottom:10px}
+        .sec-label{font-family:'DM Mono',monospace;font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:2.5px;color:#9CA3AF;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #F0EDE8}
         .upload-zone{border:2px dashed #C8DFC8;border-radius:14px;min-height:210px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;overflow:hidden;background:#F7FAF7}
         .upload-zone:hover{border-color:#2A5520;background:#F0F6F0}
         .up-ph{text-align:center;padding:28px}
@@ -885,32 +897,34 @@ export default function HomePage() {
         .up-txt{font-size:13px;font-weight:600;color:#4B5563}
         .up-sub{font-size:11px;color:#9CA3AF;margin-top:3px}
 
-        .lbl{font-size:12px;font-weight:700;color:#374151;margin-bottom:5px;display:block}
-        .inp{width:100%;border:1.5px solid #E5E7EB;border-radius:11px;padding:10px 13px;font-size:13px;font-family:'Lato',sans-serif;color:#1F2937;background:#FAFAF7;outline:none;transition:border-color .2s}
-        .inp:focus{border-color:#2A5520;background:#FFF}
+        .lbl{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;color:#6B7280;margin-bottom:6px;display:block;letter-spacing:1.5px;text-transform:uppercase}
+        .inp{width:100%;border:1px solid #E5E7EB;border-bottom:2px solid #E5E7EB;border-radius:0;padding:11px 0;font-size:14px;font-family:'DM Sans',sans-serif;color:#1F2937;background:transparent;outline:none;transition:border-color .2s}
+        .inp:focus{border-bottom-color:var(--green-600);background:transparent}
         .inp::placeholder{color:#D1D5DB}
 
-        .btn-go{width:100%;padding:13px;background:linear-gradient(135deg,#14290F,#2A5520);color:#FFF;font-size:13px;font-weight:700;border:none;border-radius:13px;cursor:pointer;transition:all .2s;font-family:'Lato',sans-serif;display:flex;align-items:center;justify-content:center;gap:7px;letter-spacing:.3px}
-        .btn-go:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 5px 18px rgba(20,41,15,.3)}
-        .btn-go:disabled{background:#D1D5DB;cursor:not-allowed;transform:none}
+        .btn-go{width:100%;padding:14px;background:var(--green-800);color:#FFF;font-size:12px;font-weight:600;border:none;border-radius:2px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:1.5px;text-transform:uppercase;position:relative;overflow:hidden}
+        .btn-go::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(201,168,76,.08),transparent);transform:translateX(-100%);transition:transform .4s ease}
+        .btn-go:hover:not(:disabled)::before{transform:translateX(100%)}
+        .btn-go:hover:not(:disabled){background:var(--green-700);box-shadow:0 4px 20px rgba(20,41,15,.25)}
+        .btn-go:disabled{background:#D1D5DB;cursor:not-allowed}
 
-        .btn-mint{width:100%;padding:13px;background:linear-gradient(135deg,#4C1D95,#6D28D9);color:#FFF;font-size:13px;font-weight:700;border:none;border-radius:13px;cursor:pointer;transition:all .2s;font-family:'Lato',sans-serif;display:flex;align-items:center;justify-content:center;gap:7px}
-        .btn-mint:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 5px 18px rgba(76,29,149,.3)}
-        .btn-mint:disabled{background:#D1D5DB;cursor:not-allowed}
+        .btn-mint{width:100%;padding:14px;background:#1A1A2E;color:var(--gold-light);font-size:12px;font-weight:600;border:1px solid rgba(201,168,76,.3);border-radius:2px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:1.5px;text-transform:uppercase}
+        .btn-mint:hover:not(:disabled){background:#16213E;border-color:var(--gold);box-shadow:0 4px 20px rgba(201,168,76,.15)}
+        .btn-mint:disabled{background:#D1D5DB;color:#9CA3AF;border-color:transparent;cursor:not-allowed}
 
         .err{background:#FEF2F2;border:1px solid #FECACA;border-radius:11px;padding:11px 13px;font-size:12px;color:#B91C1C;margin-top:10px}
         .sts{text-align:center;font-size:11px;color:#6B7280;margin-top:7px}
 
-        .hasil-box{border-radius:14px;padding:18px;border:2px solid}
-        .hasil-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;margin-bottom:14px}
+        .hasil-box{border-radius:3px;padding:18px;border:1px solid;border-top:3px solid}
+        .hasil-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;margin-bottom:14px;letter-spacing:.2px}
         .hasil-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
         .hasil-lbl{font-size:12px;color:#6B7280}
         .hasil-val{font-size:13px;font-weight:700}
         .bar-bg{height:6px;background:rgba(255,255,255,.5);border-radius:3px;overflow:hidden;margin-bottom:14px}
         .bar-fg{height:100%;border-radius:3px;transition:width 1s ease}
 
-        .sukses{border-radius:18px;padding:22px;background:linear-gradient(135deg,#F0FDF4,#DCFCE7);border:2px solid #86EFAC}
-        .sukses-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:#14532D;margin-bottom:14px}
+        .sukses{border-radius:3px;padding:22px;background:#F8FFF8;border:1px solid #C8E6C9;border-top:3px solid #4CAF50}
+        .sukses-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--green-800);margin-bottom:14px;letter-spacing:.2px}
         .hash-box{background:#FFF;border-radius:11px;padding:11px 13px;margin-bottom:9px;border:1px solid #BBF7D0}
         .hash-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#6B7280;margin-bottom:3px}
         .hash-val{font-size:11px;font-family:monospace;color:#15803D;word-break:break-all}
@@ -926,6 +940,8 @@ export default function HomePage() {
         .mg-b-4{margin-bottom:16px}
         .mg-t-4{margin-top:16px}
         .mg-t-5{margin-top:20px}
+        .sec-code{font-family:'DM Mono',monospace;font-size:10px;background:#F8FAFC;border:1px solid #E2E8F0;border-left:3px solid #4CAF50;border-radius:2px;padding:8px 10px;color:#374151;line-height:1.8;margin-top:6px}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
       `}</style>
 
       {/* HEADER */}
@@ -1042,6 +1058,162 @@ export default function HomePage() {
               ))}
             </div>
           </div>
+
+          {/* ══ SECURITY SECTION ══ */}
+          <div className="card">
+            <div className="card-head">
+              <div className="head-ico">🔐</div>
+              <div className="head-title">Security Architecture</div>
+            </div>
+            <div style={{padding:'20px'}}>
+
+              {/* SHA-256 */}
+              <div className="sec-item">
+                <div className="sec-item-head">
+                  <div className="sec-badge" style={{background:'#EFF6FF',borderColor:'#93C5FD',color:'#1E40AF'}}>
+                    <span>🔑</span> Cryptographic Hash
+                  </div>
+                  <div className="sec-status">Active</div>
+                </div>
+                <div className="sec-title">SHA-256 Photo Fingerprint</div>
+                <div className="sec-desc">
+                  Setiap foto kopi dikonversi menjadi fingerprint kriptografis 256-bit unik menggunakan algoritma SHA-256 via Web Cryptography API. Hash ini tidak dapat dibalik, diubah, atau dipalsukan — memastikan setiap NFT merepresentasikan foto kopi yang unik dan asli.
+                </div>
+                <div className="sec-code">
+                  crypto.subtle.digest('SHA-256', imageBuffer)
+                  <br/>→ 64-char hex fingerprint
+                </div>
+              </div>
+
+              <div className="sec-divider"/>
+
+              {/* ON-CHAIN REGISTRY */}
+              <div className="sec-item">
+                <div className="sec-item-head">
+                  <div className="sec-badge" style={{background:'#F0FDF4',borderColor:'#86EFAC',color:'#14532D'}}>
+                    <span>⛓️</span> Blockchain Layer
+                  </div>
+                  <div className="sec-status">Active</div>
+                </div>
+                <div className="sec-title">On-Chain Anti-Duplication Registry</div>
+                <div className="sec-desc">
+                  Hash SHA-256 setiap foto tersimpan dalam mapping <code style={{fontFamily:'monospace',fontSize:11,background:'#F3F4F6',padding:'1px 5px',borderRadius:3}}>_hashFotoRegistry</code> di smart contract. Jika foto yang sama coba di-mint ulang, transaksi ditolak langsung di level konsensus blockchain — tidak bisa dibypass dari aplikasi manapun.
+                </div>
+                <div className="sec-code">
+                  mapping(string =&gt; uint256) private _hashFotoRegistry<br/>
+                  if (registry[hash] != 0) revert FotoDuplikat()
+                </div>
+              </div>
+
+              <div className="sec-divider"/>
+
+              {/* PERCEPTUAL HASH */}
+              <div className="sec-item">
+                <div className="sec-item-head">
+                  <div className="sec-badge" style={{background:'#FFF7ED',borderColor:'#FED7AA',color:'#9A3412'}}>
+                    <span>👁️</span> Visual Analysis
+                  </div>
+                  <div className="sec-status">Active</div>
+                </div>
+                <div className="sec-title">Perceptual Hash + Hamming Distance</div>
+                <div className="sec-desc">
+                  Selain SHA-256, sistem menghitung perceptual hash (pHash) menggunakan average hash 16×16 pixel. Dua foto dibandingkan dengan Hamming distance — jika jarak ≤5 bit dari 64 bit total, foto ditandai sebagai "sangat mirip" meski hash SHA-256-nya berbeda (misalnya foto diambil ulang atau di-screenshot).
+                </div>
+                <div className="sec-code">
+                  pHash(img1) XOR pHash(img2)<br/>
+                  → Hamming distance ≤5 = WARNING ⚠️
+                </div>
+              </div>
+
+              <div className="sec-divider"/>
+
+              {/* ERC-721 IMMUTABLE */}
+              <div className="sec-item">
+                <div className="sec-item-head">
+                  <div className="sec-badge" style={{background:'#F5F3FF',borderColor:'#C4B5FD',color:'#5B21B6'}}>
+                    <span>🎫</span> NFT Standard
+                  </div>
+                  <div className="sec-status">Active</div>
+                </div>
+                <div className="sec-title">ERC-721 Immutable Certification</div>
+                <div className="sec-desc">
+                  Setiap sertifikat kopi adalah NFT unik berbasis standar ERC-721 yang tidak dapat diduplikasi, diubah, atau dihapus setelah di-mint. Data kopi — jenis, grade, confidence CNN, nama petani, lokasi kebun, timestamp, dan hash foto — tersimpan permanen di blockchain Polygon Amoy.
+                </div>
+                <div className="sec-code">
+                  Token ID #N → ipfs://CID_metadata<br/>
+                  Immutable on Polygon Amoy · Block 37M+
+                </div>
+              </div>
+
+              <div className="sec-divider"/>
+
+              {/* IPFS CONTENT ADDRESSING */}
+              <div className="sec-item">
+                <div className="sec-item-head">
+                  <div className="sec-badge" style={{background:'#FFF1F2',borderColor:'#FECDD3',color:'#9F1239'}}>
+                    <span>📦</span> Decentralised Storage
+                  </div>
+                  <div className="sec-status">Active</div>
+                </div>
+                <div className="sec-title">IPFS Content-Addressed Storage</div>
+                <div className="sec-desc">
+                  Foto dan metadata NFT disimpan di IPFS menggunakan content addressing — CID (Content Identifier) dihitung dari konten file itu sendiri. Jika file berubah, CID-nya berubah. Ini memastikan foto kopi yang tersimpan di IPFS tidak bisa dimanipulasi tanpa terdeteksi.
+                </div>
+                <div className="sec-code">
+                  CID = hash(content) via Pinata Gateway<br/>
+                  ipfs://Qm... → permanent + verifiable
+                </div>
+              </div>
+
+              <div className="sec-divider"/>
+
+              {/* METAMASK */}
+              <div className="sec-item" style={{marginBottom:0}}>
+                <div className="sec-item-head">
+                  <div className="sec-badge" style={{background:'#FFFBEB',borderColor:'#FDE68A',color:'#92400E'}}>
+                    <span>🦊</span> Wallet Security
+                  </div>
+                  <div className="sec-status">Active</div>
+                </div>
+                <div className="sec-title">MetaMask Transaction Signing</div>
+                <div className="sec-desc">
+                  Semua transaksi minting ditandatangani secara kriptografis oleh MetaMask menggunakan private key pengguna yang tidak pernah meninggalkan perangkat. Smart contract hanya bisa dipanggil oleh owner wallet yang terotorisasi (onlyOwner modifier), mencegah akses tidak sah.
+                </div>
+                <div className="sec-code">
+                  ECDSA signature · onlyOwner modifier<br/>
+                  Private key never leaves device
+                </div>
+              </div>
+
+            </div>
+
+            {/* Security Score */}
+            <div style={{margin:'0 20px 20px',background:'linear-gradient(135deg,var(--green-900),#1A1A2E)',borderRadius:6,padding:'16px 20px',border:'1px solid rgba(201,168,76,.15)'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+                <div style={{fontFamily:'DM Mono,monospace',fontSize:11,color:'rgba(255,255,255,.5)',letterSpacing:'1.5px',textTransform:'uppercase'}}>Security Score</div>
+                <div style={{fontFamily:'Cormorant Garamond,serif',fontSize:22,fontWeight:700,color:'#86EFAC'}}>6/6 Layers</div>
+              </div>
+              {[
+                {label:'SHA-256 Fingerprint',pct:100,color:'#4CAF50'},
+                {label:'On-Chain Registry',pct:100,color:'#4CAF50'},
+                {label:'Perceptual Hash',pct:100,color:'#4CAF50'},
+                {label:'ERC-721 Immutable',pct:100,color:'#4CAF50'},
+                {label:'IPFS Content-Address',pct:100,color:'#4CAF50'},
+                {label:'MetaMask Signing',pct:100,color:'#4CAF50'},
+              ].map((item,i) => (
+                <div key={i} style={{marginBottom:6}}>
+                  <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}>
+                    <span style={{fontFamily:'DM Sans,sans-serif',fontSize:11,color:'rgba(255,255,255,.6)'}}>{item.label}</span>
+                    <span style={{fontFamily:'DM Mono,monospace',fontSize:10,color:item.color}}>✓ Active</span>
+                  </div>
+                  <div style={{height:3,background:'rgba(255,255,255,.08)',borderRadius:2,overflow:'hidden'}}>
+                    <div style={{height:'100%',width:`${item.pct}%`,background:item.color,borderRadius:2}}/>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
 
         {/* ====== KOLOM KANAN ====== */}
