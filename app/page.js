@@ -802,10 +802,10 @@ export default function HomePage() {
         /* WALLET BUTTON */
         .hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
         .btn-wallet{display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:24px;font-size:12px;font-weight:700;font-family:'Lato',sans-serif;cursor:pointer;border:none;transition:all .25s;letter-spacing:.3px;white-space:nowrap}
-        .btn-wallet-off{background:rgba(255,255,255,.1);color:#FFF;border:1.5px solid rgba(255,255,255,.25)}
-        .btn-wallet-off:hover{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.45);transform:translateY(-1px)}
-        .btn-wallet-on{background:rgba(74,222,128,.15);color:#86EFAC;border:1.5px solid rgba(74,222,128,.3)}
-        .btn-wallet-on:hover{background:rgba(239,68,68,.15);color:#FCA5A5;border-color:rgba(239,68,68,.3)}
+        .btn-wallet-off{background:linear-gradient(135deg,#F97316,#EA580C);color:#FFF;border:none;box-shadow:0 2px 12px rgba(234,88,12,.4)}
+        .btn-wallet-off:hover{background:linear-gradient(135deg,#FB923C,#F97316);transform:translateY(-1px);box-shadow:0 4px 18px rgba(234,88,12,.5)}
+        .btn-wallet-on{background:linear-gradient(135deg,#16A34A,#15803D);color:#FFF;border:none;box-shadow:0 2px 12px rgba(22,163,74,.35)}
+        .btn-wallet-on:hover{background:linear-gradient(135deg,#DC2626,#B91C1C);color:#FFF;border:none;box-shadow:0 4px 18px rgba(220,38,38,.4)}
         .btn-wallet-on:hover .w-addr{display:none}
         .btn-wallet-on:hover .w-disc{display:inline}
         .w-disc{display:none}
@@ -858,10 +858,10 @@ export default function HomePage() {
         .hero-sub{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.4);margin-top:8px;margin-bottom:20px;position:relative;z-index:1;letter-spacing:2px;text-transform:uppercase}
 
         /* TABS */
-        .tabs{display:flex;border-bottom:1px solid rgba(201,168,76,.15);gap:0;position:relative;z-index:1}
-        .tab{padding:10px 18px;font-size:18px;cursor:pointer;border-bottom:2px solid transparent;opacity:.4;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none}
-        .tab.on{opacity:1;border-bottom-color:var(--gold)}
-        .tab:hover{opacity:.75}
+        .tabs{display:flex;border-bottom:1px solid rgba(201,168,76,.2);gap:4px;position:relative;z-index:1;padding:8px 12px 0}
+        .tab{padding:9px 16px;font-size:17px;cursor:pointer;border-bottom:3px solid transparent;opacity:.45;transition:all .2s;background:rgba(255,255,255,.06);border-top:none;border-left:none;border-right:none;border-radius:8px 8px 0 0}
+        .tab.on{opacity:1;border-bottom-color:#F59E0B;background:rgba(255,255,255,.15)}
+        .tab:hover{opacity:.8;background:rgba(255,255,255,.1)}
         .tab-body{background:#FFF;border-radius:0 0 18px 18px;padding:22px}
         .tab-emoji{font-size:32px;margin-bottom:10px}
         .tab-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:#14290F;margin-bottom:8px}
@@ -902,15 +902,15 @@ export default function HomePage() {
         .inp:focus{border-bottom-color:var(--green-600);background:transparent}
         .inp::placeholder{color:#D1D5DB}
 
-        .btn-go{width:100%;padding:14px;background:var(--green-800);color:#FFF;font-size:12px;font-weight:600;border:none;border-radius:2px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:1.5px;text-transform:uppercase;position:relative;overflow:hidden}
-        .btn-go::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(201,168,76,.08),transparent);transform:translateX(-100%);transition:transform .4s ease}
+        .btn-go{width:100%;padding:14px;background:linear-gradient(135deg,#16A34A,#15803D);color:#FFF;font-size:12px;font-weight:700;border:none;border-radius:8px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:1.5px;text-transform:uppercase;position:relative;overflow:hidden;box-shadow:0 4px 16px rgba(22,163,74,.35)}
+        .btn-go::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);transform:translateX(-100%);transition:transform .4s ease}
         .btn-go:hover:not(:disabled)::before{transform:translateX(100%)}
-        .btn-go:hover:not(:disabled){background:var(--green-700);box-shadow:0 4px 20px rgba(20,41,15,.25)}
-        .btn-go:disabled{background:#D1D5DB;cursor:not-allowed}
+        .btn-go:hover:not(:disabled){background:linear-gradient(135deg,#22C55E,#16A34A);box-shadow:0 6px 24px rgba(22,163,74,.45);transform:translateY(-1px)}
+        .btn-go:disabled{background:#D1D5DB;color:#9CA3AF;cursor:not-allowed;box-shadow:none}
 
-        .btn-mint{width:100%;padding:14px;background:#1A1A2E;color:var(--gold-light);font-size:12px;font-weight:600;border:1px solid rgba(201,168,76,.3);border-radius:2px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:1.5px;text-transform:uppercase}
-        .btn-mint:hover:not(:disabled){background:#16213E;border-color:var(--gold);box-shadow:0 4px 20px rgba(201,168,76,.15)}
-        .btn-mint:disabled{background:#D1D5DB;color:#9CA3AF;border-color:transparent;cursor:not-allowed}
+        .btn-mint{width:100%;padding:14px;background:linear-gradient(135deg,#7C3AED,#6D28D9);color:#FFF;font-size:12px;font-weight:700;border:none;border-radius:8px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 4px 16px rgba(124,58,237,.4)}
+        .btn-mint:hover:not(:disabled){background:linear-gradient(135deg,#8B5CF6,#7C3AED);box-shadow:0 6px 24px rgba(124,58,237,.5);transform:translateY(-1px)}
+        .btn-mint:disabled{background:#D1D5DB;color:#9CA3AF;border-color:transparent;cursor:not-allowed;box-shadow:none}
 
         .err{background:#FEF2F2;border:1px solid #FECACA;border-radius:11px;padding:11px 13px;font-size:12px;color:#B91C1C;margin-top:10px}
         .sts{text-align:center;font-size:11px;color:#6B7280;margin-top:7px}
@@ -928,13 +928,13 @@ export default function HomePage() {
         .hash-box{background:#FFF;border-radius:11px;padding:11px 13px;margin-bottom:9px;border:1px solid #BBF7D0}
         .hash-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#6B7280;margin-bottom:3px}
         .hash-val{font-size:11px;font-family:monospace;color:#15803D;word-break:break-all}
-        .btn-a{display:block;width:100%;padding:11px;border-radius:11px;font-size:13px;font-weight:700;text-align:center;text-decoration:none;margin-bottom:8px;transition:all .2s;cursor:pointer;border:none;font-family:'Lato',sans-serif}
-        .a-blue{background:#1D4ED8;color:#FFF}
-        .a-blue:hover{background:#1E40AF}
-        .a-orange{background:#EA580C;color:#FFF}
-        .a-orange:hover{background:#C2410C}
-        .a-ghost{background:none;border:1.5px solid #D1D5DB;color:#6B7280}
-        .a-ghost:hover{background:#F9FAFB}
+        .btn-a{display:block;width:100%;padding:12px;border-radius:10px;font-size:13px;font-weight:700;text-align:center;text-decoration:none;margin-bottom:8px;transition:all .2s;cursor:pointer;border:none;font-family:'Lato',sans-serif}
+        .a-blue{background:linear-gradient(135deg,#2563EB,#1D4ED8);color:#FFF;box-shadow:0 3px 12px rgba(37,99,235,.35)}
+        .a-blue:hover{background:linear-gradient(135deg,#3B82F6,#2563EB);box-shadow:0 5px 18px rgba(37,99,235,.45);transform:translateY(-1px)}
+        .a-orange{background:linear-gradient(135deg,#F97316,#EA580C);color:#FFF;box-shadow:0 3px 12px rgba(249,115,22,.35)}
+        .a-orange:hover{background:linear-gradient(135deg,#FB923C,#F97316);box-shadow:0 5px 18px rgba(249,115,22,.45);transform:translateY(-1px)}
+        .a-ghost{background:#FFF;border:2px solid #D1D5DB;color:#374151;font-weight:700}
+        .a-ghost:hover{background:#F3F4F6;border-color:#9CA3AF;transform:translateY(-1px)}
 
         .mg-b-3{margin-bottom:12px}
         .mg-b-4{margin-bottom:16px}
@@ -1464,9 +1464,11 @@ export default function HomePage() {
               {!nftAdded ? (
                 <button onClick={addNFTtoWallet} disabled={addingNFT}
                   style={{width:'100%',padding:'13px',background:addingNFT?'#D1D5DB':'linear-gradient(135deg,#F97316,#EA580C)',
-                    color:'#FFF',border:'none',borderRadius:11,fontSize:13,fontWeight:700,
+                    color:'#FFF',border:'none',borderRadius:10,fontSize:13,fontWeight:700,
                     fontFamily:'Lato,sans-serif',cursor:addingNFT?'wait':'pointer',
-                    display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginBottom:8
+                    display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginBottom:8,
+                    boxShadow:addingNFT?'none':'0 4px 16px rgba(249,115,22,.4)',
+                    transition:'all .2s'
                   }}
                 >
                   {addingNFT ? '⏳ Menambahkan ke wallet...' : '🦊 Tambah NFT ke MetaMask Wallet'}
