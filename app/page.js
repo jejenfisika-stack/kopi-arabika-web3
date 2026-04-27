@@ -1188,29 +1188,154 @@ export default function HomePage() {
             </div>
 
             {/* Security Score */}
-            <div style={{margin:'0 20px 20px',background:'linear-gradient(135deg,var(--green-900),#1A1A2E)',borderRadius:6,padding:'16px 20px',border:'1px solid rgba(201,168,76,.15)'}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
-                <div style={{fontFamily:'DM Mono,monospace',fontSize:11,color:'rgba(255,255,255,.5)',letterSpacing:'1.5px',textTransform:'uppercase'}}>Security Score</div>
-                <div style={{fontFamily:'Cormorant Garamond,serif',fontSize:22,fontWeight:700,color:'#86EFAC'}}>6/6 Layers</div>
-              </div>
-              {[
-                {label:'SHA-256 Fingerprint',pct:100,color:'#4CAF50'},
-                {label:'On-Chain Registry',pct:100,color:'#4CAF50'},
-                {label:'Perceptual Hash',pct:100,color:'#4CAF50'},
-                {label:'ERC-721 Immutable',pct:100,color:'#4CAF50'},
-                {label:'IPFS Content-Address',pct:100,color:'#4CAF50'},
-                {label:'MetaMask Signing',pct:100,color:'#4CAF50'},
-              ].map((item,i) => (
-                <div key={i} style={{marginBottom:6}}>
-                  <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}>
-                    <span style={{fontFamily:'DM Sans,sans-serif',fontSize:11,color:'rgba(255,255,255,.6)'}}>{item.label}</span>
-                    <span style={{fontFamily:'DM Mono,monospace',fontSize:10,color:item.color}}>✓ Active</span>
+            <div style={{margin:'0 20px 20px',background:'linear-gradient(135deg,#0C1F0C,#1A1A2E)',borderRadius:6,padding:'18px 20px',border:'1px solid rgba(201,168,76,.2)'}}>
+
+              {/* Header */}
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,paddingBottom:12,borderBottom:'1px solid rgba(255,255,255,.08)'}}>
+                <div>
+                  <div style={{fontSize:10,color:'rgba(255,255,255,.4)',letterSpacing:'2px',textTransform:'uppercase',fontFamily:'sans-serif',marginBottom:3}}>
+                    SECURITY SCORE
                   </div>
-                  <div style={{height:3,background:'rgba(255,255,255,.08)',borderRadius:2,overflow:'hidden'}}>
-                    <div style={{height:'100%',width:`${item.pct}%`,background:item.color,borderRadius:2}}/>
+                  <div style={{fontSize:11,color:'rgba(255,255,255,.3)',fontFamily:'sans-serif'}}>
+                    Kopi Arabika Web3 — v2
+                  </div>
+                </div>
+                <div style={{textAlign:'right'}}>
+                  <div style={{fontSize:28,fontWeight:700,color:'#86EFAC',lineHeight:1,fontFamily:'sans-serif'}}>
+                    6/6
+                  </div>
+                  <div style={{fontSize:9,color:'#4CAF50',letterSpacing:'1px',textTransform:'uppercase',fontFamily:'sans-serif',marginTop:2}}>
+                    Layers Active
+                  </div>
+                </div>
+              </div>
+
+              {/* Layer rows */}
+              {[
+                {
+                  icon:'🔑',
+                  label:'SHA-256 Fingerprint',
+                  desc:'Cryptographic photo hash',
+                  color:'#4ADE80',
+                  bg:'rgba(74,222,128,.15)',
+                },
+                {
+                  icon:'⛓️',
+                  label:'On-Chain Registry',
+                  desc:'Consensus-layer block',
+                  color:'#34D399',
+                  bg:'rgba(52,211,153,.15)',
+                },
+                {
+                  icon:'👁️',
+                  label:'Perceptual Hash (pHash)',
+                  desc:'Visual similarity ≤5 bits',
+                  color:'#6EE7B7',
+                  bg:'rgba(110,231,183,.15)',
+                },
+                {
+                  icon:'🎫',
+                  label:'ERC-721 Immutable NFT',
+                  desc:'Polygon Amoy · Tamper-proof',
+                  color:'#A78BFA',
+                  bg:'rgba(167,139,250,.15)',
+                },
+                {
+                  icon:'📦',
+                  label:'IPFS Content-Addressing',
+                  desc:'Decentralised · CID verified',
+                  color:'#FCD34D',
+                  bg:'rgba(252,211,77,.12)',
+                },
+                {
+                  icon:'🦊',
+                  label:'MetaMask ECDSA Signing',
+                  desc:'onlyOwner · Private key safe',
+                  color:'#FB923C',
+                  bg:'rgba(251,146,60,.12)',
+                },
+              ].map((item,i) => (
+                <div key={i} style={{
+                  display:'flex',alignItems:'center',gap:10,
+                  padding:'9px 10px',marginBottom:6,
+                  background:item.bg,
+                  borderRadius:4,
+                  border:`1px solid ${item.color}22`,
+                }}>
+                  {/* Icon */}
+                  <div style={{
+                    width:28,height:28,flexShrink:0,
+                    background:'rgba(255,255,255,.05)',
+                    borderRadius:4,
+                    display:'flex',alignItems:'center',justifyContent:'center',
+                    fontSize:14,
+                  }}>
+                    {item.icon}
+                  </div>
+
+                  {/* Label + desc */}
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{
+                      fontSize:12,fontWeight:600,
+                      color:'rgba(255,255,255,.9)',
+                      fontFamily:'sans-serif',
+                      lineHeight:1.2,
+                      marginBottom:2,
+                    }}>
+                      {item.label}
+                    </div>
+                    <div style={{
+                      fontSize:10,
+                      color:'rgba(255,255,255,.4)',
+                      fontFamily:'monospace',
+                      letterSpacing:'.3px',
+                    }}>
+                      {item.desc}
+                    </div>
+                  </div>
+
+                  {/* Status badge */}
+                  <div style={{
+                    display:'flex',alignItems:'center',gap:4,
+                    padding:'3px 8px',
+                    background:'rgba(255,255,255,.05)',
+                    borderRadius:20,
+                    border:`1px solid ${item.color}44`,
+                    flexShrink:0,
+                  }}>
+                    <div style={{
+                      width:5,height:5,borderRadius:'50%',
+                      background:item.color,
+                      boxShadow:`0 0 4px ${item.color}`,
+                    }}/>
+                    <span style={{
+                      fontSize:9,fontWeight:600,
+                      color:item.color,
+                      fontFamily:'monospace',
+                      letterSpacing:'1px',
+                      textTransform:'uppercase',
+                    }}>
+                      Active
+                    </span>
                   </div>
                 </div>
               ))}
+
+              {/* Footer */}
+              <div style={{
+                marginTop:12,paddingTop:10,
+                borderTop:'1px solid rgba(255,255,255,.06)',
+                display:'flex',justifyContent:'space-between',
+                alignItems:'center',
+              }}>
+                <div style={{fontSize:9,color:'rgba(255,255,255,.25)',fontFamily:'monospace',letterSpacing:'1px'}}>
+                  CONTRACT v2 · POLYGON AMOY
+                </div>
+                <div style={{fontSize:9,color:'rgba(255,255,255,.25)',fontFamily:'monospace'}}>
+                  0x85e7...cf7ad
+                </div>
+              </div>
+
             </div>
           </div>
 
