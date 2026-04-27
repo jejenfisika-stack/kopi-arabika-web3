@@ -964,7 +964,7 @@ export default function HomePage() {
             </div>
             <div className="hdr-text">
               <div className="hdr-title">Kopi Arabika <span>Web3</span></div>
-              <div className="hdr-sub">Universitas Jember · Riset Scopus Q1</div>
+              <div className="hdr-sub">Universitas Jember · Dr Zen Isaac Nuetron</div>
             </div>
           </div>
           <div className="hdr-right">
@@ -1187,7 +1187,7 @@ export default function HomePage() {
 
             </div>
 
-            {/* Security Score */}
+            {/* Security System */}
             <div style={{margin:'0 20px 20px',background:'linear-gradient(135deg,#0C1F0C,#1A1A2E)',borderRadius:6,padding:'18px 20px',border:'1px solid rgba(201,168,76,.2)'}}>
 
               {/* Header */}
