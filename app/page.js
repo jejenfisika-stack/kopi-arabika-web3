@@ -567,7 +567,18 @@ export default function HomePage() {
         }
       }
       if (!out) throw new Error('Tidak ada output dari CNN')
-      setHasilCNN(parseOutput(out)); setStatus('')
+      const parsed = parseOutput(out)
+      console.log('CNN parsed:', parsed)
+      if (parsed && parsed.bukan_kopi) {
+        setBukanKopi(true)
+        setHasilCNN(null)
+      } else if (parsed) {
+        setBukanKopi(false)
+        setHasilCNN(parsed)
+      } else {
+        setErrorMsg('Gagal parsing hasil CNN')
+      }
+      setStatus('')
     } catch(err) { setErrorMsg(`Error: ${err.message}`); setStatus('') }
     finally { setLoading(false) }
   }
@@ -714,7 +725,10 @@ export default function HomePage() {
     }
   }
 
-  const gs = hasilCNN ? (GRADE_STYLE[hasilCNN.grade] || GRADE_STYLE['Grade B']) : null
+  // Safe null check untuk gs — hindari crash saat hasilCNN null
+  const gs = (hasilCNN && !hasilCNN.bukan_kopi)
+    ? (GRADE_STYLE[hasilCNN.grade] || GRADE_STYLE['Grade B'])
+    : GRADE_STYLE['Grade B']
 
   return (
     <>
@@ -970,6 +984,46 @@ export default function HomePage() {
         .mg-t-5{margin-top:20px}
         .sec-code{font-family:'DM Mono',monospace;font-size:10px;background:#F8FAFC;border:1px solid #E2E8F0;border-left:3px solid #4CAF50;border-radius:2px;padding:8px 10px;color:#374151;line-height:1.8;margin-top:6px}
         @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+
+        /* ═══════════════════════════════════
+           OVERRIDE — SEMUA TOMBOL KONTRAS
+           ═══════════════════════════════════ */
+        .btn-go,.btn-go *{color:#FFFFFF !important;font-weight:800 !important;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+        .btn-mint,.btn-mint *{color:#FFFFFF !important;font-weight:800 !important;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+        .btn-a,.btn-a *{font-weight:800 !important}
+        .a-blue,.a-blue *{color:#FFFFFF !important;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+        .a-orange,.a-orange *{color:#FFFFFF !important;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+        .a-ghost{
+          background:linear-gradient(135deg,#37474F,#455A64) !important;
+          border:none !important;
+          color:#FFFFFF !important;
+          box-shadow:0 4px 14px rgba(55,71,79,.4) !important;
+        }
+        .a-ghost *{color:#FFFFFF !important;text-shadow:0 1px 2px rgba(0,0,0,.3) !important}
+        .a-ghost:hover{background:linear-gradient(135deg,#263238,#37474F) !important}
+
+        /* Wallet button — oranye terang */
+        .btn-wallet-off{
+          background:linear-gradient(135deg,#F57C00,#FB8C00) !important;
+          color:#FFFFFF !important;
+          border:1.5px solid rgba(255,255,255,.5) !important;
+          font-weight:800 !important;
+          text-shadow:0 1px 2px rgba(0,0,0,.25) !important;
+          box-shadow:0 3px 12px rgba(245,124,0,.4) !important;
+        }
+        .btn-wallet-off:hover{
+          background:linear-gradient(135deg,#E65100,#F57C00) !important;
+          transform:translateY(-1px);
+        }
+
+        /* Tombol disabled — tetap kontras */
+        .btn-go:disabled,.btn-mint:disabled{
+          background:linear-gradient(135deg,#757575,#9E9E9E) !important;
+          color:#FFFFFF !important;
+          opacity:1 !important;
+        }
+
       `}</style>
 
       {/* HEADER */}
