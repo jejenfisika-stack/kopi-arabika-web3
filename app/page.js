@@ -837,9 +837,10 @@ export default function HomePage() {
         .hdr-sub{font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2.5px;text-transform:uppercase;margin-top:3px}
         .hdr-badges{display:flex;gap:7px;flex-wrap:wrap}
         .bdg{padding:4px 10px;border-radius:4px;font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;font-family:'DM Mono',monospace}
-        .bdg-g{background:rgba(201,168,76,.12);color:var(--gold-light);border:1px solid rgba(201,168,76,.25)}
-        .bdg-gr{background:rgba(76,175,80,.1);color:#A5D6A7;border:1px solid rgba(76,175,80,.2)}
-        .bdg-b{background:rgba(96,165,250,.12);color:#93C5FD;border:1px solid rgba(96,165,250,.2)}
+        .bdg-g{background:linear-gradient(135deg,#1A1A2E,#16213E);color:#FFFFFF;border:1px solid rgba(252,211,77,.4);font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.4);box-shadow:0 2px 8px rgba(0,0,0,.2)}
+        .bdg-g::before{content:'🏆 ';opacity:.9}
+        .bdg-gr{background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#FFFFFF;border:1px solid rgba(165,214,167,.4);font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.4);box-shadow:0 2px 8px rgba(46,125,50,.25)}
+        .bdg-b{background:linear-gradient(135deg,#0D47A1,#1565C0);color:#FFFFFF;border:1px solid rgba(147,197,253,.4);font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.4);box-shadow:0 2px 8px rgba(13,71,161,.25)}
 
         /* WALLET BUTTON */
         .hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -1022,6 +1023,71 @@ export default function HomePage() {
           background:linear-gradient(135deg,#757575,#9E9E9E) !important;
           color:#FFFFFF !important;
           opacity:1 !important;
+        }
+
+
+
+        /* ═══════════════════════════════════
+           SECURITY SECTION — typography elegan
+           ═══════════════════════════════════ */
+        .sec-item{padding:18px 0;border-bottom:1px solid rgba(0,0,0,.05)}
+        .sec-item:last-child{border-bottom:none}
+        .sec-item-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px}
+        .sec-badge{
+          display:inline-flex;align-items:center;gap:6px;
+          padding:5px 12px;border-radius:20px;
+          font-size:11px;font-weight:600;
+          font-family:'DM Sans',sans-serif;
+          border:1px solid;letter-spacing:.2px;
+        }
+        .sec-status{
+          display:inline-flex;align-items:center;gap:5px;
+          font-family:'DM Mono',monospace;
+          font-size:10px;font-weight:600;color:#16A34A;
+          letter-spacing:1px;text-transform:uppercase;
+          padding:3px 9px;background:#F0FDF4;
+          border:1px solid #BBF7D0;border-radius:12px;
+        }
+        .sec-status::before{
+          content:'';width:6px;height:6px;
+          background:#22C55E;border-radius:50%;
+          box-shadow:0 0 6px #22C55E;
+          animation:blink 2s infinite;
+        }
+        .sec-title{
+          font-family:'Cormorant Garamond',serif !important;
+          font-size:18px !important;
+          font-weight:700 !important;
+          color:#0C1F0C !important;
+          line-height:1.3;
+          margin-bottom:8px !important;
+          letter-spacing:.2px;
+        }
+        .sec-desc{
+          font-family:'DM Sans',sans-serif !important;
+          font-size:14px !important;
+          line-height:1.7 !important;
+          color:#4B5563 !important;
+          margin-bottom:10px !important;
+          font-weight:400;
+        }
+        .sec-code{
+          font-family:'DM Mono',monospace !important;
+          font-size:11px !important;
+          background:#F8FAFC !important;
+          border:1px solid #E2E8F0 !important;
+          border-left:3px solid var(--green-500) !important;
+          border-radius:6px !important;
+          padding:10px 14px !important;
+          color:#1F2937 !important;
+          line-height:1.7 !important;
+          margin-top:8px;
+          overflow-x:auto;
+        }
+        .sec-divider{
+          height:1px;
+          background:linear-gradient(90deg,transparent,rgba(0,0,0,.08),transparent);
+          margin:0;border:none;
         }
 
       `}</style>
@@ -1452,7 +1518,9 @@ export default function HomePage() {
               </div>
 
               <button className="btn-go" onClick={klasifikasiCNN} disabled={!foto||loading}>
-                {loading&&!hasilCNN ? <><span>⏳</span>{status||'Memproses...'}</> : <><span>🔍</span>Klasifikasi dengan CNN</>}
+                {loading&&!hasilCNN
+                  ? <><span style={{color:'#FFFFFF'}}>⏳</span> <span style={{color:'#FFFFFF',fontWeight:800,textShadow:'0 1px 2px rgba(0,0,0,.3)'}}>{status||'Memproses...'}</span></>
+                  : <><span style={{color:'#FFFFFF'}}>🔍</span> <span style={{color:'#FFFFFF',fontWeight:800,textShadow:'0 1px 2px rgba(0,0,0,.3)',letterSpacing:'.5px'}}>Klasifikasi dengan CNN</span></>}
               </button>
               {errorMsg && <div className="err">{errorMsg}</div>}
 
