@@ -1134,7 +1134,7 @@ export default function HomePage() {
             </div>
             <div className="hdr-text">
               <div className="hdr-title">Kopi Arabika <span>Web3</span></div>
-              <div className="hdr-sub">Universitas Jember · Riset Scopus Q1</div>
+              <div className="hdr-sub">Universitas Jember · Riset Unggulan</div>
             </div>
           </div>
           <div className="hdr-right">
