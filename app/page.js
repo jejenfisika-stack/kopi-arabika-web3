@@ -967,8 +967,19 @@ export default function HomePage() {
         .inp:focus{border-bottom-color:var(--green-600);background:transparent}
         .inp::placeholder{color:#D1D5DB}
 
-        .btn-go{width:100%;padding:14px;background:var(--green-800);color:#FFF;font-size:12px;font-weight:600;border:none;border-radius:2px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:1.5px;text-transform:uppercase;position:relative;overflow:hidden}
-        .btn-go::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(201,168,76,.08),transparent);transform:translateX(-100%);transition:transform .4s ease}
+        .btn-go{
+          width:100%;padding:16px 20px;
+          background:linear-gradient(135deg,#1B5E20 0%,#2E7D32 50%,#43A047 100%) !important;
+          color:#FFFFFF !important;font-size:14px;font-weight:800;
+          border:none;border-radius:12px;cursor:pointer;
+          transition:all .25s;font-family:'DM Sans',sans-serif;
+          display:flex;align-items:center;justify-content:center;gap:10px;
+          letter-spacing:1px;text-transform:uppercase;
+          position:relative;overflow:hidden;
+          text-shadow:0 2px 4px rgba(0,0,0,.4);
+          box-shadow:0 4px 16px rgba(46,125,50,.45),inset 0 1px 0 rgba(255,255,255,.2);
+        }
+        .btn-go::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);transform:translateX(-100%);transition:transform .5s ease}
         .btn-go:hover:not(:disabled)::before{transform:translateX(100%)}
         .btn-go:hover:not(:disabled){background:var(--green-700);box-shadow:0 4px 20px rgba(20,41,15,.25)}
         .btn-go:disabled{background:#D1D5DB;cursor:not-allowed}
@@ -1134,7 +1145,7 @@ export default function HomePage() {
             </div>
             <div className="hdr-text">
               <div className="hdr-title">Kopi Arabika <span>Web3</span></div>
-              <div className="hdr-sub">Universitas Jember · Riset Unggulan</div>
+              <div className="hdr-sub">Universitas Jember · Riset Scopus Q1</div>
             </div>
           </div>
           <div className="hdr-right">
@@ -1338,7 +1349,7 @@ export default function HomePage() {
               <div className="sec-divider"/>
 
               {/* METAMASK */}
-              <div className="sec-item" style={{marginBottom:0}}>
+              <div className="sec-item">
                 <div className="sec-item-head">
                   <div className="sec-badge" style={{background:'#FFFBEB',borderColor:'#FDE68A',color:'#92400E'}}>
                     <span>🦊</span> Wallet Security
@@ -1352,6 +1363,30 @@ export default function HomePage() {
                 <div className="sec-code">
                   ECDSA signature · onlyOwner modifier<br/>
                   Private key never leaves device
+                </div>
+              </div>
+
+              <div className="sec-divider"/>
+
+              {/* OOD DETECTION — BARU */}
+              <div className="sec-item" style={{marginBottom:0}}>
+                <div className="sec-item-head">
+                  <div className="sec-badge" style={{background:'#FFF7ED',borderColor:'#FED7AA',color:'#C2410C'}}>
+                    <span>🛡️</span> AI Validation
+                  </div>
+                  <div className="sec-status">Active</div>
+                </div>
+                <div className="sec-title">Out-of-Distribution (OOD) Detection</div>
+                <div className="sec-desc">
+                  Sistem AI menggunakan dual-threshold detection untuk menolak gambar yang bukan biji kopi Arabika.
+                  Confidence threshold (≥85%) memastikan model yakin terhadap prediksinya, sedangkan
+                  Shannon entropy threshold (≤1.20) mendeteksi distribusi probabilitas yang terlalu merata —
+                  indikasi bahwa model tidak mengenali objek pada gambar.
+                </div>
+                <div className="sec-code">
+                  if (max_prob &lt; 0.85) → BUKAN KOPI<br/>
+                  if (entropy &gt; 1.20) → MODEL BINGUNG<br/>
+                  → Reject dengan panduan foto yang benar
                 </div>
               </div>
 
@@ -1372,7 +1407,7 @@ export default function HomePage() {
                 </div>
                 <div style={{textAlign:'right'}}>
                   <div style={{fontSize:28,fontWeight:700,color:'#86EFAC',lineHeight:1,fontFamily:'sans-serif'}}>
-                    6/6
+                    7/7
                   </div>
                   <div style={{fontSize:9,color:'#4CAF50',letterSpacing:'1px',textTransform:'uppercase',fontFamily:'sans-serif',marginTop:2}}>
                     Layers Active
@@ -1423,6 +1458,13 @@ export default function HomePage() {
                   desc:'onlyOwner · Private key safe',
                   color:'#FB923C',
                   bg:'rgba(251,146,60,.12)',
+                },
+                {
+                  icon:'🛡️',
+                  label:'OOD Detection (AI Validation)',
+                  desc:'Confidence + Entropy threshold',
+                  color:'#F87171',
+                  bg:'rgba(248,113,113,.12)',
                 },
               ].map((item,i) => (
                 <div key={i} style={{
@@ -1541,8 +1583,8 @@ export default function HomePage() {
 
               <button className="btn-go" onClick={klasifikasiCNN} disabled={!foto||loading}>
                 {loading&&!hasilCNN
-                  ? <><span style={{color:'#FFFFFF'}}>⏳</span> <span style={{color:'#FFFFFF',fontWeight:800,textShadow:'0 1px 2px rgba(0,0,0,.3)'}}>{status||'Memproses...'}</span></>
-                  : <><span style={{color:'#FFFFFF'}}>🔍</span> <span style={{color:'#FFFFFF',fontWeight:800,textShadow:'0 1px 2px rgba(0,0,0,.3)',letterSpacing:'.5px'}}>Klasifikasi dengan CNN</span></>}
+                  ? <span style={{color:'#FFFFFF',fontWeight:800,fontSize:14,textShadow:'0 2px 4px rgba(0,0,0,.4)',letterSpacing:'1px'}}>⏳ {status||'Memproses...'}</span>
+                  : <span style={{color:'#FFFFFF',fontWeight:800,fontSize:14,textShadow:'0 2px 4px rgba(0,0,0,.4)',letterSpacing:'1px'}}>🔍 Klasifikasi dengan CNN</span>}
               </button>
               {errorMsg && <div className="err">{errorMsg}</div>}
 
