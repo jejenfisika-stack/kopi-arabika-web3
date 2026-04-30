@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { ethers } from 'ethers'
 
-const CONTRACT_ADDRESS = '0x85e774FBab2cE074D8A292fDF758a3d291Dcf7ad'
+const CONTRACT_ADDRESS = '0x5392C2F10d8Dea3e498726BcB8c806E8DA78834b'  // V3 — Open Mint + Verified
 const PINATA_GATEWAY   = 'rose-casual-warbler-710.mypinata.cloud'
 const AMOY_CHAIN_ID    = '0x13882'
 
@@ -859,10 +859,39 @@ export default function HomePage() {
         .hdr-sub{font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2.5px;text-transform:uppercase;margin-top:3px}
         .hdr-badges{display:flex;gap:7px;flex-wrap:wrap}
         .bdg{padding:4px 10px;border-radius:4px;font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;font-family:'DM Mono',monospace}
-        .bdg-g{background:linear-gradient(135deg,#1A1A2E,#16213E);color:#FFFFFF;border:1px solid rgba(252,211,77,.4);font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.4);box-shadow:0 2px 8px rgba(0,0,0,.2)}
-        .bdg-g::before{content:'🏆 ';opacity:.9}
-        .bdg-gr{background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#FFFFFF;border:1px solid rgba(165,214,167,.4);font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.4);box-shadow:0 2px 8px rgba(46,125,50,.25)}
-        .bdg-b{background:linear-gradient(135deg,#0D47A1,#1565C0);color:#FFFFFF;border:1px solid rgba(147,197,253,.4);font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.4);box-shadow:0 2px 8px rgba(13,71,161,.25)}
+        .bdg-g{
+          background:linear-gradient(135deg,#1A1A2E,#16213E);color:#FCD34D;
+          border:1px solid rgba(252,211,77,.5);font-weight:700;
+          text-shadow:0 1px 2px rgba(0,0,0,.4);
+          box-shadow:0 2px 12px rgba(252,211,77,.15),inset 0 1px 0 rgba(252,211,77,.1);
+        }
+        .bdg-gr{
+          background:linear-gradient(135deg,#0D2818,#1B5E20);color:#86EFAC;
+          border:1px solid rgba(134,239,172,.4);font-weight:700;
+          text-shadow:0 1px 2px rgba(0,0,0,.4);
+          box-shadow:0 2px 12px rgba(46,125,50,.25),inset 0 1px 0 rgba(134,239,172,.1);
+        }
+        .bdg-b{
+          background:linear-gradient(135deg,#0A2342,#0D47A1);color:#93C5FD;
+          border:1px solid rgba(147,197,253,.4);font-weight:700;
+          text-shadow:0 1px 2px rgba(0,0,0,.4);
+          box-shadow:0 2px 12px rgba(13,71,161,.25),inset 0 1px 0 rgba(147,197,253,.1);
+        }
+        .bdg-verified{
+          background:linear-gradient(135deg,#064E3B,#047857);color:#A7F3D0;
+          border:1px solid rgba(167,243,208,.5);font-weight:800;
+          text-shadow:0 1px 2px rgba(0,0,0,.5);
+          padding:5px 11px;border-radius:4px;
+          font-size:9px;letter-spacing:1.5px;text-transform:uppercase;
+          font-family:'DM Mono',monospace;
+          display:inline-flex;align-items:center;gap:4px;
+          box-shadow:0 2px 12px rgba(4,120,87,.3);
+          animation:verifiedPulse 3s ease-in-out infinite;
+        }
+        @keyframes verifiedPulse{
+          0%,100%{box-shadow:0 2px 12px rgba(4,120,87,.3)}
+          50%{box-shadow:0 2px 16px rgba(4,120,87,.5)}
+        }
 
         /* WALLET BUTTON */
         .hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -885,18 +914,32 @@ export default function HomePage() {
 
         /* CARDS */
         .card{
-          background:#FFFFFF;border-radius:3px;
-          border:1px solid rgba(200,210,190,.5);
+          background:rgba(255,255,255,.97);
+          backdrop-filter:blur(10px);
+          -webkit-backdrop-filter:blur(10px);
+          border-radius:6px;
+          border:1px solid rgba(200,210,190,.4);
           border-top:3px solid var(--green-600);
-          box-shadow:0 2px 24px rgba(12,31,12,.06);
-          overflow:hidden;margin-bottom:20px;
-          transition:all .25s ease;
+          box-shadow:
+            0 4px 32px rgba(12,31,12,.05),
+            0 1px 3px rgba(12,31,12,.04),
+            inset 0 1px 0 rgba(255,255,255,.7);
+          overflow:hidden;margin-bottom:22px;
+          transition:all .3s cubic-bezier(.4,0,.2,1);
           position:relative;
         }
         .card:hover{
-          box-shadow:0 8px 40px rgba(12,31,12,.1);
-          transform:translateY(-1px);
+          box-shadow:
+            0 12px 48px rgba(12,31,12,.1),
+            0 4px 12px rgba(12,31,12,.06),
+            inset 0 1px 0 rgba(255,255,255,.9);
+          transform:translateY(-2px);
           border-top-color:var(--gold);
+        }
+        .card::after{
+          content:'';position:absolute;top:0;left:0;right:0;height:60px;
+          background:linear-gradient(180deg,rgba(255,255,255,.4),transparent);
+          pointer-events:none;
         }
 
         /* HERO CARD */
@@ -1145,7 +1188,7 @@ export default function HomePage() {
             </div>
             <div className="hdr-text">
               <div className="hdr-title">Kopi Arabika <span>Web3</span></div>
-              <div className="hdr-sub">CNN dan Teknologi Blockchain dalam Pertanian</div>
+              <div className="hdr-sub">Universitas Jember · Riset Scopus Q1 · v3 Verified</div>
             </div>
           </div>
           <div className="hdr-right">
@@ -1358,11 +1401,11 @@ export default function HomePage() {
                 </div>
                 <div className="sec-title">MetaMask Transaction Signing</div>
                 <div className="sec-desc">
-                  Semua transaksi minting ditandatangani secara kriptografis oleh MetaMask menggunakan private key pengguna yang tidak pernah meninggalkan perangkat. Smart contract hanya bisa dipanggil oleh owner wallet yang terotorisasi (onlyOwner modifier), mencegah akses tidak sah.
+                  Semua transaksi minting ditandatangani secara kriptografis oleh MetaMask menggunakan private key pengguna yang tidak pernah meninggalkan perangkat. Smart contract V3 mendukung permissionless minting — setiap petani dapat mensertifikasi kopi mereka sendiri dengan tetap mencatat wallet address untuk audit trail.
                 </div>
                 <div className="sec-code">
-                  ECDSA signature · onlyOwner modifier<br/>
-                  Private key never leaves device
+                  ECDSA signature · permissionless mint v3<br/>
+                  Private key never leaves device · audit trail
                 </div>
               </div>
 
@@ -1540,12 +1583,19 @@ export default function HomePage() {
                 display:'flex',justifyContent:'space-between',
                 alignItems:'center',
               }}>
-                <div style={{fontSize:9,color:'rgba(255,255,255,.25)',fontFamily:'monospace',letterSpacing:'1px'}}>
-                  CONTRACT v2 · POLYGON AMOY
+                <div style={{fontSize:9,color:'rgba(167,243,208,.6)',fontFamily:'monospace',letterSpacing:'1px',display:'flex',alignItems:'center',gap:6}}>
+                  <span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:'#10B981',boxShadow:'0 0 6px #10B981'}}/>
+                  CONTRACT V3 · VERIFIED
                 </div>
-                <div style={{fontSize:9,color:'rgba(255,255,255,.25)',fontFamily:'monospace'}}>
-                  0x85e7...cf7ad
-                </div>
+                <a
+                  href="https://amoy.polygonscan.com/address/0x5392C2F10d8Dea3e498726BcB8c806E8DA78834b#code"
+                  target="_blank" rel="noreferrer"
+                  style={{fontSize:9,color:'rgba(167,243,208,.6)',fontFamily:'monospace',textDecoration:'none',transition:'color .2s'}}
+                  onMouseOver={(e)=>e.target.style.color='#A7F3D0'}
+                  onMouseOut={(e)=>e.target.style.color='rgba(167,243,208,.6)'}
+                >
+                  0x5392...8834b ↗
+                </a>
               </div>
 
             </div>
