@@ -616,11 +616,33 @@ export default function HomePage() {
       const provider = new ethers.BrowserProvider(window.ethereum)
       const signer   = await provider.getSigner()
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
+      // ── Get current gas price dari network + safety margin ──
+      let gasOverrides = {}
+      try {
+        const feeData = await provider.getFeeData()
+        // Polygon Amoy minimum 25 Gwei. Pakai max(networkGas, 30 Gwei) untuk safety
+        const minGas = ethers.parseUnits('30', 'gwei')
+        const networkGas = feeData.gasPrice || feeData.maxFeePerGas || minGas
+        const finalGas = networkGas < minGas ? minGas : networkGas
+        gasOverrides = {
+          maxFeePerGas:         finalGas,
+          maxPriorityFeePerGas: finalGas,
+        }
+        console.log('Gas price set to:', ethers.formatUnits(finalGas, 'gwei'), 'Gwei')
+      } catch(e) {
+        // Fallback: 30 Gwei manual
+        gasOverrides = {
+          maxFeePerGas:         ethers.parseUnits('30', 'gwei'),
+          maxPriorityFeePerGas: ethers.parseUnits('30', 'gwei'),
+        }
+      }
+
       const tx = await contract.mintKopiNFT(
         address, ipfsData.cidFoto, `ipfs://${ipfsData.cidMetadata}`,
         hasilCNN.jenis_kopi, hasilCNN.grade, namaPetani, lokasi,
         Math.round(hasilCNN.confidence),
-        fotoHash    // ← SHA-256 hash foto — anti-duplikat v2
+        fotoHash,    // ← SHA-256 hash foto — anti-duplikat v2
+        gasOverrides // ← override gas price untuk Polygon Amoy
       )
       setStatus('Menunggu konfirmasi blockchain...')
       const receipt = await tx.wait()
