@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { ethers } from 'ethers'
 
-const CONTRACT_ADDRESS = '0x5392C2F10d8Dea3e498726BcB8c806E8DA78834b'  // V3 — Open Mint + Verified
+const CONTRACT_ADDRESS = '0x5392C2F10d8Dea3e498726BcB8c806E8DA78834b'  // V3 — Open Mint + Verified + 6-Class Fix
 const PINATA_GATEWAY   = 'rose-casual-warbler-710.mypinata.cloud'
 const AMOY_CHAIN_ID    = '0x13882'
 
