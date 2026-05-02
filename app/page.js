@@ -437,49 +437,78 @@ export default function HomePage() {
   }
 
   function parseOutput(text) {
-    // ══════════════════════════════════════════════════════
-    // LAYER 1: Deteksi penolakan eksplisit dari model 6-class
-    // app.py baru sudah punya kelas Non-Coffee → deteksi lebih akurat
-    // ══════════════════════════════════════════════════════
-    const isRejected = (
-      text.includes('BUKAN BIJI KOPI') ||
-      text.includes('TIDAK DAPAT DIKLASIFIKASI') ||
-      text.includes('NON-COFFEE') ||
-      text.includes('Non-Coffee class') ||
-      text.includes('GAMBAR TIDAK DAPAT DIKLASIFIKASI') ||
-      text.includes('CONFIDENCE TERLALU RENDAH') ||
-      text.includes('MODEL TIDAK YAKIN')
-    )
+    if (!text || text.trim().length === 0) {
+      return { bukan_kopi: true, alasan: 'Output kosong dari model', raw: text }
+    }
 
-    if (isRejected) {
-      const confMatch   = text.match(/Confidence(?:\s+Non-Coffee)?\s*:\s*([\d.]+)%/i)
-      const confVal     = parseFloat(confMatch?.[1]) || 0
-      const alasanMatch = text.match(/Alasan\s*:\s*(.+)/i)
-      const alasan      = alasanMatch?.[1]?.trim() || 'Terdeteksi sebagai Non-Coffee'
+    console.log('parseOutput text:', text.substring(0, 300))
+
+    // ══════════════════════════════════════════════════════
+    // LAYER 1: Cek apakah output adalah penolakan eksplisit
+    // Hanya tolak jika kata kunci penolakan ADA di teks
+    // ══════════════════════════════════════════════════════
+    const REJECTION_KEYWORDS = [
+      'BUKAN BIJI KOPI',
+      'GAMBAR TIDAK DAPAT DIKLASIFIKASI',
+      'CONFIDENCE TERLALU RENDAH',
+      'MODEL TIDAK YAKIN',
+    ]
+    // Cek kata kunci penolakan
+    const isExplicitRejection = REJECTION_KEYWORDS.some(kw => text.toUpperCase().includes(kw.toUpperCase()))
+
+    if (isExplicitRejection) {
+      const confMatch = text.match(/Confidence[^:]*:\s*([\d.]+)%/i)
+      const confVal   = parseFloat(confMatch?.[1]) || 0
+      const alasanMatch = text.match(/Alasan[^:]*:\s*(.+)/i)
+      const alasan    = alasanMatch?.[1]?.trim() || 'Model menolak gambar'
       return { bukan_kopi: true, confidence: confVal, alasan, raw: text }
     }
 
     // ══════════════════════════════════════════════════════
     // LAYER 2: Parse hasil klasifikasi kopi yang berhasil
+    // Support format lama (JENIS KOPI) dan format baru (nama_indo)
     // ══════════════════════════════════════════════════════
-    const jenisMatch = text.match(/JENIS KOPI\s*:\s*(.+)/i)
-    const confMatch  = text.match(/CONFIDENCE\s*:\s*([\d.]+)%/i)
-    const gradeMatch = text.match(/GRADE\s*:\s*([A-Za-z\s]+)/i)
+    // Coba berbagai format output
+    const jenisMatch = (
+      text.match(/JENIS KOPI\s*:\s*(.+)/i) ||
+      text.match(/☕ JENIS KOPI\s*:\s*(.+)/i)
+    )
+    const confMatch = (
+      text.match(/CONFIDENCE\s*:\s*([\d.]+)%/i) ||
+      text.match(/📊 CONFIDENCE\s*:\s*([\d.]+)%/i)
+    )
+    const gradeMatch = (
+      text.match(/GRADE\s*:\s*([A-Za-z][A-Za-z\s]+)/i) ||
+      text.match(/[🏆⭐✅⚠️]\s*GRADE\s*:\s*([A-Za-z][A-Za-z\s]+)/i)
+    )
 
-    const jenis      = jenisMatch?.[1]?.trim() || 'Tidak Terdeteksi'
+    const jenis      = jenisMatch?.[1]?.trim() || ''
     const confidence = parseFloat(confMatch?.[1]) || 0
     let   grade      = gradeMatch?.[1]?.trim()?.replace(/[^\w\s]/g,'').trim() || 'Grade B'
     if (!GRADE_STYLE[grade]) grade = 'Grade B'
 
+    console.log('Parsed → jenis:', jenis, 'conf:', confidence, 'grade:', grade)
+
+    // Jika tidak ada jenis kopi yang terdeteksi sama sekali → error parsing
+    if (!jenis && confidence === 0) {
+      console.warn('Parsing gagal, raw text:', text.substring(0, 200))
+      // Jangan langsung tolak — mungkin format output berubah
+      // Coba cari tanda-tanda positif dalam teks
+      const hasPositiveSign = text.includes('Arabica') || text.includes('Arabika') || text.includes('Premium') || text.includes('Grade')
+      if (!hasPositiveSign) {
+        return { bukan_kopi: true, alasan: 'Format output tidak dikenali', raw: text }
+      }
+    }
+
     // ══════════════════════════════════════════════════════
-    // LAYER 3: Safety threshold di website (lebih longgar krn model 6-class lebih akurat)
-    // Model 6-class sudah handle OOD, threshold website hanya safety net
+    // LAYER 3: Safety net confidence — HANYA jika confidence benar-benar ada
+    // Threshold 40% sangat konservatif untuk hindari false reject
     // ══════════════════════════════════════════════════════
-    if (confidence < 60) {
+    if (confidence > 0 && confidence < 40) {
       return {
         bukan_kopi: true,
         confidence,
-        alasan: `confidence terlalu rendah (${confidence.toFixed(1)}% < 60%)`,
+        alasan: `confidence terlalu rendah (${confidence.toFixed(1)}% < 40%)`,
         raw: text
       }
     }
@@ -566,20 +595,44 @@ export default function HomePage() {
       const resRes = await fetch(`${BASE}/gradio_api/call/klasifikasi_kopi/${event_id}`)
       if (!resRes.ok) throw new Error(`Hasil gagal: ${resRes.status}`)
 
-      const reader = resRes.body.getReader(); const dec = new TextDecoder()
+      // Baca SSE response dari Gradio dengan robust parsing
+      const reader = resRes.body.getReader()
+      const dec    = new TextDecoder()
       let out = ''; let buf = ''
+
       while (true) {
-        const { done, value } = await reader.read(); if (done) break
-        buf += dec.decode(value, { stream:true })
-        const lines = buf.split('\n'); buf = lines.pop() || ''
+        const { done, value } = await reader.read()
+        if (done) break
+        buf += dec.decode(value, { stream: true })
+        const lines = buf.split('\n')
+        buf = lines.pop() || ''
+
         for (const line of lines) {
-          if (line.startsWith('data:')) {
-            const raw = line.slice(5).trim(); if (raw==='[DONE]') continue
-            try { const arr=JSON.parse(raw); if(Array.isArray(arr)&&typeof arr[0]==='string') out=arr[0] } catch {}
-          }
+          if (!line.startsWith('data:')) continue
+          const raw = line.slice(5).trim()
+          if (!raw || raw === '[DONE]') continue
+          try {
+            const parsed = JSON.parse(raw)
+            // Gradio bisa return: [string] atau [{...}] atau string langsung
+            if (Array.isArray(parsed)) {
+              if (typeof parsed[0] === 'string' && parsed[0].length > 0) {
+                out = parsed[0]
+              } else if (parsed[0] && typeof parsed[0] === 'object') {
+                // Kadang Gradio wrap dalam object
+                out = JSON.stringify(parsed[0])
+              }
+            } else if (typeof parsed === 'string') {
+              out = parsed
+            }
+          } catch (_) {}
         }
       }
-      if (!out) throw new Error('Tidak ada output dari CNN')
+
+      console.log('Raw output dari HF:', out?.substring(0, 200))
+
+      if (!out || out.trim().length === 0) {
+        throw new Error('Tidak ada output dari CNN — cek Hugging Face Space')
+      }
       const parsed = parseOutput(out)
       console.log('CNN parsed:', parsed)
       if (parsed && parsed.bukan_kopi) {
