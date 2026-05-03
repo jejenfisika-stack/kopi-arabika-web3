@@ -520,6 +520,18 @@ export default function HomePage() {
     if (!foto) { alert('Pilih foto kopi terlebih dahulu!'); return }
     setLoading(true); setHasilCNN(null); setErrorMsg(''); setDuplikat(null)
 
+    // ── TIMING MEASUREMENT ──
+    const timing = {
+      t_start    : performance.now(),
+      t_hash     : 0,
+      t_hf_upload: 0,
+      t_hf_infer : 0,
+      t_ipfs_foto: 0,
+      t_ipfs_meta: 0,
+      t_blockchain: 0,
+      t_end      : 0,
+    }
+
     // ── Verifikasi foto sebelum klasifikasi ──
     try {
       setStatus('🔍 Memverifikasi keaslian foto...')
@@ -582,6 +594,7 @@ export default function HomePage() {
       const filePath = paths?.[0]
       if (!filePath) throw new Error('Path file tidak ditemukan')
 
+      timing.t_hf_upload = performance.now()
       setStatus('Mengklasifikasi dengan CNN RepViT-M1.1...')
       const prRes = await fetch(`${BASE}/gradio_api/call/klasifikasi_kopi`, {
         method:'POST', headers:{'Content-Type':'application/json'},
@@ -634,6 +647,7 @@ export default function HomePage() {
         throw new Error('Tidak ada output dari CNN — cek Hugging Face Space')
       }
       const parsed = parseOutput(out)
+      timing.t_hf_infer = performance.now()
       console.log('CNN parsed:', parsed)
       if (parsed && parsed.bukan_kopi) {
         setBukanKopi(true)
@@ -650,6 +664,7 @@ export default function HomePage() {
   }
 
   async function uploadIPFS() {
+    const t_mint_start = performance.now()
     setStatus('Mengupload foto ke IPFS...')
     const b64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(foto) })
     const res = await fetch('/api/upload-ipfs', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ imageBase64:b64, fileName:foto.name, hasilCNN, namaPetani, lokasiKebun:lokasi, hashFoto:fotoHash }) })
@@ -712,6 +727,29 @@ export default function HomePage() {
       )
       setStatus('Menunggu konfirmasi blockchain...')
       const receipt = await tx.wait()
+      const t_after_blockchain = performance.now()
+      console.log('⏱️ T5 Blockchain tx:', ((t_after_blockchain - t_after_ipfs_meta)/1000).toFixed(3), 'detik')
+      console.log('⏱️ T_total mint:', ((t_after_blockchain - t_mint_start)/1000).toFixed(3), 'detik')
+
+      // ── PRINT FULL TIMING REPORT ──
+      const t_total = (t_after_blockchain - t_mint_start) / 1000
+      console.log('\n' + '='.repeat(50))
+      console.log('LATENCY MEASUREMENT REPORT')
+      console.log('='.repeat(50))
+      console.log('T3 IPFS foto     :', ((t_after_ipfs_foto - t_mint_start)/1000).toFixed(3), 's')
+      console.log('T4 IPFS metadata :', ((t_after_ipfs_meta - t_after_ipfs_foto)/1000).toFixed(3), 's')
+      console.log('T5 Blockchain    :', ((t_after_blockchain - t_after_ipfs_meta)/1000).toFixed(3), 's')
+      console.log('T_mint total     :', t_total.toFixed(3), 's')
+      console.log('='.repeat(50))
+      console.log('COPY DATA INI KE SPREADSHEET:')
+      console.log([
+        ((t_after_ipfs_foto - t_mint_start)/1000).toFixed(3),
+        ((t_after_ipfs_meta - t_after_ipfs_foto)/1000).toFixed(3),
+        ((t_after_blockchain - t_after_ipfs_meta)/1000).toFixed(3),
+        t_total.toFixed(3)
+      ].join('\t'))
+      console.log('='.repeat(50) + '\n')
+
       setTxHash(receipt.hash)
 
       // ============================================================
