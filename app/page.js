@@ -664,7 +664,6 @@ export default function HomePage() {
   }
 
   async function uploadIPFS() {
-    const t_mint_start = performance.now()
     setStatus('Mengupload foto ke IPFS...')
     const b64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(foto) })
     const res = await fetch('/api/upload-ipfs', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ imageBase64:b64, fileName:foto.name, hasilCNN, namaPetani, lokasiKebun:lokasi, hashFoto:fotoHash }) })
@@ -689,6 +688,7 @@ export default function HomePage() {
     if (!lokasi.trim())     { alert('Isi Lokasi Kebun!'); return }
     if (!hasilCNN)          { alert('Klasifikasi CNN dulu!'); return }
     setLoading(true); setErrorMsg('')
+    const t_mint_start = performance.now()  // timing mulai
     try {
       setStatus('Menghubungkan MetaMask...')
       const address = await connectWallet(); if (!address) return
@@ -728,26 +728,16 @@ export default function HomePage() {
       setStatus('Menunggu konfirmasi blockchain...')
       const receipt = await tx.wait()
       const t_after_blockchain = performance.now()
-      console.log('⏱️ T5 Blockchain tx:', ((t_after_blockchain - t_after_ipfs_meta)/1000).toFixed(3), 'detik')
-      console.log('⏱️ T_total mint:', ((t_after_blockchain - t_mint_start)/1000).toFixed(3), 'detik')
+      const t_total_mint = (t_after_blockchain - t_mint_start) / 1000
 
-      // ── PRINT FULL TIMING REPORT ──
-      const t_total = (t_after_blockchain - t_mint_start) / 1000
+      // ── LATENCY REPORT — copy ke spreadsheet ──
       console.log('\n' + '='.repeat(50))
-      console.log('LATENCY MEASUREMENT REPORT')
+      console.log('⏱️ LATENCY MEASUREMENT REPORT')
       console.log('='.repeat(50))
-      console.log('T3 IPFS foto     :', ((t_after_ipfs_foto - t_mint_start)/1000).toFixed(3), 's')
-      console.log('T4 IPFS metadata :', ((t_after_ipfs_meta - t_after_ipfs_foto)/1000).toFixed(3), 's')
-      console.log('T5 Blockchain    :', ((t_after_blockchain - t_after_ipfs_meta)/1000).toFixed(3), 's')
-      console.log('T_mint total     :', t_total.toFixed(3), 's')
+      console.log('T_total (IPFS+Blockchain):', t_total_mint.toFixed(3), 's')
       console.log('='.repeat(50))
-      console.log('COPY DATA INI KE SPREADSHEET:')
-      console.log([
-        ((t_after_ipfs_foto - t_mint_start)/1000).toFixed(3),
-        ((t_after_ipfs_meta - t_after_ipfs_foto)/1000).toFixed(3),
-        ((t_after_blockchain - t_after_ipfs_meta)/1000).toFixed(3),
-        t_total.toFixed(3)
-      ].join('\t'))
+      console.log('COPY KE SPREADSHEET (T_total_mint detik):')
+      console.log(t_total_mint.toFixed(3))
       console.log('='.repeat(50) + '\n')
 
       setTxHash(receipt.hash)
