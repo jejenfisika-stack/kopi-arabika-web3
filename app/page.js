@@ -1,4 +1,4 @@
-'use client'
+'use client' // fix-v4
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { ethers } from 'ethers'
@@ -666,7 +666,7 @@ export default function HomePage() {
           tipe: 'IDENTIK',
           tokenId: tokenIdLama,
           hash,
-          pesan: `{t('dup_desc')} #${tokenIdLama} {t('dup_already')}`,
+          pesan: t('dup_desc') + ' #' + tokenIdLama + ' ' + t('dup_already'),
           warna: '#FEF2F2',
           border: '#FECACA',
           icon: '🚫'
@@ -1469,9 +1469,9 @@ export default function HomePage() {
             </div>
           </div>
           <div className="tab-body-wrap" style={{background:'#FFFFFF',borderRadius:'0 0 18px 18px',padding:'22px',marginTop:'-18px',boxShadow:'0 2px 16px rgba(0,0,0,.06)',border:'1px solid #E4E4DC',borderTop:'none',marginBottom:'20px'}}>
-            <div className="tab-emoji">{INFO_KOPI[activeTab].emoji}</div>
-            <div className="tab-title">{INFO_KOPI[activeTab].judul}</div>
-            <div className="tab-text">{INFO_KOPI[activeTab].isi}</div>
+            <div className="tab-emoji">{INFO_KOPI[lang||'id'][activeTab]?.emoji}</div>
+            <div className="tab-title">{INFO_KOPI[lang||'id'][activeTab]?.judul}</div>
+            <div className="tab-text">{INFO_KOPI[lang||'id'][activeTab]?.isi}</div>
             <div className="stats">
               <div className="stat"><div className="stat-v">900–1500</div><div className="stat-k">Mdpl</div></div>
               <div className="stat"><div className="stat-v">Specialty</div><div className="stat-k">Kategori</div></div>
@@ -1893,7 +1893,7 @@ export default function HomePage() {
               {duplikat && (
                 <div style={{marginTop:10,background:duplikat.warna,border:`1.5px solid ${duplikat.border}`,borderRadius:10,padding:'12px 14px'}}>
                   <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>
-                    {duplikat.icon} {duplikat.tipe === 'IDENTIK' ? `🚫 ${t('dup_title')}` : (lang==='id' ? '⚠️ PERINGATAN: Foto Sangat Mirip' : '⚠️ WARNING: Very Similar Photo')}
+                    {duplikat.icon} {duplikat.tipe === 'IDENTIK' ? '🚫 ' + t('dup_title') : (lang==='id' ? '⚠️ PERINGATAN: Foto Sangat Mirip' : '⚠️ WARNING: Very Similar Photo')}
                   </div>
                   <div style={{fontSize:12,lineHeight:1.6,color:'#374151'}}>{duplikat.pesan}</div>
                   {duplikat.tokenId && (
