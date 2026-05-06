@@ -971,6 +971,9 @@ export default function HomePage() {
   const t    = (key) => mounted ? (T[lang]?.[key] ?? key) : (T['id']?.[key] ?? key)
   const tArr = (key) => mounted ? (T[lang]?.[key] ?? []) : (T['id']?.[key] ?? [])
 
+  // ── SSR Guard: cegah render sebelum mounted ──
+  if (!mounted) return null
+
   return (
     <>
       <BlockchainDoodle/>
