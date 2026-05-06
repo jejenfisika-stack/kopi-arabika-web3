@@ -97,7 +97,7 @@ const CARA_PAKAI = {
   ],
   en: [
     { no:'01', judul:'Upload Photo',       isi:'Click the photo area on the right, select a coffee bean image from your gallery or capture directly with your camera.' },
-    { no:'02', judul:'Enter Farmer Data',  isi:'Enter the farmer's name and farm location. This data will be permanently recorded in the NFT certificate on the blockchain.' },
+    { no:'02', judul:'Enter Farmer Data',  isi:'Enter the farmer’s name and farm location. This data will be permanently recorded in the NFT certificate on the blockchain.' },
     { no:'03', judul:'CNN Classification', isi:'Click the green button. The RepViT-M1.1 AI model identifies the coffee variety and quality grade within seconds.' },
     { no:'04', judul:'Mint NFT',           isi:'Click "Mint NFT". MetaMask opens to confirm the transaction to the Polygon Amoy blockchain.' },
   ]
@@ -2058,7 +2058,7 @@ const CARA_PAKAI = {
   ],
   en: [
     { no:'01', judul:'Upload Photo',       isi:'Click the photo area on the right, select a coffee bean image from your gallery or capture directly with your camera.' },
-    { no:'02', judul:'Enter Farmer Data',  isi:'Enter the farmer's name and farm location. This data will be permanently recorded in the NFT certificate on the blockchain.' },
+    { no:'02', judul:'Enter Farmer Data',  isi:'Enter the farmer’s name and farm location. This data will be permanently recorded in the NFT certificate on the blockchain.' },
     { no:'03', judul:'CNN Classification', isi:'Click the green button. The RepViT-M1.1 AI model identifies the coffee variety and quality grade within seconds.' },
     { no:'04', judul:'Mint NFT',           isi:'Click "Mint NFT". MetaMask opens to confirm the transaction to the Polygon Amoy blockchain.' },
   ]
