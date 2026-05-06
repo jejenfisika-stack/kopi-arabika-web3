@@ -1959,298 +1959,66 @@ export default function HomePage() {
                 {tArr('ood_guides').map((g,i) => (
                   <div key={i} style={{display:'flex',gap:8,marginBottom:3,alignItems:'flex-start',fontSize:11,color:'#5D4037',fontFamily:'sans-serif'}}>
                     <span>✅</span><span>{g}</span>
-                  </div>use client'
+                  </div>
+                ))}
+              </div>
 
-import { useState, useRef, useCallback, useEffect } from 'react'
-import { ethers } from 'ethers'
+              {/* ── BUTTON UPLOAD ULANG ── */}
+              <button
+                onClick={() => { setFoto(null); setPreview(null); setBukanKopi(false); setHasilCNN(null) }}
+                style={{
+                  width:'100%',padding:'10px 0',marginTop:8,
+                  background:'linear-gradient(135deg,#BF360C,#E64A19)',
+                  color:'#FFF',border:'none',borderRadius:10,
+                  fontSize:13,fontWeight:700,cursor:'pointer',
+                  fontFamily:'sans-serif',letterSpacing:'.5px',
+                }}
+              >
+                {t('ood_btn')}
+              </button>
 
-const CONTRACT_ADDRESS = '0x5392C2F10d8Dea3e498726BcB8c806E8DA78834b'  // V3 — Open Mint + Verified + 6-Class Fix
-const PINATA_GATEWAY   = 'rose-casual-warbler-710.mypinata.cloud'
-const AMOY_CHAIN_ID    = '0x13882'
+              {/* ── DAFTAR VARIETAS ── */}
+              <div style={{marginTop:14,padding:'10px 12px',background:'rgba(191,54,12,.06)',borderRadius:8}}>
+                <div style={{fontSize:11,fontWeight:700,color:'#BF360C',marginBottom:8,fontFamily:'monospace',letterSpacing:1,textTransform:'uppercase'}}>
+                  {t('ood_varieties')}
+                </div>
+                {INFO_KOPI[lang].map((k,i) => (
+                  <div key={i} style={{display:'flex',alignItems:'center',gap:6,marginBottom:4,fontSize:11,color:'#5D4037',fontFamily:'sans-serif'}}>
+                    <span style={{fontSize:14}}>{k.emoji}</span>
+                    <span style={{fontWeight:600}}>{k.judul}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
-const CONTRACT_ABI = [
-  // mintKopiNFT v2 — 9 parameter (tambah hashFoto)
-  {
-    inputs: [
-      { name: 'petani',           type: 'address' },
-      { name: 'cid',              type: 'string'  },
-      { name: 'metadataURI',      type: 'string'  },
-      { name: 'jenisKopi',        type: 'string'  },
-      { name: 'grade',            type: 'string'  },
-      { name: 'namaPetani',       type: 'string'  },
-      { name: 'lokasiKebun',      type: 'string'  },
-      { name: 'confidencePersen', type: 'uint256' },
-      { name: 'hashFoto',         type: 'string'  }, // ← BARU di v2
-    ],
-    name: 'mintKopiNFT',
-    outputs: [{ name: '', type: 'uint256' }],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  // cekHashFoto — BARU di v2 (anti-duplikat)
-  {
-    inputs: [{ name: 'hashFoto', type: 'string' }],
-    name: 'cekHashFoto',
-    outputs: [
-      { name: 'sudahAda',    type: 'bool'    },
-      { name: 'tokenIdLama', type: 'uint256' },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  // getDataKopi v2 — tambah hashFoto di output
-  {
-    inputs: [{ name: 'tokenId', type: 'uint256' }],
-    name: 'getDataKopi',
-    outputs: [
-      { name: 'ipfsCID',     type: 'string'  },
-      { name: 'jenisKopi',   type: 'string'  },
-      { name: 'grade',       type: 'string'  },
-      { name: 'namaPetani',  type: 'string'  },
-      { name: 'lokasiKebun', type: 'string'  },
-      { name: 'timestamp',   type: 'uint256' },
-      { name: 'confidence',  type: 'uint256' },
-      { name: 'hashFoto',    type: 'string'  },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  // totalNFT
-  {
-    inputs: [],
-    name: 'totalNFT',
-    outputs: [{ name: '', type: 'uint256' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
-]
-
-const GRADE_STYLE = {
-  'Premium': { bg:'#FEF9C3', border:'#EAB308', text:'#713F12', emoji:'🏆' },
-  'Grade A': { bg:'#EFF6FF', border:'#3B82F6', text:'#1E3A8A', emoji:'⭐' },
-  'Grade B': { bg:'#F0FDF4', border:'#22C55E', text:'#14532D', emoji:'✅' },
-  'Grade C': { bg:'#F9FAFB', border:'#9CA3AF', text:'#374151', emoji:'⚠️' },
-}
-
-const INFO_KOPI = {
-  id: [
-    { emoji:'🌋', judul:'Arabika Natural Ijen',      isi:'Ditanam di lereng Ijen Mountain, Bondowoso pada ketinggian 900–1.500 mdpl. Terkenal dengan cita rasa fruity dan wine-like yang khas dari proses natural.' },
-    { emoji:'🫘', judul:'Arabika Peaberry',           isi:'Biji kopi bulat tunggal hasil mutasi alami. Rasa lebih terkonsentrasi, aroma floral kuat, body lebih ringan dibanding biji normal.' },
-    { emoji:'🧪', judul:'Arabika Anaerob Carbonic',   isi:'Diproses fermentasi anaerobik karbonasi di Ijen Mountain. Menghasilkan rasa eksotis, kompleks — buah tropis dengan sparkling sensation yang unik.' },
-    { emoji:'🍊', judul:'Arabika Orange Bourbon',     isi:'Varietas Bourbon langka berwarna oranye dari Ijen Mountain. Rasa manis, citrus, honey, body sedang-tebal. Sangat diminati di pasar specialty coffee dunia.' },
-    { emoji:'🏔️', judul:'Arabika Blue Mountain',     isi:'Adaptasi varietas premium Jamaica di dataran tinggi Ijen Mountain. Dikenal dengan rasa ringan, bersih, mild, tidak bitter. Salah satu kopi paling prestigious di dunia.' },
-  ],
-  en: [
-    { emoji:'🌋', judul:'Arabica Natural Ijen',       isi:'Grown on the slopes of Ijen Mountain, Bondowoso at 900–1,500 m above sea level. Renowned for its distinctive fruity and wine-like flavor from the natural sun-drying process.' },
-    { emoji:'🫘', judul:'Arabica Peaberry',            isi:'A naturally occurring single-bean mutation. Produces a more concentrated flavor, intense floral aroma, and lighter body compared to standard beans.' },
-    { emoji:'🧪', judul:'Arabica Anaerobic Carbonic',  isi:'Processed using anaerobic carbonic maceration fermentation on Ijen Mountain. Delivers an exotic, complex flavor profile — tropical fruit with a unique sparkling sensation.' },
-    { emoji:'🍊', judul:'Arabica Orange Bourbon',      isi:'A rare orange-fruited Bourbon variety from Ijen Mountain. Features a naturally sweet flavor with citrus and honey notes, medium to full body. Highly sought in the global specialty coffee market.' },
-    { emoji:'🏔️', judul:'Arabica Blue Mountain',      isi:'An adaptation of the premium Jamaican variety at the high altitudes of Ijen Mountain. Known for its light, clean, mild, non-bitter taste. One of the most prestigious coffees in the world.' },
-  ]
-}
-
-const CARA_PAKAI = {
-  id: [
-    { no:'01', judul:'Upload Foto',        isi:'Klik area foto di kanan, pilih gambar biji kopi dari galeri HP atau ambil langsung dengan kamera.' },
-    { no:'02', judul:'Isi Data Petani',    isi:'Masukkan nama petani dan lokasi kebun. Data ini akan tercatat dalam sertifikat NFT di blockchain.' },
-    { no:'03', judul:'Klasifikasi CNN',    isi:'Klik tombol hijau. Model AI RepViT-M1.1 mengidentifikasi jenis dan grade kopi dalam hitungan detik.' },
-    { no:'04', judul:'Mint NFT',           isi:'Klik "Mint NFT". MetaMask terbuka untuk konfirmasi transaksi ke blockchain Polygon Amoy.' },
-  ],
-  en: [
-    { no:'01', judul:'Upload Photo',       isi:'Click the photo area on the right, select a coffee bean image from your gallery or capture directly with your camera.' },
-    { no:'02', judul:'Enter Farmer Data',  isi:'Enter the farmer’s name and farm location. This data will be permanently recorded in the NFT certificate on the blockchain.' },
-    { no:'03', judul:'CNN Classification', isi:'Click the green button. The RepViT-M1.1 AI model identifies the coffee variety and quality grade within seconds.' },
-    { no:'04', judul:'Mint NFT',           isi:'Click "Mint NFT". MetaMask opens to confirm the transaction to the Polygon Amoy blockchain.' },
-  ]
-}
-
-// ── KAMUS TERJEMAHAN ──
-
-
-// ============================================================
-// BLOCKCHAIN DOODLE BACKGROUND
-// ============================================================
-function BlockchainDoodle() {
-  return (
-    <div className="bg-doodle" aria-hidden="true">
-      <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-            <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#C8E6C9" strokeWidth="0.5" opacity="0.6"/>
-          </pattern>
-        </defs>
-
-        {/* Base background gradient */}
-        <rect width="1440" height="900" fill="url(#bgGrad)"/>
-        <defs>
-          <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#F1F8E9"/>
-            <stop offset="40%" stopColor="#E8F5E9"/>
-            <stop offset="100%" stopColor="#F3E5F5"/>
-          </linearGradient>
-        </defs>
-
-        {/* Grid dots pattern */}
-        <rect width="1440" height="900" fill="url(#grid)" opacity="0.5"/>
-
-        {/* ===== BLOCKCHAIN NODES & CONNECTIONS ===== */}
-
-        {/* Connection lines - main chain */}
-        <g stroke="#81C784" strokeWidth="1.5" strokeDasharray="6,4" opacity="0.5" fill="none">
-          <line x1="120" y1="180" x2="280" y2="260"/>
-          <line x1="280" y1="260" x2="480" y2="200"/>
-          <line x1="480" y1="200" x2="650" y2="310"/>
-          <line x1="650" y1="310" x2="850" y2="240"/>
-          <line x1="850" y1="240" x2="1050" y2="320"/>
-          <line x1="1050" y1="320" x2="1240" y2="210"/>
-          <line x1="1240" y1="210" x2="1380" y2="280"/>
-          <line x1="200" y1="500" x2="400" y2="580"/>
-          <line x1="400" y1="580" x2="600" y2="510"/>
-          <line x1="600" y1="510" x2="800" y2="600"/>
-          <line x1="800" y1="600" x2="1000" y2="520"/>
-          <line x1="1000" y1="520" x2="1200" y2="620"/>
-          <line x1="1200" y1="620" x2="1400" y2="550"/>
-        </g>
-
-        {/* Cross connections */}
-        <g stroke="#A5D6A7" strokeWidth="1" strokeDasharray="4,6" opacity="0.3" fill="none">
-          <line x1="280" y1="260" x2="400" y2="580"/>
-          <line x1="650" y1="310" x2="600" y2="510"/>
-          <line x1="850" y1="240" x2="800" y2="600"/>
-          <line x1="1050" y1="320" x2="1000" y2="520"/>
-        </g>
-
-        {/* ===== BLOCK NODES — kotak blockchain ===== */}
-        {/* Node 1 */}
-        <g transform="translate(80,150)">
-          <rect width="80" height="60" rx="8" fill="#FFFFFF" stroke="#4CAF50" strokeWidth="1.5" filter="url(#shadow)"/>
-          <rect width="80" height="16" rx="8" fill="#4CAF50" opacity="0.15"/>
-          <text x="40" y="11" textAnchor="middle" fontSize="8" fill="#2E7D32" fontWeight="700" fontFamily="monospace">BLOCK #001</text>
-          <text x="40" y="30" textAnchor="middle" fontSize="7" fill="#666" fontFamily="monospace">Hash: 0xa3f...</text>
-          <text x="40" y="42" textAnchor="middle" fontSize="7" fill="#666" fontFamily="monospace">Kopi: Arabika</text>
-          <text x="40" y="54" textAnchor="middle" fontSize="7" fill="#4CAF50" fontFamily="monospace">✓ Valid</text>
-        </g>
-
-        {/* Node 2 */}
-        <g transform="translate(240,230)">
-          <rect width="80" height="60" rx="8" fill="#FFFFFF" stroke="#388E3C" strokeWidth="1.5"/>
-          <rect width="80" height="16" rx="8" fill="#388E3C" opacity="0.15"/>
-          <text x="40" y="11" textAnchor="middle" fontSize="8" fill="#2E7D32" fontWeight="700" fontFamily="monospace">BLOCK #002</text>
-          <text x="40" y="30" textAnchor="middle" fontSize="7" fill="#666" fontFamily="monospace">Hash: 0xb7c...</text>
-          <text x="40" y="42" textAnchor="middle" fontSize="7" fill="#666" fontFamily="monospace">NFT: #0042</text>
-          <text x="40" y="54" textAnchor="middle" fontSize="7" fill="#4CAF50" fontFamily="monospace">✓ Minted</text>
-        </g>
-
-        {/* Node 3 */}
-        <g transform="translate(440,170)">
-          <rect width="80" height="60" rx="8" fill="#FFFFFF" stroke="#66BB6A" strokeWidth="1.5"/>
-          <rect width="80" height="16" rx="8" fill="#66BB6A" opacity="0.15"/>
-          <text x="40" y="11" textAnchor="middle" fontSize="8" fill="#2E7D32" fontWeight="700" fontFamily="monospace">BLOCK #003</text>
-          <text x="40" y="30" textAnchor="middle" fontSize="7" fill="#666" fontFamily="monospace">Hash: 0xd2e...</text>
-          <text x="40" y="42" textAnchor="middle" fontSize="7" fill="#666" fontFamily="monospace">Grade: A+</text>
-          <text x="40" y="54" textAnchor="middle" fontSize="7" fill="#4CAF50" fontFamily="monospace">✓ Verified</text>
-        </g>
-
-        {/* Node 4 */}
-        <g transform="translate(1200,180)">
-          <rect width="80" height="60" rx="8" fill="#FFFFFF" stroke="#4CAF50" strokeWidth="1.5"/>
-          <rect width="80" height="16" rx="8" fill="#4CAF50" opacity="0.15"/>
-          <text x="40" y="11" textAnchor="middle" fontSize="8" fill="#2E7D32" fontWeight="700" fontFamily="monospace">BLOCK #009</text>
-          <text x="40" y="30" textAnchor="middle" fontSize="7" fill="#666" fontFamily="monospace">Hash: 0xf1a...</text>
-          <text x="40" y="42" textAnchor="middle" fontSize="7" fill="#666" fontFamily="monospace">Polygon ✓</text>
-          <text x="40" y="54" textAnchor="middle" fontSize="7" fill="#4CAF50" fontFamily="monospace">✓ On-chain</text>
-        </g>
-
-        {/* ===== COFFEE DOODLE ICONS (sederhana, sketch style) ===== */}
-
-        {/* Cangkir kopi - kiri bawah */}
-        <g transform="translate(50,680)" opacity="0.25">
-          <ellipse cx="35" cy="50" rx="30" ry="8" fill="none" stroke="#5D4037" strokeWidth="2"/>
-          <path d="M5,20 L65,20 L58,50 L12,50 Z" fill="none" stroke="#5D4037" strokeWidth="2" strokeLinejoin="round"/>
-          <path d="M65,28 Q80,28 80,38 Q80,48 65,48" fill="none" stroke="#5D4037" strokeWidth="2"/>
-          <path d="M25,20 Q28,8 35,5 Q42,8 45,20" fill="none" stroke="#8D6E63" strokeWidth="1.5"/>
-          <path d="M30,12 Q30,4 35,2" fill="none" stroke="#8D6E63" strokeWidth="1.5" strokeLinecap="round"/>
-          <text x="35" y="43" textAnchor="middle" fontSize="9" fill="#5D4037" fontFamily="serif">☕</text>
-        </g>
-
-        {/* Biji kopi - kanan atas */}
-        <g transform="translate(1320,60)" opacity="0.2">
-          <ellipse cx="30" cy="25" rx="28" ry="18" fill="none" stroke="#6D4C41" strokeWidth="2"/>
-          <path d="M30,7 Q35,25 30,43" fill="none" stroke="#6D4C41" strokeWidth="1.5"/>
-          <ellipse cx="80" cy="45" rx="22" ry="14" fill="none" stroke="#6D4C41" strokeWidth="2" transform="rotate(-20,80,45)"/>
-          <path d="M71,34 Q80,45 89,56" fill="none" stroke="#6D4C41" strokeWidth="1.5" transform="rotate(-20,80,45)"/>
-        </g>
-
-        {/* ===== FLOATING CIRCUIT NODES ===== */}
-        {/* Kecil di berbagai sudut */}
-        <g opacity="0.35">
-          {/* Hexagon nodes */}
-          <polygon points="1350,400 1368,390 1386,400 1386,420 1368,430 1350,420" fill="none" stroke="#4CAF50" strokeWidth="1.5"/>
-          <text x="1368" y="413" textAnchor="middle" fontSize="9" fill="#2E7D32">⛓</text>
-
-          <polygon points="60,400 78,390 96,400 96,420 78,430 60,420" fill="none" stroke="#66BB6A" strokeWidth="1.5"/>
-          <text x="78" y="413" textAnchor="middle" fontSize="9" fill="#388E3C">🔗</text>
-
-          <polygon points="700,60 718,50 736,60 736,80 718,90 700,80" fill="none" stroke="#81C784" strokeWidth="1.5"/>
-          <text x="718" y="73" textAnchor="middle" fontSize="9" fill="#2E7D32">◈</text>
-
-          <polygon points="700,800 718,790 736,800 736,820 718,830 700,820" fill="none" stroke="#4CAF50" strokeWidth="1.5"/>
-          <text x="718" y="813" textAnchor="middle" fontSize="9" fill="#2E7D32">◈</text>
-        </g>
-
-        {/* ===== FLOATING LABELS / TAGS ===== */}
-        <g fontFamily="monospace" opacity="0.3">
-          {/* Top area */}
-          <rect x="620" y="50" width="90" height="22" rx="11" fill="#E8F5E9" stroke="#81C784" strokeWidth="1"/>
-          <text x="665" y="65" textAnchor="middle" fontSize="9" fill="#2E7D32" fontWeight="700">ERC-721 NFT</text>
-
-          <rect x="850" y="70" width="80" height="22" rx="11" fill="#FFF8E1" stroke="#FFD54F" strokeWidth="1"/>
-          <text x="890" y="85" textAnchor="middle" fontSize="9" fill="#F57F17" fontWeight="700">RepViT CNN</text>
-
-          <rect x="1070" y="50" width="90" height="22" rx="11" fill="#E3F2FD" stroke="#90CAF9" strokeWidth="1"/>
-          <text x="1115" y="65" textAnchor="middle" fontSize="9" fill="#1565C0" fontWeight="700">Polygon Amoy</text>
-
-          {/* Bottom area */}
-          <rect x="300" y="820" width="80" height="22" rx="11" fill="#F3E5F5" stroke="#CE93D8" strokeWidth="1"/>
-          <text x="340" y="835" textAnchor="middle" fontSize="9" fill="#6A1B9A" fontWeight="700">IPFS Pinata</text>
-
-          <rect x="800" y="840" width="90" height="22" rx="11" fill="#E8F5E9" stroke="#81C784" strokeWidth="1"/>
-          <text x="845" y="855" textAnchor="middle" fontSize="9" fill="#2E7D32" fontWeight="700">Smart Contract</text>
-
-          <rect x="1100" y="820" width="80" height="22" rx="11" fill="#FFF3E0" stroke="#FFCC02" strokeWidth="1"/>
-          <text x="1140" y="835" textAnchor="middle" fontSize="9" fill="#E65100" fontWeight="700">MetaMask🦊</text>
-        </g>
-
-        {/* ===== DOTS/NODES ALONG CHAIN ===== */}
-        <g fill="#4CAF50" opacity="0.6">
-          <circle cx="120" cy="180" r="5"/>
-          <circle cx="280" cy="260" r="5"/>
-          <circle cx="480" cy="200" r="5"/>
-          <circle cx="650" cy="310" r="5"/>
-          <circle cx="850" cy="240" r="5"/>
-          <circle cx="1050" cy="320" r="5"/>
-          <circle cx="1240" cy="210" r="5"/>
-          <circle cx="200" cy="500" r="4"/>
-          <circle cx="400" cy="580" r="4"/>
-          <circle cx="600" cy="510" r="4"/>
-          <circle cx="800" cy="600" r="4"/>
-          <circle cx="1000" cy="520" r="4"/>
-          <circle cx="1200" cy="620" r="4"/>
-        </g>
-        <g fill="#81C784" opacity="0.4">
-          <circle cx="120" cy="180" r="10" fillOpacity="0.2"/>
-          <circle cx="480" cy="200" r="10" fillOpacity="0.2"/>
-          <circle cx="850" cy="240" r="10" fillOpacity="0.2"/>
-          <circle cx="1240" cy="210" r="10" fillOpacity="0.2"/>
-          <circle cx="400" cy="580" r="10" fillOpacity="0.2"/>
-          <circle cx="800" cy="600" r="10" fillOpacity="0.2"/>
-        </g>
-
-        {/* ===== LARGE DECORATIVE CIRCLES (subtle) ===== */}
-        <circle cx="200" cy="450" r="180" fill="none" stroke="#C8E6C9" strokeWidth="1" opacity="0.4" strokeDasharray="8,8"/>
-        <circle cx="1250" cy="450" r="150" fill="none" stroke="#BBDEFB" strokeWidth="1" opacity="0.3" strokeDasharray="6,6"/>
-        <circle cx="720" cy="450" r="300" fill="none" stroke="#E1BEE7" strokeWidth="0.5" opacity="0.2" strokeDasharray="10,10"/>
-      </svg>
-    </div>
+          {/* ════════════════════════════════════════════
+              DUPLIKAT CARD
+          ════════════════════════════════════════════ */}
+          {duplikat && (
+            <div style={{
+              background:'linear-gradient(135deg,#FFF3E0,#FFF8E1)',
+              border:'2px solid #FF8F00',borderRadius:16,padding:20,marginTop:16,
+              fontFamily:'sans-serif',
+            }}>
+              <div style={{fontSize:16,fontWeight:700,color:'#E65100',marginBottom:8}}>
+                {duplikat.icon} {duplikat.tipe === 'IDENTIK'
+                  ? (lang==='id' ? 'FOTO TERDETEKSI DUPLIKAT!' : 'DUPLICATE PHOTO DETECTED!')
+                  : (lang==='id' ? 'PERINGATAN: Foto Sangat Mirip' : 'WARNING: Very Similar Photo')}
+              </div>
+              <div style={{fontSize:13,color:'#BF360C',marginBottom:4}}>{t('dup_desc')} <strong>#{duplikat.tokenId}</strong></div>
+              <div style={{fontSize:13,color:'#BF360C',marginBottom:12}}>{t('dup_already')}</div>
+              <a href={`https://amoy.polygonscan.com/token/0x5392C2F10d8Dea3e498726BcB8c806E8DA78834b?a=${duplikat.tokenId}`}
+                 target="_blank" rel="noreferrer"
+                 style={{display:'inline-block',padding:'8px 16px',background:'#E65100',color:'#FFF',
+                         borderRadius:8,fontSize:12,fontWeight:700,textDecoration:'none'}}>
+                {t('dup_view')}
+              </a>
+              <div style={{marginTop:10,fontSize:11,color:'#BF360C',fontStyle:'italic'}}>{t('dup_cannot')}</div>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
   )
 }
