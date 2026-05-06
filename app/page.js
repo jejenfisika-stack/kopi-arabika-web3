@@ -1460,7 +1460,7 @@ export default function HomePage() {
             <div className="hero-title">{lang==="id" ? "Kopi Arabika Nusantara" : "Arabica Coffee Nusantara"}</div>
             <div className="hero-sub">{t('hero_sub')}</div>
             <div className="tabs">
-              {INFO_KOPI[lang].map((k,i) => (
+              {INFO_KOPI[lang||'id'].map((k,i) => (
                 <button key={i} className={`tab ${activeTab===i?'on':''}`} onClick={()=>setActiveTab(i)}>{k.emoji}</button>
               ))}
             </div>
@@ -1484,7 +1484,7 @@ export default function HomePage() {
               <div className="head-title">{t('cara_title')}</div>
             </div>
             <div className="cara-list">
-              {CARA_PAKAI[lang].map((c,i)=>(
+              {CARA_PAKAI[lang||'id'].map((c,i)=>(
                 <div key={i} className="cara-item">
                   <div className="cara-no">{c.no}</div>
                   <div>
@@ -1982,7 +1982,7 @@ export default function HomePage() {
                 <div style={{fontSize:11,fontWeight:700,color:'#BF360C',marginBottom:8,fontFamily:'monospace',letterSpacing:1,textTransform:'uppercase'}}>
                   {t('ood_varieties')}
                 </div>
-                {INFO_KOPI[lang].map((k,i) => (
+                {INFO_KOPI[lang||'id'].map((k,i) => (
                   <div key={i} style={{display:'flex',alignItems:'center',gap:6,marginBottom:4,fontSize:11,color:'#5D4037',fontFamily:'sans-serif'}}>
                     <span style={{fontSize:14}}>{k.emoji}</span>
                     <span style={{fontWeight:600}}>{k.judul}</span>
