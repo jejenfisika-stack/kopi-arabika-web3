@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { ethers } from 'ethers'
 
-const CONTRACT_ADDRESS = '0x85e774FBab2cE074D8A292fDF758a3d291Dcf7ad'
+const CONTRACT_ADDRESS = '0x5392C2F10d8Dea3e498726BcB8c806E8DA78834b'  // V3 — Open Mint + Verified + 6-Class Fix
 const PINATA_GATEWAY   = 'rose-casual-warbler-710.mypinata.cloud'
 const AMOY_CHAIN_ID    = '0x13882'
 
@@ -71,128 +71,13 @@ const GRADE_STYLE = {
   'Grade C': { bg:'#F9FAFB', border:'#9CA3AF', text:'#374151', emoji:'⚠️' },
 }
 
-const INFO_KOPI = {
-  id: [
-    { emoji:'🌋', judul:'Arabika Natural Ijen',      isi:'Ditanam di lereng Ijen Mountain, Bondowoso pada ketinggian 900–1.500 mdpl. Terkenal dengan cita rasa fruity dan wine-like.' },
-    { emoji:'🫘', judul:'Arabika Peaberry',           isi:'Biji kopi bulat tunggal hasil mutasi alami. Rasa lebih terkonsentrasi, aroma floral kuat.' },
-    { emoji:'🧪', judul:'Arabika Anaerob Carbonic',   isi:'Diproses fermentasi anaerobik karbonasi di Ijen Mountain. Rasa eksotis, kompleks — sparkling sensation.' },
-    { emoji:'🍊', judul:'Arabika Orange Bourbon',     isi:'Varietas Bourbon langka berwarna oranye dari Ijen Mountain. Rasa manis, citrus, honey.' },
-    { emoji:'🏔️', judul:'Arabika Blue Mountain', isi:'Adaptasi varietas premium Jamaica di Ijen Mountain. Rasa ringan, bersih, tidak bitter.' },
-  ],
-  en: [
-    { emoji:'🌋', judul:'Arabica Natural Ijen',       isi:'Grown on the slopes of Ijen Mountain, Bondowoso at 900–1,500 masl. Distinctive fruity and wine-like flavor.' },
-    { emoji:'🫘', judul:'Arabica Peaberry',            isi:'A naturally occurring single-bean mutation. Concentrated flavor, intense floral aroma.' },
-    { emoji:'🧪', judul:'Arabica Anaerobic Carbonic',  isi:'Processed with anaerobic carbonic maceration on Ijen Mountain. Exotic, complex — sparkling sensation.' },
-    { emoji:'🍊', judul:'Arabica Orange Bourbon',      isi:'A rare orange-fruited Bourbon variety from Ijen Mountain. Sweet citrus and honey notes.' },
-    { emoji:'🏔️', judul:'Arabica Blue Mountain', isi:'Premium Jamaican variety adapted at Ijen Mountain. Light, clean, non-bitter taste.' },
-  ]
-}
-
-
-const CARA_PAKAI = {
-  id: [
-    { no:'01', judul:'Upload Foto',        isi:'Klik area foto, pilih gambar biji kopi dari galeri atau kamera.' },
-    { no:'02', judul:'Isi Data Petani',    isi:'Masukkan nama petani dan lokasi kebun. Data tercatat di NFT blockchain.' },
-    { no:'03', judul:'Klasifikasi CNN',    isi:'Klik tombol hijau. Model RepViT-M1.1 mengidentifikasi jenis dan grade kopi.' },
-    { no:'04', judul:'Mint NFT',           isi:'Klik "Mint NFT". MetaMask terbuka untuk konfirmasi transaksi.' },
-  ],
-  en: [
-    { no:'01', judul:'Upload Photo',       isi:'Click the photo area, select a coffee bean image from gallery or camera.' },
-    { no:'02', judul:'Enter Farmer Data',  isi:'Enter farmer name and farm location. Data is recorded in the NFT on blockchain.' },
-    { no:'03', judul:'CNN Classification', isi:'Click the green button. RepViT-M1.1 identifies the coffee variety and grade.' },
-    { no:'04', judul:'Mint NFT',           isi:'Click "Mint NFT". MetaMask opens to confirm the transaction.' },
-  ]
-}
-'use client'
-
-import { useState, useRef, useEffect } from 'react'
-import { ethers } from 'ethers'
-
-const CONTRACT_ADDRESS = '0x85e774FBab2cE074D8A292fDF758a3d291Dcf7ad'
-const PINATA_GATEWAY   = 'rose-casual-warbler-710.mypinata.cloud'
-const AMOY_CHAIN_ID    = '0x13882'
-
-const CONTRACT_ABI = [
-  // mintKopiNFT v2 — 9 parameter (tambah hashFoto)
-  {
-    inputs: [
-      { name: 'petani',           type: 'address' },
-      { name: 'cid',              type: 'string'  },
-      { name: 'metadataURI',      type: 'string'  },
-      { name: 'jenisKopi',        type: 'string'  },
-      { name: 'grade',            type: 'string'  },
-      { name: 'namaPetani',       type: 'string'  },
-      { name: 'lokasiKebun',      type: 'string'  },
-      { name: 'confidencePersen', type: 'uint256' },
-      { name: 'hashFoto',         type: 'string'  }, // ← BARU di v2
-    ],
-    name: 'mintKopiNFT',
-    outputs: [{ name: '', type: 'uint256' }],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  // cekHashFoto — BARU di v2 (anti-duplikat)
-  {
-    inputs: [{ name: 'hashFoto', type: 'string' }],
-    name: 'cekHashFoto',
-    outputs: [
-      { name: 'sudahAda',    type: 'bool'    },
-      { name: 'tokenIdLama', type: 'uint256' },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  // getDataKopi v2 — tambah hashFoto di output
-  {
-    inputs: [{ name: 'tokenId', type: 'uint256' }],
-    name: 'getDataKopi',
-    outputs: [
-      { name: 'ipfsCID',     type: 'string'  },
-      { name: 'jenisKopi',   type: 'string'  },
-      { name: 'grade',       type: 'string'  },
-      { name: 'namaPetani',  type: 'string'  },
-      { name: 'lokasiKebun', type: 'string'  },
-      { name: 'timestamp',   type: 'uint256' },
-      { name: 'confidence',  type: 'uint256' },
-      { name: 'hashFoto',    type: 'string'  },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  // totalNFT
-  {
-    inputs: [],
-    name: 'totalNFT',
-    outputs: [{ name: '', type: 'uint256' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
+const INFO_KOPI = [
+  { emoji:'🌋', judul:'Arabika Natural Ijen',      isi:'Ditanam di lereng Gunung Ijen, Bondowoso pada ketinggian 900–1.500 mdpl. Terkenal dengan cita rasa fruity dan wine-like yang khas dari proses natural.' },
+  { emoji:'🫘', judul:'Arabika Peaberry',           isi:'Biji kopi bulat tunggal hasil mutasi alami. Rasa lebih terkonsentrasi, aroma floral kuat, body lebih ringan dibanding biji normal.' },
+  { emoji:'🧪', judul:'Arabika Anaerob Carbonic',   isi:'Diproses fermentasi anaerobik karbonasi. Menghasilkan rasa eksotis, kompleks — buah tropis dengan sparkling sensation yang unik.' },
+  { emoji:'🍊', judul:'Arabika Orange Bourbon',     isi:'Varietas Bourbon langka berwarna oranye. Rasa manis, citrus, honey, body sedang-tebal. Sangat diminati di pasar specialty coffee dunia.' },
+  { emoji:'🏔️', judul:'Arabika Blue Mountain',     isi:'Varietas premium adaptasi Jamaica. Rasa ringan, bersih, balance sempurna, tidak pahit. Salah satu kopi paling prestigious di dunia.' },
 ]
-
-const GRADE_STYLE = {
-  'Premium': { bg:'#FEF9C3', border:'#EAB308', text:'#713F12', emoji:'🏆' },
-  'Grade A': { bg:'#EFF6FF', border:'#3B82F6', text:'#1E3A8A', emoji:'⭐' },
-  'Grade B': { bg:'#F0FDF4', border:'#22C55E', text:'#14532D', emoji:'✅' },
-  'Grade C': { bg:'#F9FAFB', border:'#9CA3AF', text:'#374151', emoji:'⚠️' },
-}
-
-const INFO_KOPI = {
-  id: [
-    { emoji:'🌋', judul:'Arabika Natural Ijen',      isi:'Ditanam di lereng Ijen Mountain, Bondowoso pada ketinggian 900–1.500 mdpl. Terkenal dengan cita rasa fruity dan wine-like.' },
-    { emoji:'🫘', judul:'Arabika Peaberry',           isi:'Biji kopi bulat tunggal hasil mutasi alami. Rasa lebih terkonsentrasi, aroma floral kuat.' },
-    { emoji:'🧪', judul:'Arabika Anaerob Carbonic',   isi:'Diproses fermentasi anaerobik karbonasi di Ijen Mountain. Rasa eksotis, kompleks — sparkling sensation.' },
-    { emoji:'🍊', judul:'Arabika Orange Bourbon',     isi:'Varietas Bourbon langka berwarna oranye dari Ijen Mountain. Rasa manis, citrus, honey.' },
-    { emoji:'🏔️', judul:'Arabika Blue Mountain', isi:'Adaptasi varietas premium Jamaica di Ijen Mountain. Rasa ringan, bersih, tidak bitter.' },
-  ],
-  en: [
-    { emoji:'🌋', judul:'Arabica Natural Ijen',       isi:'Grown on the slopes of Ijen Mountain, Bondowoso at 900–1,500 masl. Distinctive fruity and wine-like flavor.' },
-    { emoji:'🫘', judul:'Arabica Peaberry',            isi:'A naturally occurring single-bean mutation. Concentrated flavor, intense floral aroma.' },
-    { emoji:'🧪', judul:'Arabica Anaerobic Carbonic',  isi:'Processed with anaerobic carbonic maceration on Ijen Mountain. Exotic, complex — sparkling sensation.' },
-    { emoji:'🍊', judul:'Arabica Orange Bourbon',      isi:'A rare orange-fruited Bourbon variety from Ijen Mountain. Sweet citrus and honey notes.' },
-    { emoji:'🏔️', judul:'Arabica Blue Mountain', isi:'Premium Jamaican variety adapted at Ijen Mountain. Light, clean, non-bitter taste.' },
-  ]
-}
-
 
 const CARA_PAKAI = [
   { no:'01', judul:'Upload Foto',        isi:'Klik area foto di kanan, pilih gambar biji kopi dari galeri HP atau ambil langsung dengan kamera.' },
@@ -202,63 +87,6 @@ const CARA_PAKAI = [
   { no:'05', judul:'Sertifikat Digital', isi:'NFT tersimpan permanen di blockchain sebagai bukti keaslian dan kualitas kopi Anda.' },
 ]
 
-// ── KAMUS TERJEMAHAN ──
-const T = {
-  id: {
-    brand_sub:'Universitas Jember · Riset Scopus Q1 · v3 Verified · Acc 99.78%',
-    hero_sub:'5 Varietas Unggulan Terverifikasi AI',
-    cara_title:'Cara Penggunaan',
-    form_title:'Klasifikasi Biji Kopi dengan AI',
-    form_foto:'Foto Biji Kopi',form_petani:'Data Petani',
-    form_nama:'Nama Petani',form_nama_ph:'Contoh: Pak Ahmad Fauzi',
-    form_lokasi:'Lokasi Kebun',form_lokasi_ph:'Contoh: Desa Tugusari, Bondowoso, Jawa Timur',
-    form_up_txt:'Klik untuk upload foto',form_up_sub:'Dari kamera HP atau galeri · JPG, PNG',
-    btn_cnn:'Klasifikasi dengan CNN',btn_mint:'Mint NFT Sertifikat',
-    btn_new:'Klasifikasi Kopi Baru',btn_proc:'Memproses...',
-    hasil_title:'Hasil Klasifikasi AI',
-    nft_title:'NFT Berhasil Di-mint!',nft_token:'Token ID NFT Anda',
-    nft_poly:'Lihat di Polygonscan',nft_ipfs:'Lihat Foto di IPFS',
-    nft_add:'Tambahkan NFT ke Wallet',nft_added:'NFT Berhasil Ditambahkan!',
-    fp_title:'Fingerprint SHA-256 Foto',fp_desc:'Hash unik ini membuktikan keaslian foto Anda di blockchain',
-    sec_title:'Security Architecture',tech_title:'Teknologi yang Digunakan',
-    ood_title:'Gambar Tidak Dapat Diklasifikasi',ood_sub:'Bukan biji kopi Arabika yang valid',
-    ood_why:'❌ Mengapa ditolak?',ood_desc:'Model CNN RepViT-M1.1 tidak mendeteksi ciri-ciri biji kopi. Sistem menolak gambar yang tidak sesuai.',
-    ood_guide:'✅ Panduan foto yang benar:',
-    ood_guides:['Foto biji kopi Arabika (belum digiling)','Pencahayaan cukup','Latar belakang polos','Fokus jelas','Top-view lebih baik','Hindari foto minuman/bubuk kopi'],
-    ood_btn:'📷 Upload Foto yang Benar',ood_varieties:'5 Varietas yang dapat diidentifikasi:',
-    dup_title:'FOTO TERDETEKSI DUPLIKAT!',dup_desc:'Foto ini IDENTIK dengan NFT',
-    dup_already:'yang sudah ada di blockchain!',dup_view:'Lihat NFT Asli di Polygonscan',
-    dup_cannot:'Foto ini tidak dapat di-mint ulang',
-    wallet_con:t('wallet_con'),adding_nft:'⏳ Menambahkan...',
-  },
-  en: {
-    brand_sub:'Universitas Jember · Scopus Q1 Research · v3 Verified · Acc 99.78%',
-    hero_sub:'5 Premium Varieties — AI-Verified Certification',
-    cara_title:'How to Use',
-    form_title:'Coffee Bean Classification with AI',
-    form_foto:'Coffee Bean Photo',form_petani:'Farmer Data',
-    form_nama:'Farmer Name',form_nama_ph:'Example: Mr. Ahmad Fauzi',
-    form_lokasi:'Farm Location',form_lokasi_ph:'Example: Tugusari Village, Bondowoso, East Java',
-    form_up_txt:'Click to upload photo',form_up_sub:'From camera or gallery · JPG, PNG',
-    btn_cnn:'Classify with CNN',btn_mint:'Mint NFT Certificate',
-    btn_new:'Classify New Coffee',btn_proc:'Processing...',
-    hasil_title:'AI Classification Result',
-    nft_title:'NFT Successfully Minted!',nft_token:'Your NFT Token ID',
-    nft_poly:'View on Polygonscan',nft_ipfs:'View Photo on IPFS',
-    nft_add:'Add NFT to Wallet',nft_added:'NFT Added to Wallet!',
-    fp_title:'SHA-256 Photo Fingerprint',fp_desc:"This unique hash proves your photo's authenticity on the blockchain",
-    sec_title:'Security Architecture',tech_title:'Technologies Used',
-    ood_title:'Image Cannot Be Classified',ood_sub:'Not a valid Arabica coffee bean image',
-    ood_why:'❌ Why was it rejected?',ood_desc:'The RepViT-M1.1 CNN model did not detect Arabica characteristics. The system rejects non-conforming images.',
-    ood_guide:'✅ Guidelines for a correct photo:',
-    ood_guides:['Arabica coffee beans (unground)','Adequate lighting','Plain background','Clear focus','Top-view preferred','Avoid coffee beverages/powder'],
-    ood_btn:'📷 Upload a Correct Photo',ood_varieties:'5 identifiable varieties:',
-    dup_title:'DUPLICATE PHOTO DETECTED!',dup_desc:'This photo is IDENTICAL to NFT',
-    dup_already:'which already exists on the blockchain!',dup_view:'View Original NFT on Polygonscan',
-    dup_cannot:'This photo cannot be minted again',
-    wallet_con:t('wallet_con'),adding_nft:'⏳ Adding...',
-  }
-}
 
 // ============================================================
 // BLOCKCHAIN DOODLE BACKGROUND
@@ -466,10 +294,9 @@ export default function HomePage() {
   const [fotoHash, setFotoHash]     = useState('')
   const [duplikat, setDuplikat]     = useState(null)
   const [verifying, setVerifying]   = useState(false)
+  const [bukanKopi, setBukanKopi]   = useState(false)
   const [walletAddr, setWalletAddr] = useState('')
   const [walletLoading, setWalletLoading] = useState(false)
-  const [lang, setLang]             = useState('id')
-  const [mounted, setMounted]       = useState(false)
   const fileRef = useRef()
 
   // ============================================================
@@ -600,7 +427,7 @@ export default function HomePage() {
     if (!file) return
     setFoto(file); setPreview(URL.createObjectURL(file))
     setHasilCNN(null); setTxHash(''); setCidFoto(''); setErrorMsg('')
-    setStatus(''); setDuplikat(null); setFotoHash('')
+    setStatus(''); setDuplikat(null); setFotoHash(''); setBukanKopi(false)
 
     // Hitung hash foto otomatis saat dipilih
     hitungHashFoto(file).then(hash => {
@@ -610,14 +437,83 @@ export default function HomePage() {
   }
 
   function parseOutput(text) {
-    const jenisMatch = text.match(/JENIS KOPI\s*:\s*(.+)/i)
-    const confMatch  = text.match(/CONFIDENCE\s*:\s*([\d.]+)%/i)
-    const gradeMatch = text.match(/GRADE\s*:\s*([A-Za-z\s]+)/i)
-    const jenis      = jenisMatch?.[1]?.trim() || 'Tidak Terdeteksi'
+    if (!text || text.trim().length === 0) {
+      return { bukan_kopi: true, alasan: 'Output kosong dari model', raw: text }
+    }
+
+    console.log('parseOutput text:', text.substring(0, 300))
+
+    // ══════════════════════════════════════════════════════
+    // LAYER 1: Cek apakah output adalah penolakan eksplisit
+    // Hanya tolak jika kata kunci penolakan ADA di teks
+    // ══════════════════════════════════════════════════════
+    const REJECTION_KEYWORDS = [
+      'BUKAN BIJI KOPI',
+      'GAMBAR TIDAK DAPAT DIKLASIFIKASI',
+      'CONFIDENCE TERLALU RENDAH',
+      'MODEL TIDAK YAKIN',
+    ]
+    // Cek kata kunci penolakan
+    const isExplicitRejection = REJECTION_KEYWORDS.some(kw => text.toUpperCase().includes(kw.toUpperCase()))
+
+    if (isExplicitRejection) {
+      const confMatch = text.match(/Confidence[^:]*:\s*([\d.]+)%/i)
+      const confVal   = parseFloat(confMatch?.[1]) || 0
+      const alasanMatch = text.match(/Alasan[^:]*:\s*(.+)/i)
+      const alasan    = alasanMatch?.[1]?.trim() || 'Model menolak gambar'
+      return { bukan_kopi: true, confidence: confVal, alasan, raw: text }
+    }
+
+    // ══════════════════════════════════════════════════════
+    // LAYER 2: Parse hasil klasifikasi kopi yang berhasil
+    // Support format lama (JENIS KOPI) dan format baru (nama_indo)
+    // ══════════════════════════════════════════════════════
+    // Coba berbagai format output
+    const jenisMatch = (
+      text.match(/JENIS KOPI\s*:\s*(.+)/i) ||
+      text.match(/☕ JENIS KOPI\s*:\s*(.+)/i)
+    )
+    const confMatch = (
+      text.match(/CONFIDENCE\s*:\s*([\d.]+)%/i) ||
+      text.match(/📊 CONFIDENCE\s*:\s*([\d.]+)%/i)
+    )
+    const gradeMatch = (
+      text.match(/GRADE\s*:\s*([A-Za-z][A-Za-z\s]+)/i) ||
+      text.match(/[🏆⭐✅⚠️]\s*GRADE\s*:\s*([A-Za-z][A-Za-z\s]+)/i)
+    )
+
+    const jenis      = jenisMatch?.[1]?.trim() || ''
     const confidence = parseFloat(confMatch?.[1]) || 0
-    let grade        = gradeMatch?.[1]?.trim()?.replace(/[^\w\s]/g,'').trim() || 'Grade B'
+    let   grade      = gradeMatch?.[1]?.trim()?.replace(/[^\w\s]/g,'').trim() || 'Grade B'
     if (!GRADE_STYLE[grade]) grade = 'Grade B'
-    return { jenis_kopi: jenis, confidence, grade }
+
+    console.log('Parsed → jenis:', jenis, 'conf:', confidence, 'grade:', grade)
+
+    // Jika tidak ada jenis kopi yang terdeteksi sama sekali → error parsing
+    if (!jenis && confidence === 0) {
+      console.warn('Parsing gagal, raw text:', text.substring(0, 200))
+      // Jangan langsung tolak — mungkin format output berubah
+      // Coba cari tanda-tanda positif dalam teks
+      const hasPositiveSign = text.includes('Arabica') || text.includes('Arabika') || text.includes('Premium') || text.includes('Grade')
+      if (!hasPositiveSign) {
+        return { bukan_kopi: true, alasan: 'Format output tidak dikenali', raw: text }
+      }
+    }
+
+    // ══════════════════════════════════════════════════════
+    // LAYER 3: Safety net confidence — HANYA jika confidence benar-benar ada
+    // Threshold 40% sangat konservatif untuk hindari false reject
+    // ══════════════════════════════════════════════════════
+    if (confidence > 0 && confidence < 40) {
+      return {
+        bukan_kopi: true,
+        confidence,
+        alasan: `confidence terlalu rendah (${confidence.toFixed(1)}% < 40%)`,
+        raw: text
+      }
+    }
+
+    return { bukan_kopi: false, jenis_kopi: jenis, confidence, grade }
   }
 
   async function klasifikasiCNN() {
@@ -699,21 +595,56 @@ export default function HomePage() {
       const resRes = await fetch(`${BASE}/gradio_api/call/klasifikasi_kopi/${event_id}`)
       if (!resRes.ok) throw new Error(`Hasil gagal: ${resRes.status}`)
 
-      const reader = resRes.body.getReader(); const dec = new TextDecoder()
+      // Baca SSE response dari Gradio dengan robust parsing
+      const reader = resRes.body.getReader()
+      const dec    = new TextDecoder()
       let out = ''; let buf = ''
+
       while (true) {
-        const { done, value } = await reader.read(); if (done) break
-        buf += dec.decode(value, { stream:true })
-        const lines = buf.split('\n'); buf = lines.pop() || ''
+        const { done, value } = await reader.read()
+        if (done) break
+        buf += dec.decode(value, { stream: true })
+        const lines = buf.split('\n')
+        buf = lines.pop() || ''
+
         for (const line of lines) {
-          if (line.startsWith('data:')) {
-            const raw = line.slice(5).trim(); if (raw==='[DONE]') continue
-            try { const arr=JSON.parse(raw); if(Array.isArray(arr)&&typeof arr[0]==='string') out=arr[0] } catch {}
-          }
+          if (!line.startsWith('data:')) continue
+          const raw = line.slice(5).trim()
+          if (!raw || raw === '[DONE]') continue
+          try {
+            const parsed = JSON.parse(raw)
+            // Gradio bisa return: [string] atau [{...}] atau string langsung
+            if (Array.isArray(parsed)) {
+              if (typeof parsed[0] === 'string' && parsed[0].length > 0) {
+                out = parsed[0]
+              } else if (parsed[0] && typeof parsed[0] === 'object') {
+                // Kadang Gradio wrap dalam object
+                out = JSON.stringify(parsed[0])
+              }
+            } else if (typeof parsed === 'string') {
+              out = parsed
+            }
+          } catch (_) {}
         }
       }
-      if (!out) throw new Error('Tidak ada output dari CNN')
-      setHasilCNN(parseOutput(out)); setStatus('')
+
+      console.log('Raw output dari HF:', out?.substring(0, 200))
+
+      if (!out || out.trim().length === 0) {
+        throw new Error('Tidak ada output dari CNN — cek Hugging Face Space')
+      }
+      const parsed = parseOutput(out)
+      console.log('CNN parsed:', parsed)
+      if (parsed && parsed.bukan_kopi) {
+        setBukanKopi(true)
+        setHasilCNN(null)
+      } else if (parsed) {
+        setBukanKopi(false)
+        setHasilCNN(parsed)
+      } else {
+        setErrorMsg('Gagal parsing hasil CNN')
+      }
+      setStatus('')
     } catch(err) { setErrorMsg(`Error: ${err.message}`); setStatus('') }
     finally { setLoading(false) }
   }
@@ -751,11 +682,33 @@ export default function HomePage() {
       const provider = new ethers.BrowserProvider(window.ethereum)
       const signer   = await provider.getSigner()
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
+      // ── Get current gas price dari network + safety margin ──
+      let gasOverrides = {}
+      try {
+        const feeData = await provider.getFeeData()
+        // Polygon Amoy minimum 25 Gwei. Pakai max(networkGas, 30 Gwei) untuk safety
+        const minGas = ethers.parseUnits('30', 'gwei')
+        const networkGas = feeData.gasPrice || feeData.maxFeePerGas || minGas
+        const finalGas = networkGas < minGas ? minGas : networkGas
+        gasOverrides = {
+          maxFeePerGas:         finalGas,
+          maxPriorityFeePerGas: finalGas,
+        }
+        console.log('Gas price set to:', ethers.formatUnits(finalGas, 'gwei'), 'Gwei')
+      } catch(e) {
+        // Fallback: 30 Gwei manual
+        gasOverrides = {
+          maxFeePerGas:         ethers.parseUnits('30', 'gwei'),
+          maxPriorityFeePerGas: ethers.parseUnits('30', 'gwei'),
+        }
+      }
+
       const tx = await contract.mintKopiNFT(
         address, ipfsData.cidFoto, `ipfs://${ipfsData.cidMetadata}`,
         hasilCNN.jenis_kopi, hasilCNN.grade, namaPetani, lokasi,
         Math.round(hasilCNN.confidence),
-        fotoHash    // ← SHA-256 hash foto — anti-duplikat v2
+        fotoHash,    // ← SHA-256 hash foto — anti-duplikat v2
+        gasOverrides // ← override gas price untuk Polygon Amoy
       )
       setStatus('Menunggu konfirmasi blockchain...')
       const receipt = await tx.wait()
@@ -860,12 +813,10 @@ export default function HomePage() {
     }
   }
 
-  useEffect(()=>{ setMounted(true) },[])
-  const t=(key)=>mounted?(T[lang]?.[key]??key):(T['id']?.[key]??key)
-  const tArr=(key)=>mounted?(T[lang]?.[key]??[]):(T['id']?.[key]??[])
-  if(!mounted) return null
-
-  const gs = hasilCNN ? (GRADE_STYLE[hasilCNN.grade] || GRADE_STYLE['Grade B']) : null
+  // Safe null check untuk gs — hindari crash saat hasilCNN null
+  const gs = (hasilCNN && !hasilCNN.bukan_kopi)
+    ? (GRADE_STYLE[hasilCNN.grade] || GRADE_STYLE['Grade B'])
+    : GRADE_STYLE['Grade B']
 
   return (
     <>
@@ -974,9 +925,39 @@ export default function HomePage() {
         .hdr-sub{font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2.5px;text-transform:uppercase;margin-top:3px}
         .hdr-badges{display:flex;gap:7px;flex-wrap:wrap}
         .bdg{padding:4px 10px;border-radius:4px;font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;font-family:'DM Mono',monospace}
-        .bdg-g{background:rgba(201,168,76,.12);color:var(--gold-light);border:1px solid rgba(201,168,76,.25)}
-        .bdg-gr{background:rgba(76,175,80,.1);color:#A5D6A7;border:1px solid rgba(76,175,80,.2)}
-        .bdg-b{background:rgba(96,165,250,.12);color:#93C5FD;border:1px solid rgba(96,165,250,.2)}
+        .bdg-g{
+          background:linear-gradient(135deg,#1A1A2E,#16213E);color:#FCD34D;
+          border:1px solid rgba(252,211,77,.5);font-weight:700;
+          text-shadow:0 1px 2px rgba(0,0,0,.4);
+          box-shadow:0 2px 12px rgba(252,211,77,.15),inset 0 1px 0 rgba(252,211,77,.1);
+        }
+        .bdg-gr{
+          background:linear-gradient(135deg,#0D2818,#1B5E20);color:#86EFAC;
+          border:1px solid rgba(134,239,172,.4);font-weight:700;
+          text-shadow:0 1px 2px rgba(0,0,0,.4);
+          box-shadow:0 2px 12px rgba(46,125,50,.25),inset 0 1px 0 rgba(134,239,172,.1);
+        }
+        .bdg-b{
+          background:linear-gradient(135deg,#0A2342,#0D47A1);color:#93C5FD;
+          border:1px solid rgba(147,197,253,.4);font-weight:700;
+          text-shadow:0 1px 2px rgba(0,0,0,.4);
+          box-shadow:0 2px 12px rgba(13,71,161,.25),inset 0 1px 0 rgba(147,197,253,.1);
+        }
+        .bdg-verified{
+          background:linear-gradient(135deg,#064E3B,#047857);color:#A7F3D0;
+          border:1px solid rgba(167,243,208,.5);font-weight:800;
+          text-shadow:0 1px 2px rgba(0,0,0,.5);
+          padding:5px 11px;border-radius:4px;
+          font-size:9px;letter-spacing:1.5px;text-transform:uppercase;
+          font-family:'DM Mono',monospace;
+          display:inline-flex;align-items:center;gap:4px;
+          box-shadow:0 2px 12px rgba(4,120,87,.3);
+          animation:verifiedPulse 3s ease-in-out infinite;
+        }
+        @keyframes verifiedPulse{
+          0%,100%{box-shadow:0 2px 12px rgba(4,120,87,.3)}
+          50%{box-shadow:0 2px 16px rgba(4,120,87,.5)}
+        }
 
         /* WALLET BUTTON */
         .hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -999,18 +980,32 @@ export default function HomePage() {
 
         /* CARDS */
         .card{
-          background:#FFFFFF;border-radius:3px;
-          border:1px solid rgba(200,210,190,.5);
+          background:rgba(255,255,255,.97);
+          backdrop-filter:blur(10px);
+          -webkit-backdrop-filter:blur(10px);
+          border-radius:6px;
+          border:1px solid rgba(200,210,190,.4);
           border-top:3px solid var(--green-600);
-          box-shadow:0 2px 24px rgba(12,31,12,.06);
-          overflow:hidden;margin-bottom:20px;
-          transition:all .25s ease;
+          box-shadow:
+            0 4px 32px rgba(12,31,12,.05),
+            0 1px 3px rgba(12,31,12,.04),
+            inset 0 1px 0 rgba(255,255,255,.7);
+          overflow:hidden;margin-bottom:22px;
+          transition:all .3s cubic-bezier(.4,0,.2,1);
           position:relative;
         }
         .card:hover{
-          box-shadow:0 8px 40px rgba(12,31,12,.1);
-          transform:translateY(-1px);
+          box-shadow:
+            0 12px 48px rgba(12,31,12,.1),
+            0 4px 12px rgba(12,31,12,.06),
+            inset 0 1px 0 rgba(255,255,255,.9);
+          transform:translateY(-2px);
           border-top-color:var(--gold);
+        }
+        .card::after{
+          content:'';position:absolute;top:0;left:0;right:0;height:60px;
+          background:linear-gradient(180deg,rgba(255,255,255,.4),transparent);
+          pointer-events:none;
         }
 
         /* HERO CARD */
@@ -1081,8 +1076,19 @@ export default function HomePage() {
         .inp:focus{border-bottom-color:var(--green-600);background:transparent}
         .inp::placeholder{color:#D1D5DB}
 
-        .btn-go{width:100%;padding:14px;background:var(--green-800);color:#FFF;font-size:12px;font-weight:600;border:none;border-radius:2px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:1.5px;text-transform:uppercase;position:relative;overflow:hidden}
-        .btn-go::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(201,168,76,.08),transparent);transform:translateX(-100%);transition:transform .4s ease}
+        .btn-go{
+          width:100%;padding:16px 20px;
+          background:linear-gradient(135deg,#1B5E20 0%,#2E7D32 50%,#43A047 100%) !important;
+          color:#FFFFFF !important;font-size:14px;font-weight:800;
+          border:none;border-radius:12px;cursor:pointer;
+          transition:all .25s;font-family:'DM Sans',sans-serif;
+          display:flex;align-items:center;justify-content:center;gap:10px;
+          letter-spacing:1px;text-transform:uppercase;
+          position:relative;overflow:hidden;
+          text-shadow:0 2px 4px rgba(0,0,0,.4);
+          box-shadow:0 4px 16px rgba(46,125,50,.45),inset 0 1px 0 rgba(255,255,255,.2);
+        }
+        .btn-go::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);transform:translateX(-100%);transition:transform .5s ease}
         .btn-go:hover:not(:disabled)::before{transform:translateX(100%)}
         .btn-go:hover:not(:disabled){background:var(--green-700);box-shadow:0 4px 20px rgba(20,41,15,.25)}
         .btn-go:disabled{background:#D1D5DB;cursor:not-allowed}
@@ -1121,6 +1127,111 @@ export default function HomePage() {
         .mg-t-5{margin-top:20px}
         .sec-code{font-family:'DM Mono',monospace;font-size:10px;background:#F8FAFC;border:1px solid #E2E8F0;border-left:3px solid #4CAF50;border-radius:2px;padding:8px 10px;color:#374151;line-height:1.8;margin-top:6px}
         @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+
+        /* ═══════════════════════════════════
+           OVERRIDE — SEMUA TOMBOL KONTRAS
+           ═══════════════════════════════════ */
+        .btn-go,.btn-go *{color:#FFFFFF !important;font-weight:800 !important;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+        .btn-mint,.btn-mint *{color:#FFFFFF !important;font-weight:800 !important;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+        .btn-a,.btn-a *{font-weight:800 !important}
+        .a-blue,.a-blue *{color:#FFFFFF !important;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+        .a-orange,.a-orange *{color:#FFFFFF !important;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+        .a-ghost{
+          background:linear-gradient(135deg,#37474F,#455A64) !important;
+          border:none !important;
+          color:#FFFFFF !important;
+          box-shadow:0 4px 14px rgba(55,71,79,.4) !important;
+        }
+        .a-ghost *{color:#FFFFFF !important;text-shadow:0 1px 2px rgba(0,0,0,.3) !important}
+        .a-ghost:hover{background:linear-gradient(135deg,#263238,#37474F) !important}
+
+        /* Wallet button — oranye terang */
+        .btn-wallet-off{
+          background:linear-gradient(135deg,#F57C00,#FB8C00) !important;
+          color:#FFFFFF !important;
+          border:1.5px solid rgba(255,255,255,.5) !important;
+          font-weight:800 !important;
+          text-shadow:0 1px 2px rgba(0,0,0,.25) !important;
+          box-shadow:0 3px 12px rgba(245,124,0,.4) !important;
+        }
+        .btn-wallet-off:hover{
+          background:linear-gradient(135deg,#E65100,#F57C00) !important;
+          transform:translateY(-1px);
+        }
+
+        /* Tombol disabled — tetap kontras */
+        .btn-go:disabled,.btn-mint:disabled{
+          background:linear-gradient(135deg,#757575,#9E9E9E) !important;
+          color:#FFFFFF !important;
+          opacity:1 !important;
+        }
+
+
+
+        /* ═══════════════════════════════════
+           SECURITY SECTION — typography elegan
+           ═══════════════════════════════════ */
+        .sec-item{padding:18px 0;border-bottom:1px solid rgba(0,0,0,.05)}
+        .sec-item:last-child{border-bottom:none}
+        .sec-item-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px}
+        .sec-badge{
+          display:inline-flex;align-items:center;gap:6px;
+          padding:5px 12px;border-radius:20px;
+          font-size:11px;font-weight:600;
+          font-family:'DM Sans',sans-serif;
+          border:1px solid;letter-spacing:.2px;
+        }
+        .sec-status{
+          display:inline-flex;align-items:center;gap:5px;
+          font-family:'DM Mono',monospace;
+          font-size:10px;font-weight:600;color:#16A34A;
+          letter-spacing:1px;text-transform:uppercase;
+          padding:3px 9px;background:#F0FDF4;
+          border:1px solid #BBF7D0;border-radius:12px;
+        }
+        .sec-status::before{
+          content:'';width:6px;height:6px;
+          background:#22C55E;border-radius:50%;
+          box-shadow:0 0 6px #22C55E;
+          animation:blink 2s infinite;
+        }
+        .sec-title{
+          font-family:'Cormorant Garamond',serif !important;
+          font-size:18px !important;
+          font-weight:700 !important;
+          color:#0C1F0C !important;
+          line-height:1.3;
+          margin-bottom:8px !important;
+          letter-spacing:.2px;
+        }
+        .sec-desc{
+          font-family:'DM Sans',sans-serif !important;
+          font-size:14px !important;
+          line-height:1.7 !important;
+          color:#4B5563 !important;
+          margin-bottom:10px !important;
+          font-weight:400;
+        }
+        .sec-code{
+          font-family:'DM Mono',monospace !important;
+          font-size:11px !important;
+          background:#F8FAFC !important;
+          border:1px solid #E2E8F0 !important;
+          border-left:3px solid var(--green-500) !important;
+          border-radius:6px !important;
+          padding:10px 14px !important;
+          color:#1F2937 !important;
+          line-height:1.7 !important;
+          margin-top:8px;
+          overflow-x:auto;
+        }
+        .sec-divider{
+          height:1px;
+          background:linear-gradient(90deg,transparent,rgba(0,0,0,.08),transparent);
+          margin:0;border:none;
+        }
+
       `}</style>
 
       {/* HEADER */}
@@ -1143,17 +1254,15 @@ export default function HomePage() {
             </div>
             <div className="hdr-text">
               <div className="hdr-title">Kopi Arabika <span>Web3</span></div>
-              <div className="hdr-sub">Universitas Jember · Riset Scopus Q1</div>
+              <div className="hdr-sub">Universitas Jember · Riset Scopus Q1 · v3 Verified · Acc 99.78%</div>
             </div>
           </div>
           <div className="hdr-right">
             <div className="hdr-badges">
-              <span className="bdg bdg-g">🏆 RepViT-M1.1 CNN</span>
+              <span className="bdg bdg-g">🏆 RepViT-M1.1 · 6-Class · 99.78%</span>
               <span className="bdg bdg-gr">⛓️ Polygon Amoy</span>
               <span className="bdg bdg-b">📦 IPFS Pinata</span>
             </div>
-            <button onClick={()=>setLang(l=>l==='id'?'en':'id')} style={{display:'flex',alignItems:'center',gap:5,padding:'7px 13px',borderRadius:20,background:'rgba(255,255,255,.12)',border:'1.5px solid rgba(255,255,255,.3)',color:'#FFF',fontSize:12,fontWeight:700,cursor:'pointer',marginRight:6}}>{lang==='id'?'🇬🇧 EN':'🇮🇩 ID'}</button>
-
             <button
               className={`btn-wallet ${walletAddr ? 'btn-wallet-on' : 'btn-wallet-off'} ${walletLoading ? 'w-loading' : ''}`}
               onClick={handleConnectWallet}
@@ -1181,15 +1290,15 @@ export default function HomePage() {
             <div className="hero-title">Kopi Arabika<br/>Nusantara</div>
             <div className="hero-sub">5 varietas unggulan terverifikasi AI</div>
             <div className="tabs">
-              {INFO_KOPI[lang||'id'].map((k,i) => (
+              {INFO_KOPI.map((k,i) => (
                 <button key={i} className={`tab ${activeTab===i?'on':''}`} onClick={()=>setActiveTab(i)}>{k.emoji}</button>
               ))}
             </div>
           </div>
           <div className="tab-body-wrap" style={{background:'#FFFFFF',borderRadius:'0 0 18px 18px',padding:'22px',marginTop:'-18px',boxShadow:'0 2px 16px rgba(0,0,0,.06)',border:'1px solid #E4E4DC',borderTop:'none',marginBottom:'20px'}}>
-            <div className="tab-emoji">{INFO_KOPI[lang||'id'][activeTab].emoji}</div>
-            <div className="tab-title">{INFO_KOPI[lang||'id'][activeTab].judul}</div>
-            <div className="tab-text">{INFO_KOPI[lang||'id'][activeTab].isi}</div>
+            <div className="tab-emoji">{INFO_KOPI[activeTab].emoji}</div>
+            <div className="tab-title">{INFO_KOPI[activeTab].judul}</div>
+            <div className="tab-text">{INFO_KOPI[activeTab].isi}</div>
             <div className="stats">
               <div className="stat"><div className="stat-v">900–1500</div><div className="stat-k">Mdpl</div></div>
               <div className="stat"><div className="stat-v">Specialty</div><div className="stat-k">Kategori</div></div>
@@ -1202,10 +1311,10 @@ export default function HomePage() {
           <div className="card">
             <div className="card-head">
               <div className="head-ico">📖</div>
-              <div className="head-title">{t('cara_title')}</div>
+              <div className="head-title">Cara Penggunaan</div>
             </div>
             <div className="cara-list">
-              {CARA_PAKAI[lang||'id'].map((c,i)=>(
+              {CARA_PAKAI.map((c,i)=>(
                 <div key={i} className="cara-item">
                   <div className="cara-no">{c.no}</div>
                   <div>
@@ -1349,7 +1458,7 @@ export default function HomePage() {
               <div className="sec-divider"/>
 
               {/* METAMASK */}
-              <div className="sec-item" style={{marginBottom:0}}>
+              <div className="sec-item">
                 <div className="sec-item-head">
                   <div className="sec-badge" style={{background:'#FFFBEB',borderColor:'#FDE68A',color:'#92400E'}}>
                     <span>🦊</span> Wallet Security
@@ -1358,11 +1467,38 @@ export default function HomePage() {
                 </div>
                 <div className="sec-title">MetaMask Transaction Signing</div>
                 <div className="sec-desc">
-                  Semua transaksi minting ditandatangani secara kriptografis oleh MetaMask menggunakan private key pengguna yang tidak pernah meninggalkan perangkat. Smart contract hanya bisa dipanggil oleh owner wallet yang terotorisasi (onlyOwner modifier), mencegah akses tidak sah.
+                  Semua transaksi minting ditandatangani secara kriptografis oleh MetaMask menggunakan private key pengguna yang tidak pernah meninggalkan perangkat. Smart contract V3 mendukung permissionless minting — setiap petani dapat mensertifikasi kopi mereka sendiri dengan tetap mencatat wallet address untuk audit trail.
                 </div>
                 <div className="sec-code">
-                  ECDSA signature · onlyOwner modifier<br/>
-                  Private key never leaves device
+                  ECDSA signature · permissionless mint v3<br/>
+                  Private key never leaves device · audit trail
+                </div>
+              </div>
+
+              <div className="sec-divider"/>
+
+              {/* OOD DETECTION — BARU */}
+              <div className="sec-item" style={{marginBottom:0}}>
+                <div className="sec-item-head">
+                  <div className="sec-badge" style={{background:'#FFF7ED',borderColor:'#FED7AA',color:'#C2410C'}}>
+                    <span>🛡️</span> AI Validation
+                  </div>
+                  <div className="sec-status">Active</div>
+                </div>
+                <div className="sec-title">Out-of-Distribution (OOD) Detection — 6-Class Model</div>
+                <div className="sec-desc">
+                  Model CNN RepViT-M1.1 versi terbaru menggunakan <strong>kelas ke-6 eksplisit "Non-Coffee"</strong>
+                  yang dilatih dengan 1.500+ foto bukan biji kopi. Sistem penolakan kini berlapis tiga:
+                  (1) Kelas Non-Coffee terdeteksi langsung → otomatis ditolak,
+                  (2) Confidence &lt;60% → ditolak meskipun bukan kelas Non-Coffee,
+                  (3) Entropy &gt;1.40 → model bingung → ditolak.
+                  Test accuracy model: <strong>99.78%</strong> · OOD recall: <strong>98.7%</strong>.
+                </div>
+                <div className="sec-code">
+                  if (pred_class == Non_Coffee) → DITOLAK (explicit)<br/>
+                  if (confidence &lt; 60%) → DITOLAK (threshold)<br/>
+                  if (entropy &gt; 1.40) → DITOLAK (entropy)<br/>
+                  → 3-layer OOD · Accuracy 99.78%
                 </div>
               </div>
 
@@ -1383,7 +1519,7 @@ export default function HomePage() {
                 </div>
                 <div style={{textAlign:'right'}}>
                   <div style={{fontSize:28,fontWeight:700,color:'#86EFAC',lineHeight:1,fontFamily:'sans-serif'}}>
-                    6/6
+                    7/7
                   </div>
                   <div style={{fontSize:9,color:'#4CAF50',letterSpacing:'1px',textTransform:'uppercase',fontFamily:'sans-serif',marginTop:2}}>
                     Layers Active
@@ -1434,6 +1570,13 @@ export default function HomePage() {
                   desc:'onlyOwner · Private key safe',
                   color:'#FB923C',
                   bg:'rgba(251,146,60,.12)',
+                },
+                {
+                  icon:'🛡️',
+                  label:'OOD Detection (AI Validation)',
+                  desc:'6-class · OOD 98.7% · Acc 99.78%',
+                  color:'#F87171',
+                  bg:'rgba(248,113,113,.12)',
                 },
               ].map((item,i) => (
                 <div key={i} style={{
@@ -1509,12 +1652,19 @@ export default function HomePage() {
                 display:'flex',justifyContent:'space-between',
                 alignItems:'center',
               }}>
-                <div style={{fontSize:9,color:'rgba(255,255,255,.25)',fontFamily:'monospace',letterSpacing:'1px'}}>
-                  CONTRACT v2 · POLYGON AMOY
+                <div style={{fontSize:9,color:'rgba(167,243,208,.6)',fontFamily:'monospace',letterSpacing:'1px',display:'flex',alignItems:'center',gap:6}}>
+                  <span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:'#10B981',boxShadow:'0 0 6px #10B981'}}/>
+                  CONTRACT V3 · VERIFIED
                 </div>
-                <div style={{fontSize:9,color:'rgba(255,255,255,.25)',fontFamily:'monospace'}}>
-                  0x85e7...cf7ad
-                </div>
+                <a
+                  href="https://amoy.polygonscan.com/address/0x5392C2F10d8Dea3e498726BcB8c806E8DA78834b#code"
+                  target="_blank" rel="noreferrer"
+                  style={{fontSize:9,color:'rgba(167,243,208,.6)',fontFamily:'monospace',textDecoration:'none',transition:'color .2s'}}
+                  onMouseOver={(e)=>e.target.style.color='#A7F3D0'}
+                  onMouseOut={(e)=>e.target.style.color='rgba(167,243,208,.6)'}
+                >
+                  0x5392...8834b ↗
+                </a>
               </div>
 
             </div>
@@ -1528,10 +1678,10 @@ export default function HomePage() {
           <div className="card">
             <div className="card-head">
               <div className="head-ico">📸</div>
-              <div className="head-title">{t('form_title')}</div>
+              <div className="head-title">Klasifikasi Biji Kopi dengan AI</div>
             </div>
             <div style={{padding:'20px'}}>
-              <p className="sec-label">{t('form_foto')}</p>
+              <p className="sec-label">Foto Biji Kopi</p>
               <div className="upload-zone mg-b-4" onClick={()=>fileRef.current.click()}>
                 {preview
                   ? <img src={preview} alt="preview" style={{width:'100%',maxHeight:'260px',objectFit:'contain'}}/>
@@ -1540,18 +1690,20 @@ export default function HomePage() {
               </div>
               <input ref={fileRef} type="file" accept="image/*" style={{display:'none'}} onChange={handleFoto} capture="environment"/>
 
-              <p className="sec-label mg-t-5">{t('form_petani')}</p>
+              <p className="sec-label mg-t-5">Data Petani</p>
               <div className="mg-b-3">
                 <label className="lbl">👤 Nama Petani</label>
-                <input className="inp" placeholder={t('form_nama_ph')} value={namaPetani} onChange={e=>setNamaPetani(e.target.value)}/>
+                <input className="inp" placeholder="Contoh: Pak Ahmad Fauzi" value={namaPetani} onChange={e=>setNamaPetani(e.target.value)}/>
               </div>
               <div className="mg-b-4">
                 <label className="lbl">📍 Lokasi Kebun</label>
-                <input className="inp" placeholder={t('form_lokasi_ph')} value={lokasi} onChange={e=>setLokasi(e.target.value)}/>
+                <input className="inp" placeholder="Contoh: Desa Tugusari, Bondowoso, Jawa Timur" value={lokasi} onChange={e=>setLokasi(e.target.value)}/>
               </div>
 
               <button className="btn-go" onClick={klasifikasiCNN} disabled={!foto||loading}>
-                {loading&&!hasilCNN ? <><span>⏳</span>{status||'Memproses...'}</> : <><span>🔍</span>Klasifikasi dengan CNN</>}
+                {loading&&!hasilCNN
+                  ? <span style={{color:'#FFFFFF',fontWeight:800,fontSize:14,textShadow:'0 2px 4px rgba(0,0,0,.4)',letterSpacing:'1px'}}>⏳ {status||'Memproses...'}</span>
+                  : <span style={{color:'#FFFFFF',fontWeight:800,fontSize:14,textShadow:'0 2px 4px rgba(0,0,0,.4)',letterSpacing:'1px'}}>🔍 Klasifikasi dengan CNN</span>}
               </button>
               {errorMsg && <div className="err">{errorMsg}</div>}
 
@@ -1588,12 +1740,129 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* ══ BUKAN BIJI KOPI ══ */}
+          {bukanKopi && !hasilCNN && (
+            <div style={{
+              background:'#FFF3E0',
+              border:'2px solid #FF6D00',
+              borderRadius:14,padding:22,marginBottom:20,
+            }}>
+              {/* Header */}
+              <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:16}}>
+                <div style={{
+                  width:48,height:48,borderRadius:12,
+                  background:'#FF6D00',
+                  display:'flex',alignItems:'center',justifyContent:'center',
+                  fontSize:24,flexShrink:0,
+                }}>🚫</div>
+                <div>
+                  <div style={{
+                    fontSize:16,fontWeight:700,color:'#BF360C',
+                    fontFamily:'sans-serif',marginBottom:3,
+                  }}>Gambar Tidak Dapat Diklasifikasi</div>
+                  <div style={{fontSize:12,color:'#E64A19',fontFamily:'sans-serif'}}>
+                    Bukan biji kopi Arabika yang valid
+                  </div>
+                </div>
+              </div>
+
+              {/* Penjelasan */}
+              <div style={{
+                background:'rgba(255,255,255,.7)',borderRadius:10,
+                padding:'14px 16px',marginBottom:14,
+                border:'1px solid rgba(255,109,0,.2)',
+              }}>
+                <div style={{fontSize:13,fontWeight:700,color:'#BF360C',marginBottom:8,fontFamily:'sans-serif'}}>
+                  ❌ Mengapa ditolak?
+                </div>
+                <div style={{fontSize:12,color:'#5D4037',lineHeight:1.8,fontFamily:'sans-serif'}}>
+                  Model CNN RepViT-M1.1 tidak mendeteksi ciri-ciri biji kopi Arabika pada gambar yang Anda upload.
+                  Sistem secara otomatis menolak gambar yang tidak sesuai untuk mencegah klasifikasi yang salah.
+                </div>
+              </div>
+
+              {/* Panduan */}
+              <div style={{marginBottom:14}}>
+                <div style={{fontSize:12,fontWeight:700,color:'#E64A19',marginBottom:8,fontFamily:'sans-serif'}}>
+                  ✅ Panduan foto yang benar:
+                </div>
+                {[
+                  ['📸','Foto biji kopi Arabika (belum digiling/diseduh)'],
+                  ['☀️','Pencahayaan cukup, tidak gelap atau silau'],
+                  ['⬜','Latar belakang polos (putih atau terang)'],
+                  ['🔭','Fokus jelas pada biji kopi, tidak blur'],
+                  ['📐','Ambil dari atas (top-view) lebih baik'],
+                  ['🚫','Hindari foto minuman kopi, bubuk kopi, atau tanaman kopi'],
+                ].map(([ico, txt], i) => (
+                  <div key={i} style={{
+                    display:'flex',gap:8,alignItems:'center',
+                    fontSize:12,color:'#4E342E',fontFamily:'sans-serif',
+                    padding:'4px 0',
+                  }}>
+                    <span style={{fontSize:14}}>{ico}</span>
+                    <span>{txt}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* 5 Kelas */}
+              <div style={{
+                background:'rgba(255,255,255,.6)',borderRadius:10,
+                padding:'12px 14px',marginBottom:14,
+                border:'1px solid rgba(255,109,0,.15)',
+              }}>
+                <div style={{fontSize:11,fontWeight:700,color:'#BF360C',marginBottom:8,fontFamily:'monospace',letterSpacing:1,textTransform:'uppercase'}}>
+                  5 Varietas yang dapat diidentifikasi:
+                </div>
+                {[
+                  ['🌋','Arabika Natural Ijen','Bondowoso, Jawa Timur'],
+                  ['🫘','Arabika Peaberry','Biji bulat tunggal unik'],
+                  ['🧪','Arabika Anaerob Carbonic','Fermentasi anaerobik'],
+                  ['🍊','Arabika Orange Bourbon','Varietas Bourbon langka'],
+                  ['🏔️','Arabika Blue Mountain','Premium adaptasi Jamaica'],
+                ].map(([ico, nama, desc], i) => (
+                  <div key={i} style={{
+                    display:'flex',gap:8,alignItems:'center',
+                    padding:'5px 0',
+                    borderBottom: i < 4 ? '0.5px solid rgba(255,109,0,.1)' : 'none',
+                  }}>
+                    <span style={{fontSize:16}}>{ico}</span>
+                    <div>
+                      <div style={{fontSize:12,fontWeight:600,color:'#4E342E',fontFamily:'sans-serif'}}>{nama}</div>
+                      <div style={{fontSize:10,color:'#8D6E63',fontFamily:'sans-serif'}}>{desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Tombol coba lagi */}
+              <button
+                onClick={() => {
+                  setBukanKopi(false); setFoto(null); setPreview(null)
+                  setErrorMsg(''); setStatus(''); setDuplikat(null)
+                  setFotoHash('')
+                }}
+                style={{
+                  width:'100%',padding:'13px',
+                  background:'linear-gradient(135deg,#E64A19,#FF7043)',
+                  color:'#FFFFFF',border:'none',borderRadius:12,
+                  fontSize:13,fontWeight:700,fontFamily:'sans-serif',
+                  cursor:'pointer',letterSpacing:'.3px',
+                  boxShadow:'0 4px 14px rgba(230,74,25,.4)',
+                  display:'flex',alignItems:'center',justifyContent:'center',gap:8,
+                }}
+              >
+                📷 Upload Foto Biji Kopi yang Benar
+              </button>
+            </div>
+          )}
+
           {/* Hasil CNN */}
           {hasilCNN && !txHash && (
             <div className="card">
               <div className="card-head">
                 <div className="head-ico">{gs.emoji}</div>
-                <div className="head-title">{t('hasil_title')}</div>
+                <div className="head-title">Hasil Klasifikasi AI</div>
               </div>
               <div style={{padding:'20px'}}>
                 <div className="hasil-box" style={{background:gs.bg,borderColor:gs.border}}>
@@ -1628,7 +1897,7 @@ export default function HomePage() {
           {/* Sukses NFT */}
           {txHash && (
             <div className="sukses">
-              <div className="sukses-title">{`🎉 ${t('nft_title')}`}</div>
+              <div className="sukses-title">🎉 NFT Berhasil Di-mint!</div>
 
               {/* Token ID */}
               {tokenId !== null && (
@@ -1680,7 +1949,8 @@ export default function HomePage() {
                 setFoto(null);setPreview(null);setHasilCNN(null);
                 setTxHash('');setCidFoto('');setNamaPetani('');setLokasi('');
                 setStatus('');setErrorMsg('');setTokenId(null);setNftAdded(false);
-              }}>{`↩️ ${t('btn_new')}`}</button>
+                setBukanKopi(false);setDuplikat(null);setFotoHash('');
+              }}>↩️ Klasifikasi Kopi Baru</button>
             </div>
           )}
         </div>
