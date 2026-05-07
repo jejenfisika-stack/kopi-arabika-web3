@@ -152,6 +152,21 @@ const T = {
     err_lokasi:    'Isi Lokasi Kebun terlebih dahulu!',
     err_foto:      'Pilih foto kopi terlebih dahulu!',
     err_cnn:       'Klasifikasi CNN dulu!',
+    // Status messages
+    sts_verify:    'Memverifikasi keaslian foto...',
+    sts_upload:    'Mengunggah foto ke model AI...',
+    sts_classify:  'Mengklasifikasi dengan CNN RepViT-M1.1...',
+    sts_waiting:   'Menunggu hasil AI...',
+    sts_ipfs:      'Mengupload foto ke IPFS...',
+    sts_metamask:  'Menghubungkan MetaMask...',
+    sts_sending:   'Mengirim transaksi ke Polygon Amoy...',
+    sts_confirm:   'Menunggu konfirmasi blockchain...',
+    sts_addnft:    'Menambahkan NFT ke MetaMask...',
+    sts_connecting:t('sts_connecting'),
+    // Connect wallet info
+    wallet_info:   t('wallet_info'),
+    // NFT added
+    adding_nft:    t('adding_nft'),
   },
   en: {
     brand_sub:     'Universitas Jember · Scopus Q1 Research · v3 Verified · Acc 99.78%',
@@ -200,6 +215,21 @@ const T = {
     err_lokasi:    'Please enter the Farm Location first!',
     err_foto:      'Please select a coffee photo first!',
     err_cnn:       'Please perform CNN Classification first!',
+    // Status messages
+    sts_verify:    'Verifying photo authenticity...',
+    sts_upload:    'Uploading photo to AI model...',
+    sts_classify:  'Classifying with CNN RepViT-M1.1...',
+    sts_waiting:   'Waiting for AI result...',
+    sts_ipfs:      'Uploading photo to IPFS...',
+    sts_metamask:  'Connecting MetaMask...',
+    sts_sending:   'Sending transaction to Polygon Amoy...',
+    sts_confirm:   'Awaiting blockchain confirmation...',
+    sts_addnft:    'Adding NFT to MetaMask...',
+    sts_connecting:'⏳ Connecting...',
+    // Connect wallet info
+    wallet_info:   '* Connect wallet first to mint NFT',
+    // NFT added
+    adding_nft:    '⏳ Adding...',
   }
 }
 
@@ -652,7 +682,7 @@ export default function HomePage() {
 
     // ── Verifikasi foto sebelum klasifikasi ──
     try {
-      setStatus('🔍 Memverifikasi keaslian foto...')
+      setStatus(t('sts_verify'))
       const hash = fotoHash || await hitungHashFoto(foto)
       if (!fotoHash) setFotoHash(hash)
 
@@ -675,28 +705,7 @@ export default function HomePage() {
         return // Hentikan proses
       }
 
-      // Hitung pHash untuk deteksi foto serupa
-      const pHash = await hitungPHash(foto)
-      const pHashLama = localStorage.getItem('lastPHash')
-      if (pHashLama && pHash) {
-        const dist = hammingDistance(pHash, pHashLama)
-        console.log('Hamming distance:', dist)
-        if (dist <= 5) {
-          // Sangat mirip — peringatan
-          setDuplikat({
-            tipe: 'MIRIP',
-            dist,
-            hash,
-            pesan: `Foto ini SANGAT MIRIP dengan foto yang baru-baru ini diproses (jarak: ${dist}/64). Pastikan ini foto yang berbeda!`,
-            warna: '#FFFBEB',
-            border: '#FDE68A',
-            icon: '⚠️'
-          })
-          // Tidak hentikan proses, hanya peringatan
-        }
-      }
-      // Simpan pHash foto ini untuk perbandingan berikutnya
-      if (pHash) localStorage.setItem('lastPHash', pHash)
+      // pHash MIRIP check dihapus — SHA-256 on-chain sudah cukup
 
     } catch(err) {
       console.log('Verifikasi error:', err)
@@ -704,7 +713,7 @@ export default function HomePage() {
     }
     try {
       const BASE = 'https://jejenFis06-kopi-arabika-classifier.hf.space'
-      setStatus('Mengunggah foto ke model AI...')
+      setStatus(t('sts_upload'))
       const fd = new FormData(); fd.append('files', foto, foto.name)
       const upRes = await fetch(`${BASE}/gradio_api/upload`, { method:'POST', body:fd })
       if (!upRes.ok) throw new Error(`Upload gagal: ${upRes.status}`)
@@ -713,7 +722,7 @@ export default function HomePage() {
       if (!filePath) throw new Error('Path file tidak ditemukan')
 
       timing.t_hf_upload = performance.now()
-      setStatus('Mengklasifikasi dengan CNN RepViT-M1.1...')
+      setStatus(t('sts_classify'))
       const prRes = await fetch(`${BASE}/gradio_api/call/klasifikasi_kopi`, {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ data:[{ path:filePath, mime_type:foto.type, orig_name:foto.name }] }),
@@ -722,7 +731,7 @@ export default function HomePage() {
       const { event_id } = await prRes.json()
       if (!event_id) throw new Error('event_id tidak ditemukan')
 
-      setStatus('Menunggu hasil AI...')
+      setStatus(t('sts_waiting'))
       const resRes = await fetch(`${BASE}/gradio_api/call/klasifikasi_kopi/${event_id}`)
       if (!resRes.ok) throw new Error(`Hasil gagal: ${resRes.status}`)
 
@@ -782,7 +791,7 @@ export default function HomePage() {
   }
 
   async function uploadIPFS() {
-    setStatus('Mengupload foto ke IPFS...')
+    setStatus(t('sts_ipfs'))
     const b64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(foto) })
     const res = await fetch('/api/upload-ipfs', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ imageBase64:b64, fileName:foto.name, hasilCNN, namaPetani, lokasiKebun:lokasi, hashFoto:fotoHash }) })
     const data = await res.json()
@@ -804,14 +813,14 @@ export default function HomePage() {
   async function mintNFT() {
     if (!namaPetani.trim()) { alert(t('err_nama')); return }
     if (!lokasi.trim())     { alert(t('err_lokasi')); return }
-    if (!hasilCNN)          { alert('Klasifikasi CNN dulu!'); return }
+    if (!hasilCNN)          { alert(t('err_cnn')); return }
     setLoading(true); setErrorMsg('')
     const t_mint_start = performance.now()  // timing mulai
     try {
-      setStatus('Menghubungkan MetaMask...')
+      setStatus(t('sts_metamask'))
       const address = await connectWallet(); if (!address) return
       const ipfsData = await uploadIPFS()
-      setStatus('Mengirim transaksi ke Polygon Amoy...')
+      setStatus(t('sts_sending'))
       const provider = new ethers.BrowserProvider(window.ethereum)
       const signer   = await provider.getSigner()
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
@@ -843,7 +852,7 @@ export default function HomePage() {
         fotoHash,    // ← SHA-256 hash foto — anti-duplikat v2
         gasOverrides // ← override gas price untuk Polygon Amoy
       )
-      setStatus('Menunggu konfirmasi blockchain...')
+      setStatus(t('sts_confirm'))
       const receipt = await tx.wait()
       const t_after_blockchain = performance.now()
       const t_total_mint = (t_after_blockchain - t_mint_start) / 1000
@@ -881,7 +890,7 @@ export default function HomePage() {
       // Auto import NFT ke MetaMask wallet user
       // ============================================================
       if (mintedTokenId !== null && window.ethereum) {
-        setStatus('Menambahkan NFT ke MetaMask...')
+        setStatus(t('sts_addnft'))
         try {
           await window.ethereum.request({
             method: 'wallet_watchAsset',
@@ -1443,7 +1452,7 @@ export default function HomePage() {
             >
               <span className={`w-dot ${walletAddr ? 'w-dot-on' : 'w-dot-off'}`}/>
               {walletLoading
-                ? '⏳ Menghubungkan...'
+                ? t('sts_connecting')
                 : walletAddr
                   ? <><span className="w-addr">🦊 {shortAddr(walletAddr)}</span><span className="w-disc">✕ Disconnect</span></>
                   : t('wallet_connect')
@@ -1875,8 +1884,8 @@ export default function HomePage() {
 
               <button className="btn-go" onClick={klasifikasiCNN} disabled={!foto||loading}>
                 {loading&&!hasilCNN
-                  ? <span style={{color:'#FFFFFF',fontWeight:800,fontSize:14,textShadow:'0 2px 4px rgba(0,0,0,.4)',letterSpacing:'1px'}}>⏳ {status||'Memproses...'}</span>
-                  : <span style={{color:'#FFFFFF',fontWeight:800,fontSize:14,textShadow:'0 2px 4px rgba(0,0,0,.4)',letterSpacing:'1px'}}>🔍 Klasifikasi dengan CNN</span>}
+                  ? <span style={{color:'#FFFFFF',fontWeight:800,fontSize:14,textShadow:'0 2px 4px rgba(0,0,0,.4)',letterSpacing:'1px'}}>⏳ {status||t('btn_proc')}</span>
+                  : <span style={{color:'#FFFFFF',fontWeight:800,fontSize:14,textShadow:'0 2px 4px rgba(0,0,0,.4)',letterSpacing:'1px'}}>{`🔍 ${t('btn_cnn')}`}</span>}
               </button>
               {errorMsg && <div className="err">{errorMsg}</div>}
 
@@ -2020,6 +2029,110 @@ export default function HomePage() {
               <div style={{marginTop:10,fontSize:11,color:'#BF360C',fontStyle:'italic'}}>{t('dup_cannot')}</div>
             </div>
           )}
+
+          {/* ══ HASIL KLASIFIKASI CNN ══ */}
+          {hasilCNN && !hasilCNN.bukan_kopi && !txHash && (
+            <div className="hasil-box mg-t-4" style={{
+              background: gs.bg,
+              borderColor: gs.border,
+            }}>
+              <div className="hasil-title" style={{color: gs.text}}>
+                {gs.emoji} {t('hasil_title')}
+              </div>
+
+              <div className="hasil-row">
+                <span className="hasil-lbl">{lang==='id' ? 'Jenis Kopi' : 'Coffee Variety'}</span>
+                <span className="hasil-val" style={{color: gs.text}}>{hasilCNN.jenis_kopi}</span>
+              </div>
+              <div className="hasil-row">
+                <span className="hasil-lbl">{lang==='id' ? 'Grade Kualitas' : 'Quality Grade'}</span>
+                <span className="hasil-val" style={{color: gs.text}}>{hasilCNN.grade}</span>
+              </div>
+              <div className="hasil-row">
+                <span className="hasil-lbl">Confidence</span>
+                <span className="hasil-val" style={{color: gs.text}}>{hasilCNN.confidence?.toFixed(1)}%</span>
+              </div>
+
+              <div className="bar-bg">
+                <div className="bar-fg" style={{
+                  width: `${hasilCNN.confidence}%`,
+                  background: gs.border
+                }}/>
+              </div>
+
+              <button
+                className="btn-mint"
+                onClick={mintNFT}
+                disabled={loading || !walletAddr}
+                style={{marginTop:8}}
+              >
+                {loading
+                  ? `⏳ ${status || t('btn_proc')}`
+                  : `🪙 ${t('btn_mint')}`
+                }
+              </button>
+              {!walletAddr && (
+                <div style={{textAlign:'center',fontSize:11,color:'#9CA3AF',marginTop:6}}>
+                  {lang==='id' ? t('wallet_info') : '* Connect wallet first to mint NFT'}
+                </div>
+              )}
+              {errorMsg && <div className="err">{errorMsg}</div>}
+              {status && <div className="sts">{status}</div>}
+            </div>
+          )}
+
+          {/* ══ NFT SUKSES ══ */}
+          {txHash && (
+            <div className="sukses mg-t-4">
+              <div className="sukses-title">🎉 {t('nft_title')}</div>
+
+              <div className="hash-box">
+                <div className="hash-lbl">{t('nft_token')}</div>
+                <div className="hash-val">#{tokenId ?? '—'}</div>
+              </div>
+              <div className="hash-box">
+                <div className="hash-lbl">Transaction Hash</div>
+                <div className="hash-val">{txHash.slice(0,20)}...{txHash.slice(-8)}</div>
+              </div>
+
+              <a className="btn-a a-blue"
+                href={`https://amoy.polygonscan.com/tx/${txHash}`}
+                target="_blank" rel="noreferrer"
+              >
+                🔍 {t('nft_poly')}
+              </a>
+              {cidFoto && (
+                <a className="btn-a a-orange"
+                  href={`https://${PINATA_GATEWAY}/ipfs/${cidFoto}`}
+                  target="_blank" rel="noreferrer"
+                >
+                  🖼️ {t('nft_ipfs')}
+                </a>
+              )}
+              {tokenId !== null && (
+                <button
+                  className="btn-a a-ghost"
+                  onClick={addNFTtoWallet}
+                  disabled={addingNFT}
+                >
+                  {addingNFT ? t('adding_nft') : nftAdded ? `✅ ${t('nft_added')}` : `💼 ${t('nft_add')}`}
+                </button>
+              )}
+              <button
+                className="btn-a a-ghost"
+                onClick={() => {
+                  setFoto(null); setPreview(null); setHasilCNN(null)
+                  setTxHash(''); setCidFoto(''); setErrorMsg('')
+                  setDuplikat(null); setFotoHash(''); setBukanKopi(false)
+                  setTokenId(null); setNftAdded(false)
+                }}
+                style={{marginTop:4}}
+              >
+                ↩️ {t('btn_new')}
+              </button>
+            </div>
+          )}
+
         </div>
       </div>
     </>
