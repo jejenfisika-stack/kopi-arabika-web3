@@ -106,7 +106,7 @@ const CARA_PAKAI = {
 // ── KAMUS TERJEMAHAN ──
 const T = {
   id: {
-    brand_sub:     'Universitas Jember · Riset Scopus Q1 · v3 Verified · Acc 99.78%',
+    brand_sub:     'Riset Unggulan Universitas Jember',
     hero_title:    'Kopi Arabika Nusantara',
     hero_sub:      '5 Varietas Unggulan Terverifikasi AI',
     cara_title:    'Cara Penggunaan',
@@ -169,7 +169,7 @@ const T = {
     adding_nft:    '⏳ Menambahkan...',
   },
   en: {
-    brand_sub:     'Universitas Jember · Scopus Q1 Research · v3 Verified · Acc 99.78%',
+    brand_sub:     'Excellent Research Universitas Jember',
     hero_title:    'Arabica Coffee of Nusantara',
     hero_sub:      '5 Premium Varieties — AI-Verified Certification',
     cara_title:    'How to Use',
