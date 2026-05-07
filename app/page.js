@@ -162,11 +162,11 @@ const T = {
     sts_sending:   'Mengirim transaksi ke Polygon Amoy...',
     sts_confirm:   'Menunggu konfirmasi blockchain...',
     sts_addnft:    'Menambahkan NFT ke MetaMask...',
-    sts_connecting:t('sts_connecting'),
+    sts_connecting:'⏳ Menghubungkan...',
     // Connect wallet info
-    wallet_info:   t('wallet_info'),
+    wallet_info:   '* Connect wallet dulu untuk mint NFT',
     // NFT added
-    adding_nft:    t('adding_nft'),
+    adding_nft:    '⏳ Menambahkan...',
   },
   en: {
     brand_sub:     'Universitas Jember · Scopus Q1 Research · v3 Verified · Acc 99.78%',
@@ -665,7 +665,7 @@ export default function HomePage() {
   }
 
   async function klasifikasiCNN() {
-    if (!foto) { alert(t('err_foto')); return }
+    if (!foto) { alert('Pilih foto kopi terlebih dahulu!'); return }
     setLoading(true); setHasilCNN(null); setErrorMsg(''); setDuplikat(null)
 
     // ── TIMING MEASUREMENT ──
@@ -682,7 +682,7 @@ export default function HomePage() {
 
     // ── Verifikasi foto sebelum klasifikasi ──
     try {
-      setStatus(t('sts_verify'))
+      setStatus('🔍 Memverifikasi keaslian foto...')
       const hash = fotoHash || await hitungHashFoto(foto)
       if (!fotoHash) setFotoHash(hash)
 
@@ -696,7 +696,7 @@ export default function HomePage() {
           tipe: 'IDENTIK',
           tokenId: tokenIdLama,
           hash,
-          pesan: t('dup_desc') + ' #' + tokenIdLama + ' ' + t('dup_already'),
+          pesan: 'Foto ini IDENTIK dengan NFT #' + tokenIdLama + ' yang sudah ada di blockchain!',
           warna: '#FEF2F2',
           border: '#FECACA',
           icon: '🚫'
@@ -713,7 +713,7 @@ export default function HomePage() {
     }
     try {
       const BASE = 'https://jejenFis06-kopi-arabika-classifier.hf.space'
-      setStatus(t('sts_upload'))
+      setStatus('Mengunggah foto ke model AI...')
       const fd = new FormData(); fd.append('files', foto, foto.name)
       const upRes = await fetch(`${BASE}/gradio_api/upload`, { method:'POST', body:fd })
       if (!upRes.ok) throw new Error(`Upload gagal: ${upRes.status}`)
@@ -722,7 +722,7 @@ export default function HomePage() {
       if (!filePath) throw new Error('Path file tidak ditemukan')
 
       timing.t_hf_upload = performance.now()
-      setStatus(t('sts_classify'))
+      setStatus('Mengklasifikasi dengan CNN RepViT-M1.1...')
       const prRes = await fetch(`${BASE}/gradio_api/call/klasifikasi_kopi`, {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ data:[{ path:filePath, mime_type:foto.type, orig_name:foto.name }] }),
@@ -731,7 +731,7 @@ export default function HomePage() {
       const { event_id } = await prRes.json()
       if (!event_id) throw new Error('event_id tidak ditemukan')
 
-      setStatus(t('sts_waiting'))
+      setStatus('Menunggu hasil AI...')
       const resRes = await fetch(`${BASE}/gradio_api/call/klasifikasi_kopi/${event_id}`)
       if (!resRes.ok) throw new Error(`Hasil gagal: ${resRes.status}`)
 
@@ -791,7 +791,7 @@ export default function HomePage() {
   }
 
   async function uploadIPFS() {
-    setStatus(t('sts_ipfs'))
+    setStatus('Mengupload foto ke IPFS...')
     const b64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(foto) })
     const res = await fetch('/api/upload-ipfs', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ imageBase64:b64, fileName:foto.name, hasilCNN, namaPetani, lokasiKebun:lokasi, hashFoto:fotoHash }) })
     const data = await res.json()
@@ -811,16 +811,16 @@ export default function HomePage() {
   }
 
   async function mintNFT() {
-    if (!namaPetani.trim()) { alert(t('err_nama')); return }
-    if (!lokasi.trim())     { alert(t('err_lokasi')); return }
-    if (!hasilCNN)          { alert(t('err_cnn')); return }
+    if (!namaPetani.trim()) { alert('Isi Nama Petani terlebih dahulu!'); return }
+    if (!lokasi.trim())     { alert('Isi Lokasi Kebun terlebih dahulu!'); return }
+    if (!hasilCNN)          { alert('Klasifikasi CNN dulu!'); return }
     setLoading(true); setErrorMsg('')
     const t_mint_start = performance.now()  // timing mulai
     try {
-      setStatus(t('sts_metamask'))
+      setStatus('Menghubungkan MetaMask...')
       const address = await connectWallet(); if (!address) return
       const ipfsData = await uploadIPFS()
-      setStatus(t('sts_sending'))
+      setStatus('Mengirim transaksi ke Polygon Amoy...')
       const provider = new ethers.BrowserProvider(window.ethereum)
       const signer   = await provider.getSigner()
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
@@ -852,7 +852,7 @@ export default function HomePage() {
         fotoHash,    // ← SHA-256 hash foto — anti-duplikat v2
         gasOverrides // ← override gas price untuk Polygon Amoy
       )
-      setStatus(t('sts_confirm'))
+      setStatus('Menunggu konfirmasi blockchain...')
       const receipt = await tx.wait()
       const t_after_blockchain = performance.now()
       const t_total_mint = (t_after_blockchain - t_mint_start) / 1000
@@ -890,7 +890,7 @@ export default function HomePage() {
       // Auto import NFT ke MetaMask wallet user
       // ============================================================
       if (mintedTokenId !== null && window.ethereum) {
-        setStatus(t('sts_addnft'))
+        setStatus('Menambahkan NFT ke MetaMask...')
         try {
           await window.ethereum.request({
             method: 'wallet_watchAsset',
