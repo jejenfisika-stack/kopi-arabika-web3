@@ -1,6 +1,6 @@
-'use client' // fix-v4
+'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { ethers } from 'ethers'
 
 const CONTRACT_ADDRESS = '0x5392C2F10d8Dea3e498726BcB8c806E8DA78834b'  // V3 — Open Mint + Verified + 6-Class Fix
@@ -64,11 +64,6 @@ const CONTRACT_ABI = [
   },
 ]
 
-// Helper terjemahan — bisa diakses dari dalam async functions
-function getT(lang, key) {
-  return T?.[lang]?.[key] ?? T?.['id']?.[key] ?? key
-}
-
 const GRADE_STYLE = {
   'Premium': { bg:'#FEF9C3', border:'#EAB308', text:'#713F12', emoji:'🏆' },
   'Grade A': { bg:'#EFF6FF', border:'#3B82F6', text:'#1E3A8A', emoji:'⭐' },
@@ -76,199 +71,21 @@ const GRADE_STYLE = {
   'Grade C': { bg:'#F9FAFB', border:'#9CA3AF', text:'#374151', emoji:'⚠️' },
 }
 
-const INFO_KOPI = {
-  id: [
-    { emoji:'🌋', judul:'Arabika Natural Ijen',      isi:'Ditanam di lereng Ijen Mountain, Bondowoso pada ketinggian 900–1.500 mdpl. Terkenal dengan cita rasa fruity dan wine-like yang khas dari proses natural.' },
-    { emoji:'🫘', judul:'Arabika Peaberry',           isi:'Biji kopi bulat tunggal hasil mutasi alami. Rasa lebih terkonsentrasi, aroma floral kuat, body lebih ringan dibanding biji normal.' },
-    { emoji:'🧪', judul:'Arabika Anaerob Carbonic',   isi:'Diproses fermentasi anaerobik karbonasi di Ijen Mountain. Menghasilkan rasa eksotis, kompleks — buah tropis dengan sparkling sensation yang unik.' },
-    { emoji:'🍊', judul:'Arabika Orange Bourbon',     isi:'Varietas Bourbon langka berwarna oranye dari Ijen Mountain. Rasa manis, citrus, honey, body sedang-tebal. Sangat diminati di pasar specialty coffee dunia.' },
-    { emoji:'🏔️', judul:'Arabika Blue Mountain',     isi:'Adaptasi varietas premium Jamaica di dataran tinggi Ijen Mountain. Dikenal dengan rasa ringan, bersih, mild, tidak bitter. Salah satu kopi paling prestigious di dunia.' },
-  ],
-  en: [
-    { emoji:'🌋', judul:'Arabica Natural Ijen',       isi:'Grown on the slopes of Ijen Mountain, Bondowoso at 900–1,500 m above sea level. Renowned for its distinctive fruity and wine-like flavor from the natural sun-drying process.' },
-    { emoji:'🫘', judul:'Arabica Peaberry',            isi:'A naturally occurring single-bean mutation. Produces a more concentrated flavor, intense floral aroma, and lighter body compared to standard beans.' },
-    { emoji:'🧪', judul:'Arabica Anaerobic Carbonic',  isi:'Processed using anaerobic carbonic maceration fermentation on Ijen Mountain. Delivers an exotic, complex flavor profile — tropical fruit with a unique sparkling sensation.' },
-    { emoji:'🍊', judul:'Arabica Orange Bourbon',      isi:'A rare orange-fruited Bourbon variety from Ijen Mountain. Features a naturally sweet flavor with citrus and honey notes, medium to full body. Highly sought in the global specialty coffee market.' },
-    { emoji:'🏔️', judul:'Arabica Blue Mountain',      isi:'An adaptation of the premium Jamaican variety at the high altitudes of Ijen Mountain. Known for its light, clean, mild, non-bitter taste. One of the most prestigious coffees in the world.' },
-  ]
-}
+const INFO_KOPI = [
+  { emoji:'🌋', judul:'Arabika Natural Ijen',      isi:'Ditanam di lereng Gunung Ijen, Bondowoso pada ketinggian 900–1.500 mdpl. Terkenal dengan cita rasa fruity dan wine-like yang khas dari proses natural.' },
+  { emoji:'🫘', judul:'Arabika Peaberry',           isi:'Biji kopi bulat tunggal hasil mutasi alami. Rasa lebih terkonsentrasi, aroma floral kuat, body lebih ringan dibanding biji normal.' },
+  { emoji:'🧪', judul:'Arabika Anaerob Carbonic',   isi:'Diproses fermentasi anaerobik karbonasi. Menghasilkan rasa eksotis, kompleks — buah tropis dengan sparkling sensation yang unik.' },
+  { emoji:'🍊', judul:'Arabika Orange Bourbon',     isi:'Varietas Bourbon langka berwarna oranye. Rasa manis, citrus, honey, body sedang-tebal. Sangat diminati di pasar specialty coffee dunia.' },
+  { emoji:'🏔️', judul:'Arabika Blue Mountain',     isi:'Varietas premium adaptasi Jamaica. Rasa ringan, bersih, balance sempurna, tidak pahit. Salah satu kopi paling prestigious di dunia.' },
+]
 
-const CARA_PAKAI = {
-  id: [
-    { no:'01', judul:'Upload Foto',        isi:'Klik area foto di kanan, pilih gambar biji kopi dari galeri HP atau ambil langsung dengan kamera.' },
-    { no:'02', judul:'Isi Data Petani',    isi:'Masukkan nama petani dan lokasi kebun. Data ini akan tercatat dalam sertifikat NFT di blockchain.' },
-    { no:'03', judul:'Klasifikasi CNN',    isi:'Klik tombol hijau. Model AI RepViT-M1.1 mengidentifikasi jenis dan grade kopi dalam hitungan detik.' },
-    { no:'04', judul:'Mint NFT',           isi:'Klik "Mint NFT". MetaMask terbuka untuk konfirmasi transaksi ke blockchain Polygon Amoy.' },
-  ],
-  en: [
-    { no:'01', judul:'Upload Photo',       isi:'Click the photo area on the right, select a coffee bean image from your gallery or capture directly with your camera.' },
-    { no:'02', judul:'Enter Farmer Data',  isi:'Enter the farmer’s name and farm location. This data will be permanently recorded in the NFT certificate on the blockchain.' },
-    { no:'03', judul:'CNN Classification', isi:'Click the green button. The RepViT-M1.1 AI model identifies the coffee variety and quality grade within seconds.' },
-    { no:'04', judul:'Mint NFT',           isi:'Click "Mint NFT". MetaMask opens to confirm the transaction to the Polygon Amoy blockchain.' },
-  ]
-}
-
-// ── KAMUS TERJEMAHAN ──
-const T = {
-  id: {
-    brand_sub:     'Universitas Jember · Riset Scopus Q1 · v3 Verified · Acc 99.78%',
-    hero_title:    'Kopi Arabika Nusantara',
-    hero_sub:      '5 Varietas Unggulan Terverifikasi AI',
-    cara_title:    'Cara Penggunaan',
-    form_title:    'Klasifikasi Biji Kopi dengan AI',
-    form_foto:     'Foto Biji Kopi',
-    form_petani:   'Data Petani',
-    form_nama:     'Nama Petani',
-    form_nama_ph:  'Contoh: Pak Ahmad Fauzi',
-    form_lokasi:   'Lokasi Kebun',
-    form_lokasi_ph:'Contoh: Desa Tugusari, Bondowoso, Jawa Timur',
-    form_email:    'Email (opsional)',
-    form_email_ph: 'Contoh: petani@gmail.com',
-    form_email_sub:'Untuk notifikasi saat NFT berhasil di-mint',
-    form_up_txt:   'Klik untuk upload foto',
-    form_up_sub:   'Dari kamera HP atau galeri · JPG, PNG',
-    btn_cnn:       'Klasifikasi dengan CNN',
-    btn_mint:      'Mint NFT Sertifikat',
-    btn_new:       'Klasifikasi Kopi Baru',
-    btn_proc:      'Memproses...',
-    hasil_title:   'Hasil Klasifikasi AI',
-    nft_title:     'NFT Berhasil Di-mint!',
-    nft_token:     'Token ID NFT Anda',
-    nft_poly:      'Lihat di Polygonscan',
-    nft_ipfs:      'Lihat Foto di IPFS',
-    nft_add:       'Tambahkan NFT ke Wallet',
-    nft_added:     'NFT Berhasil Ditambahkan ke MetaMask!',
-    fp_title:      'Fingerprint SHA-256 Foto',
-    fp_desc:       'Hash unik ini membuktikan keaslian foto Anda di blockchain',
-    sec_title:     'Security Architecture',
-    tech_title:    'Teknologi yang Digunakan',
-    ood_title:     'Gambar Tidak Dapat Diklasifikasi',
-    ood_sub:       'Bukan biji kopi Arabika yang valid',
-    ood_why:       'Mengapa ditolak?',
-    ood_desc:      'Model CNN RepViT-M1.1 tidak mendeteksi ciri-ciri biji kopi Arabika pada gambar yang Anda upload. Sistem secara otomatis menolak gambar yang tidak sesuai untuk mencegah klasifikasi yang salah.',
-    ood_guide:     'Panduan foto yang benar:',
-    ood_guides:    ['Foto biji kopi Arabika (belum digiling/diseduh)','Pencahayaan cukup, tidak gelap atau silau','Latar belakang polos (putih atau terang)','Fokus jelas pada biji kopi, tidak blur','Ambil dari atas (top-view) lebih baik','Hindari foto minuman kopi, bubuk kopi, atau tanaman kopi'],
-    ood_btn:       'Upload Foto Biji Kopi yang Benar',
-    ood_varieties: '5 Varietas yang dapat diidentifikasi:',
-    dup_title:     'FOTO TERDETEKSI DUPLIKAT!',
-    dup_desc:      'Foto ini IDENTIK dengan NFT',
-    dup_already:   'yang sudah ada di blockchain!',
-    dup_view:      'Lihat NFT Asli di Polygonscan',
-    dup_cannot:    'Foto ini tidak dapat di-mint ulang — sudah terdaftar di blockchain',
-    wallet_con:    'Connect Wallet',
-    err_nama:      'Isi Nama Petani terlebih dahulu!',
-    err_lokasi:    'Isi Lokasi Kebun terlebih dahulu!',
-    err_foto:      'Pilih foto kopi terlebih dahulu!',
-    err_cnn:       'Klasifikasi CNN dulu!',
-    // Hasil klasifikasi labels
-    label_jenis:   t('label_jenis'),
-    label_grade:   'Grade Kualitas',
-    label_conf:    'Confidence',
-    label_asal:    'Asal',
-    label_karakter:'Karakter',
-    label_proses:  'Proses',
-    // Wallet
-    wallet_need:   t('wallet_need'),
-    wallet_disc:   'Disconnect',
-    // NFT sukses tambahan
-    nft_cert:      'Lihat Sertifikat',
-    nft_share:     'Bagikan Sertifikat',
-    // Status messages
-    sts_verify:    'Memverifikasi keaslian foto...',
-    sts_upload:    'Mengunggah foto ke model AI...',
-    sts_classify:  'Mengklasifikasi dengan CNN RepViT-M1.1...',
-    sts_waiting:   'Menunggu hasil AI...',
-    sts_ipfs:      'Mengupload foto ke IPFS...',
-    sts_metamask:  'Menghubungkan MetaMask...',
-    sts_sending:   'Mengirim transaksi ke Polygon Amoy...',
-    sts_confirm:   'Menunggu konfirmasi blockchain...',
-    sts_addnft:    'Menambahkan NFT ke MetaMask...',
-    sts_connecting:lang==='id' ? '⏳ Menghubungkan...' : '⏳ Connecting...',
-    // Connect wallet info
-    wallet_info:   t('wallet_need'),
-    // NFT added
-    adding_nft:    '⏳ Menambahkan...',
-  },
-  en: {
-    brand_sub:     'Universitas Jember · Scopus Q1 Research · v3 Verified · Acc 99.78%',
-    hero_title:    'Arabica Coffee of Nusantara',
-    hero_sub:      '5 Premium Varieties — AI-Verified Certification',
-    cara_title:    'How to Use',
-    form_title:    'Coffee Bean Classification with AI',
-    form_foto:     'Coffee Bean Photo',
-    form_petani:   'Farmer Data',
-    form_nama:     'Farmer Name',
-    form_nama_ph:  'Example: Mr. Ahmad Fauzi',
-    form_lokasi:   'Farm Location',
-    form_lokasi_ph:'Example: Tugusari Village, Bondowoso, East Java',
-    form_email:    'Email (optional)',
-    form_email_ph: 'Example: farmer@gmail.com',
-    form_email_sub:'For notification when NFT is successfully minted',
-    form_up_txt:   'Click to upload photo',
-    form_up_sub:   'From camera or gallery · JPG, PNG',
-    btn_cnn:       'Classify with CNN',
-    btn_mint:      'Mint NFT Certificate',
-    btn_new:       'Classify New Coffee',
-    btn_proc:      'Processing...',
-    hasil_title:   'AI Classification Result',
-    nft_title:     'NFT Successfully Minted!',
-    nft_token:     'Your NFT Token ID',
-    nft_poly:      'View on Polygonscan',
-    nft_ipfs:      'View Photo on IPFS',
-    nft_add:       'Add NFT to Wallet',
-    nft_added:     'NFT Successfully Added to MetaMask!',
-    fp_title:      'SHA-256 Photo Fingerprint',
-    fp_desc:       "This unique hash cryptographically proves your photo's authenticity on the blockchain",
-    sec_title:     'Security Architecture',
-    tech_title:    'Technologies Used',
-    ood_title:     'Image Cannot Be Classified',
-    ood_sub:       'Not a valid Arabica coffee bean image',
-    ood_why:       'Why was it rejected?',
-    ood_desc:      'The RepViT-M1.1 CNN model did not detect Arabica coffee bean characteristics in the uploaded image. The system automatically rejects non-conforming images to prevent misclassification.',
-    ood_guide:     'Guidelines for a correct photo:',
-    ood_guides:    ['Photo must contain Arabica coffee beans (unground/unbrewed)','Adequate lighting, not too dark or overexposed','Plain background (white or light-colored)','Clear focus on the coffee beans, not blurry','Top-view (overhead) angle is preferred','Avoid photos of coffee beverages, ground coffee, or coffee plants'],
-    ood_btn:       'Upload a Correct Coffee Bean Photo',
-    ood_varieties: '5 identifiable varieties:',
-    dup_title:     'DUPLICATE PHOTO DETECTED!',
-    dup_desc:      'This photo is IDENTICAL to NFT',
-    dup_already:   'which already exists on the blockchain!',
-    dup_view:      'View Original NFT on Polygonscan',
-    dup_cannot:    'This photo cannot be minted again — already registered on the blockchain',
-    wallet_con:    'Connect Wallet',
-    err_nama:      'Please enter the Farmer Name first!',
-    err_lokasi:    'Please enter the Farm Location first!',
-    err_foto:      'Please select a coffee photo first!',
-    err_cnn:       'Please perform CNN Classification first!',
-    // Hasil klasifikasi labels
-    label_jenis:   'Coffee Variety',
-    label_grade:   'Quality Grade',
-    label_conf:    'Confidence',
-    label_asal:    'Origin',
-    label_karakter:'Characteristics',
-    label_proses:  'Processing',
-    // Wallet
-    wallet_need:   t('wallet_need'),
-    wallet_disc:   'Disconnect',
-    // NFT sukses tambahan
-    nft_cert:      'View Certificate',
-    nft_share:     'Share Certificate',
-    // Status messages
-    sts_verify:    'Verifying photo authenticity...',
-    sts_upload:    'Uploading photo to AI model...',
-    sts_classify:  'Classifying with CNN RepViT-M1.1...',
-    sts_waiting:   'Waiting for AI result...',
-    sts_ipfs:      'Uploading photo to IPFS...',
-    sts_metamask:  'Connecting MetaMask...',
-    sts_sending:   'Sending transaction to Polygon Amoy...',
-    sts_confirm:   'Awaiting blockchain confirmation...',
-    sts_addnft:    'Adding NFT to MetaMask...',
-    sts_connecting:'⏳ Connecting...',
-    // Connect wallet info
-    wallet_info:   t('wallet_need'),
-    // NFT added
-    adding_nft:    '⏳ Adding...',
-  }
-}
+const CARA_PAKAI = [
+  { no:'01', judul:'Upload Foto',        isi:'Klik area foto di kanan, pilih gambar biji kopi dari galeri HP atau ambil langsung dengan kamera.' },
+  { no:'02', judul:'Isi Data Petani',    isi:'Masukkan nama petani dan lokasi kebun. Data ini akan tercatat dalam sertifikat NFT di blockchain.' },
+  { no:'03', judul:'Klasifikasi CNN',    isi:'Klik tombol hijau. Model AI RepViT-M1.1 mengidentifikasi jenis dan grade kopi dalam hitungan detik.' },
+  { no:'04', judul:'Mint NFT',           isi:'Klik "Mint NFT". MetaMask terbuka untuk konfirmasi transaksi ke blockchain Polygon Amoy.' },
+  { no:'05', judul:'Sertifikat Digital', isi:'NFT tersimpan permanen di blockchain sebagai bukti keaslian dan kualitas kopi Anda.' },
+]
 
 
 // ============================================================
@@ -478,10 +295,6 @@ export default function HomePage() {
   const [duplikat, setDuplikat]     = useState(null)
   const [verifying, setVerifying]   = useState(false)
   const [bukanKopi, setBukanKopi]   = useState(false)
-  const [lang, setLang]             = useState('id')  // 'id' | 'en'
-  const langRef = useRef('id')  // ref untuk akses lang di async functions
-  const [email, setEmail]           = useState('')     // untuk notifikasi
-  const [mounted, setMounted]       = useState(false)  // anti-hydration
   const [walletAddr, setWalletAddr] = useState('')
   const [walletLoading, setWalletLoading] = useState(false)
   const fileRef = useRef()
@@ -704,24 +517,12 @@ export default function HomePage() {
   }
 
   async function klasifikasiCNN() {
-    if (!foto) { alert(getT(langRef.current, 'err_foto')); return }
+    if (!foto) { alert('Pilih foto kopi terlebih dahulu!'); return }
     setLoading(true); setHasilCNN(null); setErrorMsg(''); setDuplikat(null)
-
-    // ── TIMING MEASUREMENT ──
-    const timing = {
-      t_start    : performance.now(),
-      t_hash     : 0,
-      t_hf_upload: 0,
-      t_hf_infer : 0,
-      t_ipfs_foto: 0,
-      t_ipfs_meta: 0,
-      t_blockchain: 0,
-      t_end      : 0,
-    }
 
     // ── Verifikasi foto sebelum klasifikasi ──
     try {
-      setStatus(getT(langRef.current, 'sts_verify'))
+      setStatus('🔍 Memverifikasi keaslian foto...')
       const hash = fotoHash || await hitungHashFoto(foto)
       if (!fotoHash) setFotoHash(hash)
 
@@ -735,7 +536,7 @@ export default function HomePage() {
           tipe: 'IDENTIK',
           tokenId: tokenIdLama,
           hash,
-          pesan: 'Foto ini IDENTIK dengan NFT #' + tokenIdLama + ' yang sudah ada di blockchain!',
+          pesan: `Foto ini IDENTIK dengan NFT #${tokenIdLama} yang sudah ada di blockchain!`,
           warna: '#FEF2F2',
           border: '#FECACA',
           icon: '🚫'
@@ -744,7 +545,28 @@ export default function HomePage() {
         return // Hentikan proses
       }
 
-      // pHash MIRIP check dihapus — SHA-256 on-chain sudah cukup
+      // Hitung pHash untuk deteksi foto serupa
+      const pHash = await hitungPHash(foto)
+      const pHashLama = localStorage.getItem('lastPHash')
+      if (pHashLama && pHash) {
+        const dist = hammingDistance(pHash, pHashLama)
+        console.log('Hamming distance:', dist)
+        if (dist <= 5) {
+          // Sangat mirip — peringatan
+          setDuplikat({
+            tipe: 'MIRIP',
+            dist,
+            hash,
+            pesan: `Foto ini SANGAT MIRIP dengan foto yang baru-baru ini diproses (jarak: ${dist}/64). Pastikan ini foto yang berbeda!`,
+            warna: '#FFFBEB',
+            border: '#FDE68A',
+            icon: '⚠️'
+          })
+          // Tidak hentikan proses, hanya peringatan
+        }
+      }
+      // Simpan pHash foto ini untuk perbandingan berikutnya
+      if (pHash) localStorage.setItem('lastPHash', pHash)
 
     } catch(err) {
       console.log('Verifikasi error:', err)
@@ -752,7 +574,7 @@ export default function HomePage() {
     }
     try {
       const BASE = 'https://jejenFis06-kopi-arabika-classifier.hf.space'
-      setStatus(getT(langRef.current, 'sts_upload'))
+      setStatus('Mengunggah foto ke model AI...')
       const fd = new FormData(); fd.append('files', foto, foto.name)
       const upRes = await fetch(`${BASE}/gradio_api/upload`, { method:'POST', body:fd })
       if (!upRes.ok) throw new Error(`Upload gagal: ${upRes.status}`)
@@ -760,8 +582,7 @@ export default function HomePage() {
       const filePath = paths?.[0]
       if (!filePath) throw new Error('Path file tidak ditemukan')
 
-      timing.t_hf_upload = performance.now()
-      setStatus(getT(langRef.current, 'sts_classify'))
+      setStatus('Mengklasifikasi dengan CNN RepViT-M1.1...')
       const prRes = await fetch(`${BASE}/gradio_api/call/klasifikasi_kopi`, {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ data:[{ path:filePath, mime_type:foto.type, orig_name:foto.name }] }),
@@ -770,7 +591,7 @@ export default function HomePage() {
       const { event_id } = await prRes.json()
       if (!event_id) throw new Error('event_id tidak ditemukan')
 
-      setStatus(getT(langRef.current, 'sts_waiting'))
+      setStatus('Menunggu hasil AI...')
       const resRes = await fetch(`${BASE}/gradio_api/call/klasifikasi_kopi/${event_id}`)
       if (!resRes.ok) throw new Error(`Hasil gagal: ${resRes.status}`)
 
@@ -813,7 +634,6 @@ export default function HomePage() {
         throw new Error('Tidak ada output dari CNN — cek Hugging Face Space')
       }
       const parsed = parseOutput(out)
-      timing.t_hf_infer = performance.now()
       console.log('CNN parsed:', parsed)
       if (parsed && parsed.bukan_kopi) {
         setBukanKopi(true)
@@ -821,10 +641,6 @@ export default function HomePage() {
       } else if (parsed) {
         setBukanKopi(false)
         setHasilCNN(parsed)
-        // Scroll ke hasil klasifikasi
-        setTimeout(() => {
-          document.getElementById('hasil-section')?.scrollIntoView({ behavior:'smooth', block:'start' })
-        }, 100)
       } else {
         setErrorMsg('Gagal parsing hasil CNN')
       }
@@ -834,7 +650,7 @@ export default function HomePage() {
   }
 
   async function uploadIPFS() {
-    setStatus(getT(langRef.current, 'sts_ipfs'))
+    setStatus('Mengupload foto ke IPFS...')
     const b64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(foto) })
     const res = await fetch('/api/upload-ipfs', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ imageBase64:b64, fileName:foto.name, hasilCNN, namaPetani, lokasiKebun:lokasi, hashFoto:fotoHash }) })
     const data = await res.json()
@@ -854,16 +670,15 @@ export default function HomePage() {
   }
 
   async function mintNFT() {
-    if (!namaPetani.trim()) { alert(getT(langRef.current, 'err_nama')); return }
-    if (!lokasi.trim())     { alert(getT(langRef.current, 'err_lokasi')); return }
-    if (!hasilCNN)          { alert(getT(langRef.current, 'err_cnn')); return }
+    if (!namaPetani.trim()) { alert('Isi Nama Petani!'); return }
+    if (!lokasi.trim())     { alert('Isi Lokasi Kebun!'); return }
+    if (!hasilCNN)          { alert('Klasifikasi CNN dulu!'); return }
     setLoading(true); setErrorMsg('')
-    const t_mint_start = performance.now()  // timing mulai
     try {
-      setStatus(getT(langRef.current, 'sts_metamask'))
+      setStatus('Menghubungkan MetaMask...')
       const address = await connectWallet(); if (!address) return
       const ipfsData = await uploadIPFS()
-      setStatus(getT(langRef.current, 'sts_sending'))
+      setStatus('Mengirim transaksi ke Polygon Amoy...')
       const provider = new ethers.BrowserProvider(window.ethereum)
       const signer   = await provider.getSigner()
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
@@ -895,47 +710,9 @@ export default function HomePage() {
         fotoHash,    // ← SHA-256 hash foto — anti-duplikat v2
         gasOverrides // ← override gas price untuk Polygon Amoy
       )
-      setStatus(getT(langRef.current, 'sts_confirm'))
+      setStatus('Menunggu konfirmasi blockchain...')
       const receipt = await tx.wait()
-      const t_after_blockchain = performance.now()
-      const t_total_mint = (t_after_blockchain - t_mint_start) / 1000
-
-      // ── LATENCY REPORT — copy ke spreadsheet ──
-      console.log('\n' + '='.repeat(50))
-      console.log('⏱️ LATENCY MEASUREMENT REPORT')
-      console.log('='.repeat(50))
-      console.log('T_total (IPFS+Blockchain):', t_total_mint.toFixed(3), 's')
-      console.log('='.repeat(50))
-      console.log('COPY KE SPREADSHEET (T_total_mint detik):')
-      console.log(t_total_mint.toFixed(3))
-      console.log('='.repeat(50) + '\n')
-
       setTxHash(receipt.hash)
-
-      // ── Kirim notifikasi email jika email diisi ──
-      if (email && email.includes('@')) {
-        try {
-          await fetch('/api/send-email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              to:         email,
-              tokenId:    mintedTokenId,
-              txHash:     receipt.hash,
-              jenisKopi:  hasilCNN?.jenis_kopi,
-              grade:      hasilCNN?.grade,
-              confidence: hasilCNN?.confidence,
-              namaPetani,
-              lokasi,
-              lang,
-            })
-          })
-          console.log('Email notifikasi dikirim ke:', email)
-        } catch(e) {
-          console.warn('Email gagal:', e.message)
-          // Tidak gagalkan proses mint jika email error
-        }
-      }
 
       // ============================================================
       // Ambil Token ID dari event log transaksi
@@ -958,7 +735,7 @@ export default function HomePage() {
       // Auto import NFT ke MetaMask wallet user
       // ============================================================
       if (mintedTokenId !== null && window.ethereum) {
-        setStatus(getT(langRef.current, 'sts_addnft'))
+        setStatus('Menambahkan NFT ke MetaMask...')
         try {
           await window.ethereum.request({
             method: 'wallet_watchAsset',
@@ -1041,91 +818,10 @@ export default function HomePage() {
     ? (GRADE_STYLE[hasilCNN.grade] || GRADE_STYLE['Grade B'])
     : GRADE_STYLE['Grade B']
 
-  // Helper: ambil terjemahan, fallback ke 'id' jika belum mounted
-  // Fix hydration mismatch — set mounted setelah render di browser
-  useEffect(() => { setMounted(true) }, [])
-  useEffect(() => { langRef.current = lang }, [lang])
-
-  const t    = (key) => mounted ? (T[lang]?.[key] ?? key) : (T['id']?.[key] ?? key)
-  const tArr = (key) => mounted ? (T[lang]?.[key] ?? []) : (T['id']?.[key] ?? [])
-
-  // ── SSR Guard: loading skeleton saat belum mounted ──
-  if (!mounted) return (
-    <div style={{
-      minHeight:'100vh',
-      background:'linear-gradient(135deg,#F1F8E9,#E8F5E9)',
-      display:'flex',alignItems:'center',justifyContent:'center',
-      flexDirection:'column',gap:16,
-    }}>
-      <div style={{
-        width:56,height:56,borderRadius:'50%',
-        background:'linear-gradient(135deg,#14290F,#2E7D32)',
-        display:'flex',alignItems:'center',justifyContent:'center',
-        fontSize:24,
-        animation:'pulse 1.5s ease-in-out infinite',
-      }}>☕</div>
-      <div style={{
-        fontSize:14,color:'#4B5563',fontFamily:'sans-serif',
-        letterSpacing:1,
-      }}>Loading...</div>
-      <style>{`@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.95)}}`}</style>
-    </div>
-  )
-
   return (
-    <div lang={lang} style={{minHeight:'100vh'}}>
-      {/* Skip to main content — accessibility */}
-      <a href="#main-content"
-         style={{
-           position:'absolute',top:-40,left:0,
-           background:'#14290F',color:'#FFF',
-           padding:'8px 16px',zIndex:9999,
-           borderRadius:'0 0 8px 0',
-           transition:'top .2s',fontSize:13,
-           fontFamily:'sans-serif',
-         }}
-         onFocus={e=>e.target.style.top='0'}
-         onBlur={e=>e.target.style.top='-40px'}
-      >
-        {lang==='id' ? 'Langsung ke konten utama' : 'Skip to main content'}
-      </a>
+    <>
       <BlockchainDoodle/>
-      {/* ══ PWA + SEO + ACCESSIBILITY META TAGS ══ */}
-      <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-      <meta name="theme-color" content="#14290F"/>
-      <meta name="color-scheme" content="light"/>
-      <meta name="apple-mobile-web-app-capable" content="yes"/>
-      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-      <meta name="apple-mobile-web-app-title" content={lang==='id' ? 'Kopi Arabika Web3' : 'Arabica Coffee Web3'}/>
-      <meta name="description" content={lang==='id'
-        ? 'Sistem klasifikasi kopi Arabika berbasis CNN RepViT-M1.1 dan sertifikasi NFT blockchain Polygon. Universitas Jember · Riset Scopus Q1.'
-        : 'Arabica coffee classification system using CNN RepViT-M1.1 and NFT blockchain certification on Polygon. Universitas Jember · Scopus Q1 Research.'}/>
-      <meta name="keywords" content="kopi arabika, arabica coffee, CNN classification, NFT blockchain, Polygon, IPFS, RepViT, Universitas Jember, Ijen Mountain"/>
-      <meta name="author" content="Universitas Jember"/>
-      <meta name="robots" content="index, follow"/>
-
-      {/* Open Graph */}
-      <meta property="og:type" content="website"/>
-      <meta property="og:url" content="https://kopi-arabika-web3.vercel.app"/>
-      <meta property="og:title" content={lang==='id' ? 'Kopi Arabika Web3 — Sertifikasi NFT' : 'Arabica Coffee Web3 — NFT Certification'}/>
-      <meta property="og:description" content={lang==='id'
-        ? 'Klasifikasi CNN 99.78% + Sertifikat NFT Blockchain untuk Kopi Arabika Ijen'
-        : '99.78% CNN Accuracy + Blockchain NFT Certificate for Ijen Arabica Coffee'}/>
-      <meta property="og:image" content="https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=1200&h=630&fit=crop"/>
-      <meta property="og:locale" content={lang==='id' ? 'id_ID' : 'en_US'}/>
-
-      {/* Twitter Card */}
-      <meta name="twitter:card" content="summary_large_image"/>
-      <meta name="twitter:title" content={lang==='id' ? 'Kopi Arabika Web3' : 'Arabica Coffee Web3'}/>
-      <meta name="twitter:description" content={lang==='id'
-        ? 'CNN RepViT-M1.1 · 99.78% · NFT Blockchain Polygon · Universitas Jember'
-        : 'CNN RepViT-M1.1 · 99.78% · NFT Blockchain Polygon · Universitas Jember'}/>
-      <meta name="twitter:image" content="https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=1200&h=630&fit=crop"/>
-
-      {/* PWA */}
-      <link rel="manifest" href="/manifest.json"/>
-      <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=180&h=180&fit=crop"/>
-            <style>{`
+      <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lato:wght@300;400;700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
         body{
@@ -1558,7 +1254,7 @@ export default function HomePage() {
             </div>
             <div className="hdr-text">
               <div className="hdr-title">Kopi Arabika <span>Web3</span></div>
-              <div className="hdr-sub">{t('brand_sub')}</div>
+              <div className="hdr-sub">Universitas Jember · Riset Scopus Q1 · v3 Verified · Acc 99.78%</div>
             </div>
           </div>
           <div className="hdr-right">
@@ -1567,23 +1263,6 @@ export default function HomePage() {
               <span className="bdg bdg-gr">⛓️ Polygon Amoy</span>
               <span className="bdg bdg-b">📦 IPFS Pinata</span>
             </div>
-            {/* LANGUAGE TOGGLE */}
-            <button
-              onClick={() => setLang(l => l === 'id' ? 'en' : 'id')}
-              style={{
-                display:'flex',alignItems:'center',gap:5,
-                padding:'7px 13px',borderRadius:20,
-                background:'rgba(255,255,255,.12)',
-                border:'1.5px solid rgba(255,255,255,.3)',
-                color:'#FFF',fontSize:12,fontWeight:700,
-                cursor:'pointer',letterSpacing:'.5px',
-                transition:'background .2s',
-              }}
-              title={lang==='id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
-            >
-              {lang === 'id' ? '🇬🇧 EN' : '🇮🇩 ID'}
-            </button>
-
             <button
               className={`btn-wallet ${walletAddr ? 'btn-wallet-on' : 'btn-wallet-off'} ${walletLoading ? 'w-loading' : ''}`}
               onClick={handleConnectWallet}
@@ -1591,10 +1270,10 @@ export default function HomePage() {
             >
               <span className={`w-dot ${walletAddr ? 'w-dot-on' : 'w-dot-off'}`}/>
               {walletLoading
-                ? t('sts_connecting')
+                ? '⏳ Menghubungkan...'
                 : walletAddr
                   ? <><span className="w-addr">🦊 {shortAddr(walletAddr)}</span><span className="w-disc">✕ Disconnect</span></>
-                  : t('wallet_connect')
+                  : '🦊 Connect Wallet'
               }
             </button>
           </div>
@@ -1602,24 +1281,24 @@ export default function HomePage() {
       </header>
 
       {/* LAYOUT 2 KOLOM */}
-      <div id="main-content" className="layout">
+      <div className="layout">
 
         {/* ====== KOLOM KIRI ====== */}
         <div>
           {/* Hero + tab info kopi */}
           <div className="hero-card">
-            <div className="hero-title">{lang==="id" ? "Kopi Arabika Nusantara" : "Arabica Coffee Nusantara"}</div>
-            <div className="hero-sub">{t('hero_sub')}</div>
+            <div className="hero-title">Kopi Arabika<br/>Nusantara</div>
+            <div className="hero-sub">5 varietas unggulan terverifikasi AI</div>
             <div className="tabs">
-              {INFO_KOPI[lang||'id'].map((k,i) => (
+              {INFO_KOPI.map((k,i) => (
                 <button key={i} className={`tab ${activeTab===i?'on':''}`} onClick={()=>setActiveTab(i)}>{k.emoji}</button>
               ))}
             </div>
           </div>
           <div className="tab-body-wrap" style={{background:'#FFFFFF',borderRadius:'0 0 18px 18px',padding:'22px',marginTop:'-18px',boxShadow:'0 2px 16px rgba(0,0,0,.06)',border:'1px solid #E4E4DC',borderTop:'none',marginBottom:'20px'}}>
-            <div className="tab-emoji">{INFO_KOPI[lang||'id'][activeTab]?.emoji}</div>
-            <div className="tab-title">{INFO_KOPI[lang||'id'][activeTab]?.judul}</div>
-            <div className="tab-text">{INFO_KOPI[lang||'id'][activeTab]?.isi}</div>
+            <div className="tab-emoji">{INFO_KOPI[activeTab].emoji}</div>
+            <div className="tab-title">{INFO_KOPI[activeTab].judul}</div>
+            <div className="tab-text">{INFO_KOPI[activeTab].isi}</div>
             <div className="stats">
               <div className="stat"><div className="stat-v">900–1500</div><div className="stat-k">Mdpl</div></div>
               <div className="stat"><div className="stat-v">Specialty</div><div className="stat-k">Kategori</div></div>
@@ -1632,10 +1311,10 @@ export default function HomePage() {
           <div className="card">
             <div className="card-head">
               <div className="head-ico">📖</div>
-              <div className="head-title">{t('cara_title')}</div>
+              <div className="head-title">Cara Penggunaan</div>
             </div>
             <div className="cara-list">
-              {CARA_PAKAI[lang||'id'].map((c,i)=>(
+              {CARA_PAKAI.map((c,i)=>(
                 <div key={i} className="cara-item">
                   <div className="cara-no">{c.no}</div>
                   <div>
@@ -1651,7 +1330,7 @@ export default function HomePage() {
           <div className="card">
             <div className="card-head">
               <div className="head-ico">⚙️</div>
-              <div className="head-title">{t('tech_title')}</div>
+              <div className="head-title">Teknologi yang Digunakan</div>
             </div>
             <div className="tech-grid">
               {[
@@ -1674,7 +1353,7 @@ export default function HomePage() {
           <div className="card">
             <div className="card-head">
               <div className="head-ico">🔐</div>
-              <div className="head-title">{t('sec_title')}</div>
+              <div className="head-title">Security Architecture</div>
             </div>
             <div style={{padding:'20px'}}>
 
@@ -1835,7 +1514,7 @@ export default function HomePage() {
                     SECURITY SCORE
                   </div>
                   <div style={{fontSize:11,color:'rgba(255,255,255,.3)',fontFamily:'sans-serif'}}>
-                    lang==='id' ? lang==='id' ? 'Kopi Arabika Web3 — v2' : 'Arabica Coffee Web3 — v2' : 'Arabica Coffee Web3 — v2'
+                    Kopi Arabika Web3 — v2
                   </div>
                 </div>
                 <div style={{textAlign:'right'}}>
@@ -1975,7 +1654,7 @@ export default function HomePage() {
               }}>
                 <div style={{fontSize:9,color:'rgba(167,243,208,.6)',fontFamily:'monospace',letterSpacing:'1px',display:'flex',alignItems:'center',gap:6}}>
                   <span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:'#10B981',boxShadow:'0 0 6px #10B981'}}/>
-                  <span>CONTRACT V3 · VERIFIED</span>
+                  CONTRACT V3 · VERIFIED
                 </div>
                 <a
                   href="https://amoy.polygonscan.com/address/0x5392C2F10d8Dea3e498726BcB8c806E8DA78834b#code"
@@ -1999,46 +1678,41 @@ export default function HomePage() {
           <div className="card">
             <div className="card-head">
               <div className="head-ico">📸</div>
-              <div className="head-title">{t('form_title')}</div>
+              <div className="head-title">Klasifikasi Biji Kopi dengan AI</div>
             </div>
             <div style={{padding:'20px'}}>
-              <p className="sec-label">{t('form_foto')}</p>
-              <div className="upload-zone mg-b-4" onClick={()=>fileRef.current.click()} role="button" tabIndex={0} aria-label={lang==='id' ? 'Upload foto biji kopi' : 'Upload coffee bean photo'} onKeyDown={e=>e.key==='Enter'&&fileRef.current.click()}>
+              <p className="sec-label">Foto Biji Kopi</p>
+              <div className="upload-zone mg-b-4" onClick={()=>fileRef.current.click()}>
                 {preview
                   ? <img src={preview} alt="preview" style={{width:'100%',maxHeight:'260px',objectFit:'contain'}}/>
-                  : <div className="up-ph"><div className="up-ico">📷</div><div className="up-txt">{t('form_upload_txt')}</div><div className="up-sub">{t('form_upload_sub')}</div></div>
+                  : <div className="up-ph"><div className="up-ico">📷</div><div className="up-txt">Klik untuk upload foto</div><div className="up-sub">Dari kamera HP atau galeri · JPG, PNG</div></div>
                 }
               </div>
               <input ref={fileRef} type="file" accept="image/*" style={{display:'none'}} onChange={handleFoto} capture="environment"/>
 
-              <p className="sec-label mg-t-5">{t('form_petani')}</p>
+              <p className="sec-label mg-t-5">Data Petani</p>
               <div className="mg-b-3">
-                <label className="lbl">👤 {t('form_nama')}</label>
-                <input className="inp" placeholder={t('form_nama_ph')} value={namaPetani} onChange={e=>setNamaPetani(e.target.value)}/>
+                <label className="lbl">👤 Nama Petani</label>
+                <input className="inp" placeholder="Contoh: Pak Ahmad Fauzi" value={namaPetani} onChange={e=>setNamaPetani(e.target.value)}/>
               </div>
               <div className="mg-b-4">
-                <label className="lbl">📍 {t('form_lokasi')}</label>
-                <input className="inp" placeholder={t('form_lokasi_ph')} value={lokasi} onChange={e=>setLokasi(e.target.value)}/>
-              </div>
-              <div className="mg-b-4">
-                <label className="lbl">📧 {t('form_email')}</label>
-                <input className="inp" type="email" placeholder={t('form_email_ph')} value={email} onChange={e=>setEmail(e.target.value)}/>
-                <div style={{fontSize:10,color:'#9CA3AF',marginTop:4}}>{t('form_email_sub')}</div>
+                <label className="lbl">📍 Lokasi Kebun</label>
+                <input className="inp" placeholder="Contoh: Desa Tugusari, Bondowoso, Jawa Timur" value={lokasi} onChange={e=>setLokasi(e.target.value)}/>
               </div>
 
-              <button className="btn-go" onClick={klasifikasiCNN} disabled={!foto||loading} aria-label={t("btn_cnn")} title={t("btn_cnn")}>
+              <button className="btn-go" onClick={klasifikasiCNN} disabled={!foto||loading}>
                 {loading&&!hasilCNN
-                  ? <span style={{color:'#FFFFFF',fontWeight:800,fontSize:14,textShadow:'0 2px 4px rgba(0,0,0,.4)',letterSpacing:'1px'}}>⏳ {status||t('btn_proc')}</span>
-                  : <span style={{color:'#FFFFFF',fontWeight:800,fontSize:14,textShadow:'0 2px 4px rgba(0,0,0,.4)',letterSpacing:'1px'}}>{`🔍 ${t('btn_cnn')}`}</span>}
+                  ? <span style={{color:'#FFFFFF',fontWeight:800,fontSize:14,textShadow:'0 2px 4px rgba(0,0,0,.4)',letterSpacing:'1px'}}>⏳ {status||'Memproses...'}</span>
+                  : <span style={{color:'#FFFFFF',fontWeight:800,fontSize:14,textShadow:'0 2px 4px rgba(0,0,0,.4)',letterSpacing:'1px'}}>🔍 Klasifikasi dengan CNN</span>}
               </button>
               {errorMsg && <div className="err">{errorMsg}</div>}
 
               {/* Info hash foto */}
               {fotoHash && !duplikat && (
                 <div style={{marginTop:10,background:'#F0FDF4',border:'1px solid #BBF7D0',borderRadius:10,padding:'8px 12px',fontSize:11}}>
-                  <div style={{color:'#166534',fontWeight:700,marginBottom:2}}>🔐 {t('fp_title')}</div>
+                  <div style={{color:'#166534',fontWeight:700,marginBottom:2}}>🔐 Fingerprint SHA-256 Foto</div>
                   <div style={{fontFamily:'monospace',color:'#166534',wordBreak:'break-all',fontSize:10}}>{fotoHash.slice(0,32)}...{fotoHash.slice(-8)}</div>
-                  <div style={{color:'#6B7280',marginTop:2,fontSize:10}}>{t('fp_desc')}</div>
+                  <div style={{color:'#6B7280',marginTop:2,fontSize:10}}>Hash unik ini membuktikan keaslian foto Anda di blockchain</div>
                 </div>
               )}
 
@@ -2046,7 +1720,7 @@ export default function HomePage() {
               {duplikat && (
                 <div style={{marginTop:10,background:duplikat.warna,border:`1.5px solid ${duplikat.border}`,borderRadius:10,padding:'12px 14px'}}>
                   <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>
-                    {duplikat.icon} {duplikat.tipe === 'IDENTIK' ? '🚫 ' + t('dup_title') : (lang==='id' ? '⚠️ PERINGATAN: Foto Sangat Mirip' : '⚠️ WARNING: Very Similar Photo')}
+                    {duplikat.icon} {duplikat.tipe === 'IDENTIK' ? 'FOTO TERDETEKSI DUPLIKAT!' : 'PERINGATAN: Foto Sangat Mirip'}
                   </div>
                   <div style={{fontSize:12,lineHeight:1.6,color:'#374151'}}>{duplikat.pesan}</div>
                   {duplikat.tokenId && (
@@ -2085,7 +1759,7 @@ export default function HomePage() {
                   <div style={{
                     fontSize:16,fontWeight:700,color:'#BF360C',
                     fontFamily:'sans-serif',marginBottom:3,
-                  }}>{t('ood_title')}</div>
+                  }}>Gambar Tidak Dapat Diklasifikasi</div>
                   <div style={{fontSize:12,color:'#E64A19',fontFamily:'sans-serif'}}>
                     Bukan biji kopi Arabika yang valid
                   </div>
@@ -2099,7 +1773,7 @@ export default function HomePage() {
                 border:'1px solid rgba(255,109,0,.2)',
               }}>
                 <div style={{fontSize:13,fontWeight:700,color:'#BF360C',marginBottom:8,fontFamily:'sans-serif'}}>
-                  {t('ood_why')}
+                  ❌ Mengapa ditolak?
                 </div>
                 <div style={{fontSize:12,color:'#5D4037',lineHeight:1.8,fontFamily:'sans-serif'}}>
                   Model CNN RepViT-M1.1 tidak mendeteksi ciri-ciri biji kopi Arabika pada gambar yang Anda upload.
@@ -2110,192 +1784,178 @@ export default function HomePage() {
               {/* Panduan */}
               <div style={{marginBottom:14}}>
                 <div style={{fontSize:12,fontWeight:700,color:'#E64A19',marginBottom:8,fontFamily:'sans-serif'}}>
-                  {t('ood_guide')}
+                  ✅ Panduan foto yang benar:
                 </div>
-                {tArr('ood_guides').map((g,i) => (
-                  <div key={i} style={{display:'flex',gap:8,marginBottom:3,alignItems:'flex-start',fontSize:11,color:'#5D4037',fontFamily:'sans-serif'}}>
-                    <span>✅</span><span>{g}</span>
+                {[
+                  ['📸','Foto biji kopi Arabika (belum digiling/diseduh)'],
+                  ['☀️','Pencahayaan cukup, tidak gelap atau silau'],
+                  ['⬜','Latar belakang polos (putih atau terang)'],
+                  ['🔭','Fokus jelas pada biji kopi, tidak blur'],
+                  ['📐','Ambil dari atas (top-view) lebih baik'],
+                  ['🚫','Hindari foto minuman kopi, bubuk kopi, atau tanaman kopi'],
+                ].map(([ico, txt], i) => (
+                  <div key={i} style={{
+                    display:'flex',gap:8,alignItems:'center',
+                    fontSize:12,color:'#4E342E',fontFamily:'sans-serif',
+                    padding:'4px 0',
+                  }}>
+                    <span style={{fontSize:14}}>{ico}</span>
+                    <span>{txt}</span>
                   </div>
                 ))}
               </div>
 
-              {/* ── BUTTON UPLOAD ULANG ── */}
-              <button
-                onClick={() => { setFoto(null); setPreview(null); setBukanKopi(false); setHasilCNN(null) }}
-                style={{
-                  width:'100%',padding:'10px 0',marginTop:8,
-                  background:'linear-gradient(135deg,#BF360C,#E64A19)',
-                  color:'#FFF',border:'none',borderRadius:10,
-                  fontSize:13,fontWeight:700,cursor:'pointer',
-                  fontFamily:'sans-serif',letterSpacing:'.5px',
-                }}
-              >
-                {t('ood_btn')}
-              </button>
-
-              {/* ── DAFTAR VARIETAS ── */}
-              <div style={{marginTop:14,padding:'10px 12px',background:'rgba(191,54,12,.06)',borderRadius:8}}>
+              {/* 5 Kelas */}
+              <div style={{
+                background:'rgba(255,255,255,.6)',borderRadius:10,
+                padding:'12px 14px',marginBottom:14,
+                border:'1px solid rgba(255,109,0,.15)',
+              }}>
                 <div style={{fontSize:11,fontWeight:700,color:'#BF360C',marginBottom:8,fontFamily:'monospace',letterSpacing:1,textTransform:'uppercase'}}>
-                  {t('ood_varieties')}
+                  5 Varietas yang dapat diidentifikasi:
                 </div>
-                {INFO_KOPI[lang||'id'].map((k,i) => (
-                  <div key={i} style={{display:'flex',alignItems:'center',gap:6,marginBottom:4,fontSize:11,color:'#5D4037',fontFamily:'sans-serif'}}>
-                    <span style={{fontSize:14}}>{k.emoji}</span>
-                    <span style={{fontWeight:600}}>{k.judul}</span>
+                {[
+                  ['🌋','Arabika Natural Ijen','Bondowoso, Jawa Timur'],
+                  ['🫘','Arabika Peaberry','Biji bulat tunggal unik'],
+                  ['🧪','Arabika Anaerob Carbonic','Fermentasi anaerobik'],
+                  ['🍊','Arabika Orange Bourbon','Varietas Bourbon langka'],
+                  ['🏔️','Arabika Blue Mountain','Premium adaptasi Jamaica'],
+                ].map(([ico, nama, desc], i) => (
+                  <div key={i} style={{
+                    display:'flex',gap:8,alignItems:'center',
+                    padding:'5px 0',
+                    borderBottom: i < 4 ? '0.5px solid rgba(255,109,0,.1)' : 'none',
+                  }}>
+                    <span style={{fontSize:16}}>{ico}</span>
+                    <div>
+                      <div style={{fontSize:12,fontWeight:600,color:'#4E342E',fontFamily:'sans-serif'}}>{nama}</div>
+                      <div style={{fontSize:10,color:'#8D6E63',fontFamily:'sans-serif'}}>{desc}</div>
+                    </div>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
 
-          {/* ════════════════════════════════════════════
-              DUPLIKAT CARD
-          ════════════════════════════════════════════ */}
-          {duplikat && (
-            <div style={{
-              background:'linear-gradient(135deg,#FFF3E0,#FFF8E1)',
-              border:'2px solid #FF8F00',borderRadius:16,padding:20,marginTop:16,
-              fontFamily:'sans-serif',
-            }}>
-              <div style={{fontSize:16,fontWeight:700,color:'#E65100',marginBottom:8}}>
-                {duplikat.icon} {duplikat.tipe === 'IDENTIK'
-                  ? (lang==='id' ? 'FOTO TERDETEKSI DUPLIKAT!' : 'DUPLICATE PHOTO DETECTED!')
-                  : (lang==='id' ? 'PERINGATAN: Foto Sangat Mirip' : 'WARNING: Very Similar Photo')}
-              </div>
-              <div style={{fontSize:13,color:'#BF360C',marginBottom:4}}>{t('dup_desc')} <strong>#{duplikat.tokenId}</strong></div>
-              <div style={{fontSize:13,color:'#BF360C',marginBottom:12}}>{t('dup_already')}</div>
-              <a href={`https://amoy.polygonscan.com/token/0x5392C2F10d8Dea3e498726BcB8c806E8DA78834b?a=${duplikat.tokenId}`}
-                 target="_blank" rel="noreferrer"
-                 style={{display:'inline-block',padding:'8px 16px',background:'#E65100',color:'#FFF',
-                         borderRadius:8,fontSize:12,fontWeight:700,textDecoration:'none'}}>
-                {t('dup_view')}
-              </a>
-              <div style={{marginTop:10,fontSize:11,color:'#BF360C',fontStyle:'italic'}}>{t('dup_cannot')}</div>
-            </div>
-          )}
-
-          {/* ══ HASIL KLASIFIKASI CNN ══ */}
-          {hasilCNN && !hasilCNN.bukan_kopi && !txHash && (<div id="hasil-section">
-            <div className="hasil-box mg-t-4" style={{
-              background: gs.bg,
-              borderColor: gs.border,
-            }}>
-              <div className="hasil-title" style={{color: gs.text}}>
-                {gs.emoji} {t('hasil_title')}
-              </div>
-
-              <div className="hasil-row">
-                <span className="hasil-lbl">{t('label_jenis')}</span>
-                <span className="hasil-val" style={{color: gs.text}}>{hasilCNN.jenis_kopi}</span>
-              </div>
-              <div className="hasil-row">
-                <span className="hasil-lbl">{t('label_grade')}</span>
-                <span className="hasil-val" style={{color: gs.text}}>{hasilCNN.grade}</span>
-              </div>
-              <div className="hasil-row">
-                <span className="hasil-lbl">Confidence</span>
-                <span className="hasil-val" style={{color: gs.text}}>{hasilCNN.confidence?.toFixed(1)}%</span>
-              </div>
-
-              <div className="bar-bg">
-                <div className="bar-fg" style={{
-                  width: `${hasilCNN.confidence}%`,
-                  background: gs.border
-                }}/>
-              </div>
-
+              {/* Tombol coba lagi */}
               <button
-                className="btn-mint"
-                aria-label={t("btn_mint")}
-                onClick={mintNFT}
-                disabled={loading || !walletAddr}
-                style={{marginTop:8}}
-              >
-                {loading
-                  ? `⏳ ${status || t('btn_proc')}`
-                  : `🪙 ${t('btn_mint')}`
-                }
-              </button>
-              {!walletAddr && (
-                <div style={{textAlign:'center',fontSize:11,color:'#9CA3AF',marginTop:6}}>
-                  {lang==='id' ? t('wallet_info') : t('wallet_need')}
-                </div>
-              )}
-              {errorMsg && <div className="err">{errorMsg}</div>}
-              {status && <div className="sts">{status}</div>}
-            </div>
-          )}
-
-          {/* ══ NFT SUKSES ══ */}
-          {txHash && (
-            <div className="sukses mg-t-4">
-              <div className="sukses-title">🎉 {t('nft_title')}</div>
-
-              <div className="hash-box" style={{cursor:'pointer'}}
-                onClick={() => { navigator.clipboard?.writeText(String(tokenId)); alert('Token ID copied!') }}>
-                <div className="hash-lbl">{t('nft_token')} <span style={{fontSize:10,color:'#9CA3AF'}}>📋 tap to copy</span></div>
-                <div className="hash-val">#{tokenId ?? '—'}</div>
-              </div>
-              <div className="hash-box" style={{cursor:'pointer'}}
-                onClick={() => { navigator.clipboard?.writeText(txHash); alert('TX Hash copied!') }}>
-                <div className="hash-lbl">Transaction Hash <span style={{fontSize:10,color:'#9CA3AF'}}>📋 tap to copy</span></div>
-                <div className="hash-val">{txHash.slice(0,20)}...{txHash.slice(-8)}</div>
-              </div>
-
-              <a className="btn-a a-blue"
-                href={`https://amoy.polygonscan.com/tx/${txHash}`}
-                target="_blank" rel="noreferrer"
-              >
-                🔍 {t('nft_poly')}
-              </a>
-              {cidFoto && (
-                <a className="btn-a a-orange"
-                  href={`https://${PINATA_GATEWAY}/ipfs/${cidFoto}`}
-                  target="_blank" rel="noreferrer"
-                >
-                  🖼️ {t('nft_ipfs')}
-                </a>
-              )}
-              {tokenId !== null && (
-                <button
-                  className="btn-a a-ghost"
-                  onClick={addNFTtoWallet}
-                  disabled={addingNFT}
-                >
-                  {addingNFT ? t('adding_nft') : nftAdded ? `✅ ${t('nft_added')}` : `💼 ${t('nft_add')}`}
-                </button>
-              )}
-              {/* Email confirmation */}
-              {email && (
-                <div style={{
-                  background:'#F0FDF4',border:'1px solid #BBF7D0',
-                  borderRadius:8,padding:'10px 14px',marginBottom:8,
-                  fontSize:12,color:'#15803D',textAlign:'center',
-                }}>
-                  📧 {lang==='id'
-                    ? `Notifikasi dikirim ke ${email}`
-                    : `Notification sent to ${email}`}
-                </div>
-              )}
-
-              <button
-                className="btn-a a-ghost"
                 onClick={() => {
-                  setFoto(null); setPreview(null); setHasilCNN(null)
-                  setTxHash(''); setCidFoto(''); setErrorMsg('')
-                  setDuplikat(null); setFotoHash(''); setBukanKopi(false)
-                  setTokenId(null); setNftAdded(false)
+                  setBukanKopi(false); setFoto(null); setPreview(null)
+                  setErrorMsg(''); setStatus(''); setDuplikat(null)
+                  setFotoHash('')
                 }}
-                style={{marginTop:4}}
+                style={{
+                  width:'100%',padding:'13px',
+                  background:'linear-gradient(135deg,#E64A19,#FF7043)',
+                  color:'#FFFFFF',border:'none',borderRadius:12,
+                  fontSize:13,fontWeight:700,fontFamily:'sans-serif',
+                  cursor:'pointer',letterSpacing:'.3px',
+                  boxShadow:'0 4px 14px rgba(230,74,25,.4)',
+                  display:'flex',alignItems:'center',justifyContent:'center',gap:8,
+                }}
               >
-                ↩️ {t('btn_new')}
+                📷 Upload Foto Biji Kopi yang Benar
               </button>
             </div>
           )}
 
+          {/* Hasil CNN */}
+          {hasilCNN && !txHash && (
+            <div className="card">
+              <div className="card-head">
+                <div className="head-ico">{gs.emoji}</div>
+                <div className="head-title">Hasil Klasifikasi AI</div>
+              </div>
+              <div style={{padding:'20px'}}>
+                <div className="hasil-box" style={{background:gs.bg,borderColor:gs.border}}>
+                  <div className="hasil-title" style={{color:gs.text}}>{gs.emoji} {hasilCNN.jenis_kopi.replace(/_/g,' ')}</div>
+                  <div className="hasil-row">
+                    <span className="hasil-lbl">Confidence CNN</span>
+                    <span className="hasil-val">{hasilCNN.confidence.toFixed(2)}%</span>
+                  </div>
+                  <div className="bar-bg">
+                    <div className="bar-fg" style={{width:`${hasilCNN.confidence}%`,background:gs.border}}/>
+                  </div>
+                  <div className="hasil-row">
+                    <span className="hasil-lbl">Grade Kualitas</span>
+                    <span className="hasil-val" style={{color:gs.text}}>{gs.emoji} {hasilCNN.grade}</span>
+                  </div>
+                  <div className="hasil-row">
+                    <span className="hasil-lbl">Model AI</span>
+                    <span className="hasil-val" style={{fontSize:11}}>RepViT-M1.1 (CVPR 2024)</span>
+                  </div>
+                </div>
+                <div className="mg-t-4">
+                  <button className="btn-mint" onClick={mintNFT} disabled={loading}>
+                    {loading ? <><span>⏳</span>{status}</> : <><span>🔗</span>Mint NFT ke Blockchain Polygon</>}
+                  </button>
+                  {status&&!loading && <p className="sts">{status}</p>}
+                  {errorMsg && <div className="err">{errorMsg}</div>}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Sukses NFT */}
+          {txHash && (
+            <div className="sukses">
+              <div className="sukses-title">🎉 NFT Berhasil Di-mint!</div>
+
+              {/* Token ID */}
+              {tokenId !== null && (
+                <div className="hash-box" style={{background:'#F0FDF4',borderColor:'#86EFAC'}}>
+                  <div className="hash-lbl">🏷️ Token ID NFT Anda</div>
+                  <div style={{fontSize:20,fontWeight:700,color:'#14532D',fontFamily:'monospace'}}>#{tokenId}</div>
+                </div>
+              )}
+
+              <div className="hash-box"><div className="hash-lbl">Transaction Hash</div><div className="hash-val">{txHash}</div></div>
+              {cidFoto && <div className="hash-box"><div className="hash-lbl">CID Foto IPFS</div><div className="hash-val">{cidFoto}</div></div>}
+
+              {/* Tombol Tambah ke MetaMask */}
+              {!nftAdded ? (
+                <button onClick={addNFTtoWallet} disabled={addingNFT}
+                  style={{width:'100%',padding:'13px',background:addingNFT?'#D1D5DB':'linear-gradient(135deg,#F97316,#EA580C)',
+                    color:'#FFF',border:'none',borderRadius:11,fontSize:13,fontWeight:700,
+                    fontFamily:'Lato,sans-serif',cursor:addingNFT?'wait':'pointer',
+                    display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginBottom:8
+                  }}
+                >
+                  {addingNFT ? '⏳ Menambahkan ke wallet...' : '🦊 Tambah NFT ke MetaMask Wallet'}
+                </button>
+              ) : (
+                <div style={{background:'#F0FDF4',border:'1.5px solid #86EFAC',borderRadius:11,
+                  padding:'14px',marginBottom:8,textAlign:'center'}}>
+                  <div style={{fontSize:24,marginBottom:4}}>✅</div>
+                  <div style={{fontSize:13,fontWeight:700,color:'#14532D'}}>NFT berhasil masuk ke MetaMask!</div>
+                  <div style={{fontSize:11,color:'#6B7280',marginTop:3}}>Buka MetaMask → tab <strong>NFTs</strong> untuk melihat</div>
+                </div>
+              )}
+
+              <a href={`https://amoy.polygonscan.com/tx/${txHash}`} target="_blank" rel="noreferrer" className="btn-a a-blue">🔍 Verifikasi di Polygonscan</a>
+              {cidFoto && <a href={`https://${PINATA_GATEWAY}/ipfs/${cidFoto}`} target="_blank" rel="noreferrer" className="btn-a a-orange">🖼️ Lihat Foto di IPFS</a>}
+
+              {/* Panduan import manual */}
+              {tokenId !== null && (
+                <div style={{background:'#FFF7ED',border:'1px solid #FED7AA',borderRadius:11,
+                  padding:'12px 14px',marginBottom:8,fontSize:11,color:'#92400E',lineHeight:1.6}}>
+                  <strong>📋 Import Manual ke MetaMask (jika tombol di atas gagal):</strong><br/>
+                  1. Buka MetaMask → tab <strong>NFTs</strong><br/>
+                  2. Klik <strong>Import NFT</strong><br/>
+                  3. Contract Address: <code style={{fontSize:9,wordBreak:'break-all',display:'block',marginTop:2}}>{CONTRACT_ADDRESS}</code>
+                  4. Token ID: <strong>#{tokenId}</strong>
+                </div>
+              )}
+
+              <button className="btn-a a-ghost" onClick={()=>{
+                setFoto(null);setPreview(null);setHasilCNN(null);
+                setTxHash('');setCidFoto('');setNamaPetani('');setLokasi('');
+                setStatus('');setErrorMsg('');setTokenId(null);setNftAdded(false);
+                setBukanKopi(false);setDuplikat(null);setFotoHash('');
+              }}>↩️ Klasifikasi Kopi Baru</button>
+            </div>
+          )}
         </div>
+
       </div>
-      </div>
-    </div>
+    </>
   )
 }
