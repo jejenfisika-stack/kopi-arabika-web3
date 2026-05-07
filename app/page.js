@@ -1602,7 +1602,7 @@ export default function HomePage() {
       </header>
 
       {/* LAYOUT 2 KOLOM */}
-      <main id="main-content" className="layout">
+      <div id="main-content" className="layout">
 
         {/* ====== KOLOM KIRI ====== */}
         <div>
@@ -1975,7 +1975,7 @@ export default function HomePage() {
               }}>
                 <div style={{fontSize:9,color:'rgba(167,243,208,.6)',fontFamily:'monospace',letterSpacing:'1px',display:'flex',alignItems:'center',gap:6}}>
                   <span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:'#10B981',boxShadow:'0 0 6px #10B981'}}/>
-                  CONTRACT V3 · VERIFIED
+                  <span>CONTRACT V3 · VERIFIED</span>
                 </div>
                 <a
                   href="https://amoy.polygonscan.com/address/0x5392C2F10d8Dea3e498726BcB8c806E8DA78834b#code"
@@ -2294,7 +2294,8 @@ export default function HomePage() {
           )}
 
         </div>
-      </main>
+      </div>
+      </div>
     </div>
   )
 }
