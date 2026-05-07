@@ -64,6 +64,11 @@ const CONTRACT_ABI = [
   },
 ]
 
+// Helper terjemahan — bisa diakses dari dalam async functions
+function getT(lang, key) {
+  return T?.[lang]?.[key] ?? T?.['id']?.[key] ?? key
+}
+
 const GRADE_STYLE = {
   'Premium': { bg:'#FEF9C3', border:'#EAB308', text:'#713F12', emoji:'🏆' },
   'Grade A': { bg:'#EFF6FF', border:'#3B82F6', text:'#1E3A8A', emoji:'⭐' },
@@ -474,6 +479,7 @@ export default function HomePage() {
   const [verifying, setVerifying]   = useState(false)
   const [bukanKopi, setBukanKopi]   = useState(false)
   const [lang, setLang]             = useState('id')  // 'id' | 'en'
+  const langRef = useRef('id')  // ref untuk akses lang di async functions
   const [email, setEmail]           = useState('')     // untuk notifikasi
   const [mounted, setMounted]       = useState(false)  // anti-hydration
   const [walletAddr, setWalletAddr] = useState('')
@@ -698,7 +704,7 @@ export default function HomePage() {
   }
 
   async function klasifikasiCNN() {
-    if (!foto) { alert('Pilih foto kopi terlebih dahulu!'); return }
+    if (!foto) { alert(getT(langRef.current, 'err_foto')); return }
     setLoading(true); setHasilCNN(null); setErrorMsg(''); setDuplikat(null)
 
     // ── TIMING MEASUREMENT ──
@@ -715,7 +721,7 @@ export default function HomePage() {
 
     // ── Verifikasi foto sebelum klasifikasi ──
     try {
-      setStatus('🔍 Memverifikasi keaslian foto...')
+      setStatus(getT(langRef.current, 'sts_verify'))
       const hash = fotoHash || await hitungHashFoto(foto)
       if (!fotoHash) setFotoHash(hash)
 
@@ -746,7 +752,7 @@ export default function HomePage() {
     }
     try {
       const BASE = 'https://jejenFis06-kopi-arabika-classifier.hf.space'
-      setStatus('Mengunggah foto ke model AI...')
+      setStatus(getT(langRef.current, 'sts_upload'))
       const fd = new FormData(); fd.append('files', foto, foto.name)
       const upRes = await fetch(`${BASE}/gradio_api/upload`, { method:'POST', body:fd })
       if (!upRes.ok) throw new Error(`Upload gagal: ${upRes.status}`)
@@ -755,7 +761,7 @@ export default function HomePage() {
       if (!filePath) throw new Error('Path file tidak ditemukan')
 
       timing.t_hf_upload = performance.now()
-      setStatus('Mengklasifikasi dengan CNN RepViT-M1.1...')
+      setStatus(getT(langRef.current, 'sts_classify'))
       const prRes = await fetch(`${BASE}/gradio_api/call/klasifikasi_kopi`, {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ data:[{ path:filePath, mime_type:foto.type, orig_name:foto.name }] }),
@@ -764,7 +770,7 @@ export default function HomePage() {
       const { event_id } = await prRes.json()
       if (!event_id) throw new Error('event_id tidak ditemukan')
 
-      setStatus('Menunggu hasil AI...')
+      setStatus(getT(langRef.current, 'sts_waiting'))
       const resRes = await fetch(`${BASE}/gradio_api/call/klasifikasi_kopi/${event_id}`)
       if (!resRes.ok) throw new Error(`Hasil gagal: ${resRes.status}`)
 
@@ -828,7 +834,7 @@ export default function HomePage() {
   }
 
   async function uploadIPFS() {
-    setStatus('Mengupload foto ke IPFS...')
+    setStatus(getT(langRef.current, 'sts_ipfs'))
     const b64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(foto) })
     const res = await fetch('/api/upload-ipfs', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ imageBase64:b64, fileName:foto.name, hasilCNN, namaPetani, lokasiKebun:lokasi, hashFoto:fotoHash }) })
     const data = await res.json()
@@ -848,16 +854,16 @@ export default function HomePage() {
   }
 
   async function mintNFT() {
-    if (!namaPetani.trim()) { alert('Isi Nama Petani terlebih dahulu!'); return }
-    if (!lokasi.trim())     { alert('Isi Lokasi Kebun terlebih dahulu!'); return }
-    if (!hasilCNN)          { alert('Klasifikasi CNN dulu!'); return }
+    if (!namaPetani.trim()) { alert(getT(langRef.current, 'err_nama')); return }
+    if (!lokasi.trim())     { alert(getT(langRef.current, 'err_lokasi')); return }
+    if (!hasilCNN)          { alert(getT(langRef.current, 'err_cnn')); return }
     setLoading(true); setErrorMsg('')
     const t_mint_start = performance.now()  // timing mulai
     try {
-      setStatus('Menghubungkan MetaMask...')
+      setStatus(getT(langRef.current, 'sts_metamask'))
       const address = await connectWallet(); if (!address) return
       const ipfsData = await uploadIPFS()
-      setStatus('Mengirim transaksi ke Polygon Amoy...')
+      setStatus(getT(langRef.current, 'sts_sending'))
       const provider = new ethers.BrowserProvider(window.ethereum)
       const signer   = await provider.getSigner()
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
@@ -889,7 +895,7 @@ export default function HomePage() {
         fotoHash,    // ← SHA-256 hash foto — anti-duplikat v2
         gasOverrides // ← override gas price untuk Polygon Amoy
       )
-      setStatus('Menunggu konfirmasi blockchain...')
+      setStatus(getT(langRef.current, 'sts_confirm'))
       const receipt = await tx.wait()
       const t_after_blockchain = performance.now()
       const t_total_mint = (t_after_blockchain - t_mint_start) / 1000
@@ -952,7 +958,7 @@ export default function HomePage() {
       // Auto import NFT ke MetaMask wallet user
       // ============================================================
       if (mintedTokenId !== null && window.ethereum) {
-        setStatus('Menambahkan NFT ke MetaMask...')
+        setStatus(getT(langRef.current, 'sts_addnft'))
         try {
           await window.ethereum.request({
             method: 'wallet_watchAsset',
@@ -1038,6 +1044,7 @@ export default function HomePage() {
   // Helper: ambil terjemahan, fallback ke 'id' jika belum mounted
   // Fix hydration mismatch — set mounted setelah render di browser
   useEffect(() => { setMounted(true) }, [])
+  useEffect(() => { langRef.current = lang }, [lang])
 
   const t    = (key) => mounted ? (T[lang]?.[key] ?? key) : (T['id']?.[key] ?? key)
   const tArr = (key) => mounted ? (T[lang]?.[key] ?? []) : (T['id']?.[key] ?? [])
