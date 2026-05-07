@@ -106,7 +106,7 @@ const CARA_PAKAI = {
 // ── KAMUS TERJEMAHAN ──
 const T = {
   id: {
-    brand_sub:     'Riset Unggulan Universitas Jember',
+    brand_sub:     'Universitas Jember · Riset Scopus Q1 · v3 Verified · Acc 99.78%',
     hero_title:    'Kopi Arabika Nusantara',
     hero_sub:      '5 Varietas Unggulan Terverifikasi AI',
     cara_title:    'Cara Penggunaan',
@@ -117,6 +117,9 @@ const T = {
     form_nama_ph:  'Contoh: Pak Ahmad Fauzi',
     form_lokasi:   'Lokasi Kebun',
     form_lokasi_ph:'Contoh: Desa Tugusari, Bondowoso, Jawa Timur',
+    form_email:    'Email (opsional)',
+    form_email_ph: 'Contoh: petani@gmail.com',
+    form_email_sub:'Untuk notifikasi saat NFT berhasil di-mint',
     form_up_txt:   'Klik untuk upload foto',
     form_up_sub:   'Dari kamera HP atau galeri · JPG, PNG',
     btn_cnn:       'Klasifikasi dengan CNN',
@@ -152,6 +155,19 @@ const T = {
     err_lokasi:    'Isi Lokasi Kebun terlebih dahulu!',
     err_foto:      'Pilih foto kopi terlebih dahulu!',
     err_cnn:       'Klasifikasi CNN dulu!',
+    // Hasil klasifikasi labels
+    label_jenis:   t('label_jenis'),
+    label_grade:   'Grade Kualitas',
+    label_conf:    'Confidence',
+    label_asal:    'Asal',
+    label_karakter:'Karakter',
+    label_proses:  'Proses',
+    // Wallet
+    wallet_need:   t('wallet_need'),
+    wallet_disc:   'Disconnect',
+    // NFT sukses tambahan
+    nft_cert:      'Lihat Sertifikat',
+    nft_share:     'Bagikan Sertifikat',
     // Status messages
     sts_verify:    'Memverifikasi keaslian foto...',
     sts_upload:    'Mengunggah foto ke model AI...',
@@ -162,14 +178,14 @@ const T = {
     sts_sending:   'Mengirim transaksi ke Polygon Amoy...',
     sts_confirm:   'Menunggu konfirmasi blockchain...',
     sts_addnft:    'Menambahkan NFT ke MetaMask...',
-    sts_connecting:'⏳ Menghubungkan...',
+    sts_connecting:lang==='id' ? '⏳ Menghubungkan...' : '⏳ Connecting...',
     // Connect wallet info
-    wallet_info:   '* Connect wallet dulu untuk mint NFT',
+    wallet_info:   t('wallet_need'),
     // NFT added
     adding_nft:    '⏳ Menambahkan...',
   },
   en: {
-    brand_sub:     'Excellent Research Universitas Jember',
+    brand_sub:     'Universitas Jember · Scopus Q1 Research · v3 Verified · Acc 99.78%',
     hero_title:    'Arabica Coffee of Nusantara',
     hero_sub:      '5 Premium Varieties — AI-Verified Certification',
     cara_title:    'How to Use',
@@ -180,6 +196,9 @@ const T = {
     form_nama_ph:  'Example: Mr. Ahmad Fauzi',
     form_lokasi:   'Farm Location',
     form_lokasi_ph:'Example: Tugusari Village, Bondowoso, East Java',
+    form_email:    'Email (optional)',
+    form_email_ph: 'Example: farmer@gmail.com',
+    form_email_sub:'For notification when NFT is successfully minted',
     form_up_txt:   'Click to upload photo',
     form_up_sub:   'From camera or gallery · JPG, PNG',
     btn_cnn:       'Classify with CNN',
@@ -215,6 +234,19 @@ const T = {
     err_lokasi:    'Please enter the Farm Location first!',
     err_foto:      'Please select a coffee photo first!',
     err_cnn:       'Please perform CNN Classification first!',
+    // Hasil klasifikasi labels
+    label_jenis:   'Coffee Variety',
+    label_grade:   'Quality Grade',
+    label_conf:    'Confidence',
+    label_asal:    'Origin',
+    label_karakter:'Characteristics',
+    label_proses:  'Processing',
+    // Wallet
+    wallet_need:   t('wallet_need'),
+    wallet_disc:   'Disconnect',
+    // NFT sukses tambahan
+    nft_cert:      'View Certificate',
+    nft_share:     'Share Certificate',
     // Status messages
     sts_verify:    'Verifying photo authenticity...',
     sts_upload:    'Uploading photo to AI model...',
@@ -227,7 +259,7 @@ const T = {
     sts_addnft:    'Adding NFT to MetaMask...',
     sts_connecting:'⏳ Connecting...',
     // Connect wallet info
-    wallet_info:   '* Connect wallet first to mint NFT',
+    wallet_info:   t('wallet_need'),
     // NFT added
     adding_nft:    '⏳ Adding...',
   }
@@ -442,6 +474,7 @@ export default function HomePage() {
   const [verifying, setVerifying]   = useState(false)
   const [bukanKopi, setBukanKopi]   = useState(false)
   const [lang, setLang]             = useState('id')  // 'id' | 'en'
+  const [email, setEmail]           = useState('')     // untuk notifikasi
   const [mounted, setMounted]       = useState(false)  // anti-hydration
   const [walletAddr, setWalletAddr] = useState('')
   const [walletLoading, setWalletLoading] = useState(false)
@@ -782,6 +815,10 @@ export default function HomePage() {
       } else if (parsed) {
         setBukanKopi(false)
         setHasilCNN(parsed)
+        // Scroll ke hasil klasifikasi
+        setTimeout(() => {
+          document.getElementById('hasil-section')?.scrollIntoView({ behavior:'smooth', block:'start' })
+        }, 100)
       } else {
         setErrorMsg('Gagal parsing hasil CNN')
       }
@@ -868,6 +905,31 @@ export default function HomePage() {
       console.log('='.repeat(50) + '\n')
 
       setTxHash(receipt.hash)
+
+      // ── Kirim notifikasi email jika email diisi ──
+      if (email && email.includes('@')) {
+        try {
+          await fetch('/api/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              to:         email,
+              tokenId:    mintedTokenId,
+              txHash:     receipt.hash,
+              jenisKopi:  hasilCNN?.jenis_kopi,
+              grade:      hasilCNN?.grade,
+              confidence: hasilCNN?.confidence,
+              namaPetani,
+              lokasi,
+              lang,
+            })
+          })
+          console.log('Email notifikasi dikirim ke:', email)
+        } catch(e) {
+          console.warn('Email gagal:', e.message)
+          // Tidak gagalkan proses mint jika email error
+        }
+      }
 
       // ============================================================
       // Ambil Token ID dari event log transaksi
@@ -980,13 +1042,83 @@ export default function HomePage() {
   const t    = (key) => mounted ? (T[lang]?.[key] ?? key) : (T['id']?.[key] ?? key)
   const tArr = (key) => mounted ? (T[lang]?.[key] ?? []) : (T['id']?.[key] ?? [])
 
-  // ── SSR Guard: cegah render sebelum mounted ──
-  if (!mounted) return null
+  // ── SSR Guard: loading skeleton saat belum mounted ──
+  if (!mounted) return (
+    <div style={{
+      minHeight:'100vh',
+      background:'linear-gradient(135deg,#F1F8E9,#E8F5E9)',
+      display:'flex',alignItems:'center',justifyContent:'center',
+      flexDirection:'column',gap:16,
+    }}>
+      <div style={{
+        width:56,height:56,borderRadius:'50%',
+        background:'linear-gradient(135deg,#14290F,#2E7D32)',
+        display:'flex',alignItems:'center',justifyContent:'center',
+        fontSize:24,
+        animation:'pulse 1.5s ease-in-out infinite',
+      }}>☕</div>
+      <div style={{
+        fontSize:14,color:'#4B5563',fontFamily:'sans-serif',
+        letterSpacing:1,
+      }}>Loading...</div>
+      <style>{`@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.95)}}`}</style>
+    </div>
+  )
 
   return (
-    <>
+    <div lang={lang} style={{minHeight:'100vh'}}>
+      {/* Skip to main content — accessibility */}
+      <a href="#main-content"
+         style={{
+           position:'absolute',top:-40,left:0,
+           background:'#14290F',color:'#FFF',
+           padding:'8px 16px',zIndex:9999,
+           borderRadius:'0 0 8px 0',
+           transition:'top .2s',fontSize:13,
+           fontFamily:'sans-serif',
+         }}
+         onFocus={e=>e.target.style.top='0'}
+         onBlur={e=>e.target.style.top='-40px'}
+      >
+        {lang==='id' ? 'Langsung ke konten utama' : 'Skip to main content'}
+      </a>
       <BlockchainDoodle/>
-      <style>{`
+      {/* ══ PWA + SEO + ACCESSIBILITY META TAGS ══ */}
+      <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+      <meta name="theme-color" content="#14290F"/>
+      <meta name="color-scheme" content="light"/>
+      <meta name="apple-mobile-web-app-capable" content="yes"/>
+      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+      <meta name="apple-mobile-web-app-title" content={lang==='id' ? 'Kopi Arabika Web3' : 'Arabica Coffee Web3'}/>
+      <meta name="description" content={lang==='id'
+        ? 'Sistem klasifikasi kopi Arabika berbasis CNN RepViT-M1.1 dan sertifikasi NFT blockchain Polygon. Universitas Jember · Riset Scopus Q1.'
+        : 'Arabica coffee classification system using CNN RepViT-M1.1 and NFT blockchain certification on Polygon. Universitas Jember · Scopus Q1 Research.'}/>
+      <meta name="keywords" content="kopi arabika, arabica coffee, CNN classification, NFT blockchain, Polygon, IPFS, RepViT, Universitas Jember, Ijen Mountain"/>
+      <meta name="author" content="Universitas Jember"/>
+      <meta name="robots" content="index, follow"/>
+
+      {/* Open Graph */}
+      <meta property="og:type" content="website"/>
+      <meta property="og:url" content="https://kopi-arabika-web3.vercel.app"/>
+      <meta property="og:title" content={lang==='id' ? 'Kopi Arabika Web3 — Sertifikasi NFT' : 'Arabica Coffee Web3 — NFT Certification'}/>
+      <meta property="og:description" content={lang==='id'
+        ? 'Klasifikasi CNN 99.78% + Sertifikat NFT Blockchain untuk Kopi Arabika Ijen'
+        : '99.78% CNN Accuracy + Blockchain NFT Certificate for Ijen Arabica Coffee'}/>
+      <meta property="og:image" content="https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=1200&h=630&fit=crop"/>
+      <meta property="og:locale" content={lang==='id' ? 'id_ID' : 'en_US'}/>
+
+      {/* Twitter Card */}
+      <meta name="twitter:card" content="summary_large_image"/>
+      <meta name="twitter:title" content={lang==='id' ? 'Kopi Arabika Web3' : 'Arabica Coffee Web3'}/>
+      <meta name="twitter:description" content={lang==='id'
+        ? 'CNN RepViT-M1.1 · 99.78% · NFT Blockchain Polygon · Universitas Jember'
+        : 'CNN RepViT-M1.1 · 99.78% · NFT Blockchain Polygon · Universitas Jember'}/>
+      <meta name="twitter:image" content="https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=1200&h=630&fit=crop"/>
+
+      {/* PWA */}
+      <link rel="manifest" href="/manifest.json"/>
+      <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=180&h=180&fit=crop"/>
+            <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lato:wght@300;400;700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
         body{
@@ -1463,7 +1595,7 @@ export default function HomePage() {
       </header>
 
       {/* LAYOUT 2 KOLOM */}
-      <div className="layout">
+      <main id="main-content" className="layout">
 
         {/* ====== KOLOM KIRI ====== */}
         <div>
@@ -1696,7 +1828,7 @@ export default function HomePage() {
                     SECURITY SCORE
                   </div>
                   <div style={{fontSize:11,color:'rgba(255,255,255,.3)',fontFamily:'sans-serif'}}>
-                    Kopi Arabika Web3 — v2
+                    lang==='id' ? lang==='id' ? 'Kopi Arabika Web3 — v2' : 'Arabica Coffee Web3 — v2' : 'Arabica Coffee Web3 — v2'
                   </div>
                 </div>
                 <div style={{textAlign:'right'}}>
@@ -1864,7 +1996,7 @@ export default function HomePage() {
             </div>
             <div style={{padding:'20px'}}>
               <p className="sec-label">{t('form_foto')}</p>
-              <div className="upload-zone mg-b-4" onClick={()=>fileRef.current.click()}>
+              <div className="upload-zone mg-b-4" onClick={()=>fileRef.current.click()} role="button" tabIndex={0} aria-label={lang==='id' ? 'Upload foto biji kopi' : 'Upload coffee bean photo'} onKeyDown={e=>e.key==='Enter'&&fileRef.current.click()}>
                 {preview
                   ? <img src={preview} alt="preview" style={{width:'100%',maxHeight:'260px',objectFit:'contain'}}/>
                   : <div className="up-ph"><div className="up-ico">📷</div><div className="up-txt">{t('form_upload_txt')}</div><div className="up-sub">{t('form_upload_sub')}</div></div>
@@ -1881,8 +2013,13 @@ export default function HomePage() {
                 <label className="lbl">📍 {t('form_lokasi')}</label>
                 <input className="inp" placeholder={t('form_lokasi_ph')} value={lokasi} onChange={e=>setLokasi(e.target.value)}/>
               </div>
+              <div className="mg-b-4">
+                <label className="lbl">📧 {t('form_email')}</label>
+                <input className="inp" type="email" placeholder={t('form_email_ph')} value={email} onChange={e=>setEmail(e.target.value)}/>
+                <div style={{fontSize:10,color:'#9CA3AF',marginTop:4}}>{t('form_email_sub')}</div>
+              </div>
 
-              <button className="btn-go" onClick={klasifikasiCNN} disabled={!foto||loading}>
+              <button className="btn-go" onClick={klasifikasiCNN} disabled={!foto||loading} aria-label={t("btn_cnn")} title={t("btn_cnn")}>
                 {loading&&!hasilCNN
                   ? <span style={{color:'#FFFFFF',fontWeight:800,fontSize:14,textShadow:'0 2px 4px rgba(0,0,0,.4)',letterSpacing:'1px'}}>⏳ {status||t('btn_proc')}</span>
                   : <span style={{color:'#FFFFFF',fontWeight:800,fontSize:14,textShadow:'0 2px 4px rgba(0,0,0,.4)',letterSpacing:'1px'}}>{`🔍 ${t('btn_cnn')}`}</span>}
@@ -2031,7 +2168,7 @@ export default function HomePage() {
           )}
 
           {/* ══ HASIL KLASIFIKASI CNN ══ */}
-          {hasilCNN && !hasilCNN.bukan_kopi && !txHash && (
+          {hasilCNN && !hasilCNN.bukan_kopi && !txHash && (<div id="hasil-section">
             <div className="hasil-box mg-t-4" style={{
               background: gs.bg,
               borderColor: gs.border,
@@ -2041,11 +2178,11 @@ export default function HomePage() {
               </div>
 
               <div className="hasil-row">
-                <span className="hasil-lbl">{lang==='id' ? 'Jenis Kopi' : 'Coffee Variety'}</span>
+                <span className="hasil-lbl">{t('label_jenis')}</span>
                 <span className="hasil-val" style={{color: gs.text}}>{hasilCNN.jenis_kopi}</span>
               </div>
               <div className="hasil-row">
-                <span className="hasil-lbl">{lang==='id' ? 'Grade Kualitas' : 'Quality Grade'}</span>
+                <span className="hasil-lbl">{t('label_grade')}</span>
                 <span className="hasil-val" style={{color: gs.text}}>{hasilCNN.grade}</span>
               </div>
               <div className="hasil-row">
@@ -2062,6 +2199,7 @@ export default function HomePage() {
 
               <button
                 className="btn-mint"
+                aria-label={t("btn_mint")}
                 onClick={mintNFT}
                 disabled={loading || !walletAddr}
                 style={{marginTop:8}}
@@ -2073,7 +2211,7 @@ export default function HomePage() {
               </button>
               {!walletAddr && (
                 <div style={{textAlign:'center',fontSize:11,color:'#9CA3AF',marginTop:6}}>
-                  {lang==='id' ? t('wallet_info') : '* Connect wallet first to mint NFT'}
+                  {lang==='id' ? t('wallet_info') : t('wallet_need')}
                 </div>
               )}
               {errorMsg && <div className="err">{errorMsg}</div>}
@@ -2086,12 +2224,14 @@ export default function HomePage() {
             <div className="sukses mg-t-4">
               <div className="sukses-title">🎉 {t('nft_title')}</div>
 
-              <div className="hash-box">
-                <div className="hash-lbl">{t('nft_token')}</div>
+              <div className="hash-box" style={{cursor:'pointer'}}
+                onClick={() => { navigator.clipboard?.writeText(String(tokenId)); alert('Token ID copied!') }}>
+                <div className="hash-lbl">{t('nft_token')} <span style={{fontSize:10,color:'#9CA3AF'}}>📋 tap to copy</span></div>
                 <div className="hash-val">#{tokenId ?? '—'}</div>
               </div>
-              <div className="hash-box">
-                <div className="hash-lbl">Transaction Hash</div>
+              <div className="hash-box" style={{cursor:'pointer'}}
+                onClick={() => { navigator.clipboard?.writeText(txHash); alert('TX Hash copied!') }}>
+                <div className="hash-lbl">Transaction Hash <span style={{fontSize:10,color:'#9CA3AF'}}>📋 tap to copy</span></div>
                 <div className="hash-val">{txHash.slice(0,20)}...{txHash.slice(-8)}</div>
               </div>
 
@@ -2118,6 +2258,19 @@ export default function HomePage() {
                   {addingNFT ? t('adding_nft') : nftAdded ? `✅ ${t('nft_added')}` : `💼 ${t('nft_add')}`}
                 </button>
               )}
+              {/* Email confirmation */}
+              {email && (
+                <div style={{
+                  background:'#F0FDF4',border:'1px solid #BBF7D0',
+                  borderRadius:8,padding:'10px 14px',marginBottom:8,
+                  fontSize:12,color:'#15803D',textAlign:'center',
+                }}>
+                  📧 {lang==='id'
+                    ? `Notifikasi dikirim ke ${email}`
+                    : `Notification sent to ${email}`}
+                </div>
+              )}
+
               <button
                 className="btn-a a-ghost"
                 onClick={() => {
@@ -2134,7 +2287,7 @@ export default function HomePage() {
           )}
 
         </div>
-      </div>
-    </>
+      </main>
+    </div>
   )
 }
