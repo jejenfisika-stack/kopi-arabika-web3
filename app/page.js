@@ -72,11 +72,11 @@ const GRADE_STYLE = {
 }
 
 const INFO_KOPI = [
-  { emoji:'🌋', judul:'Arabika Natural Ijen',      color:'#B5793F', isi:'Ditanam di lereng Gunung Ijen, Bondowoso pada ketinggian 900–1.500 mdpl. Terkenal dengan cita rasa fruity dan wine-like yang khas dari proses natural.' },
-  { emoji:'🫘', judul:'Arabika Peaberry',           color:'#8B5A2B', isi:'Biji kopi bulat tunggal hasil mutasi alami. Rasa lebih terkonsentrasi, aroma floral kuat, body lebih ringan dibanding biji normal.' },
-  { emoji:'🧪', judul:'Arabika Anaerob Carbonic',   color:'#6F4E37', isi:'Diproses fermentasi anaerobik karbonasi. Menghasilkan rasa eksotis, kompleks — buah tropis dengan sparkling sensation yang unik.' },
-  { emoji:'🍊', judul:'Arabika Orange Bourbon',     color:'#C9822E', isi:'Varietas Bourbon langka berwarna oranye. Rasa manis, citrus, honey, body sedang-tebal. Sangat diminati di pasar specialty coffee dunia.' },
-  { emoji:'🏔️', judul:'Arabika Blue Mountain',     color:'#6F8FA8', isi:'Varietas premium adaptasi Jamaica. Rasa ringan, bersih, balance sempurna, tidak pahit. Salah satu kopi paling prestigious di dunia.' },
+  { emoji:'🌋', judul:'Arabika Natural Ijen',      color:'#E63946', isi:'Ditanam di lereng Gunung Ijen, Bondowoso pada ketinggian 900–1.500 mdpl. Terkenal dengan cita rasa fruity dan wine-like yang khas dari proses natural.' },
+  { emoji:'🫘', judul:'Arabika Peaberry',           color:'#F77F00', isi:'Biji kopi bulat tunggal hasil mutasi alami. Rasa lebih terkonsentrasi, aroma floral kuat, body lebih ringan dibanding biji normal.' },
+  { emoji:'🧪', judul:'Arabika Anaerob Carbonic',   color:'#E0A100', isi:'Diproses fermentasi anaerobik karbonasi. Menghasilkan rasa eksotis, kompleks — buah tropis dengan sparkling sensation yang unik.' },
+  { emoji:'🍊', judul:'Arabika Orange Bourbon',     color:'#7CB518', isi:'Varietas Bourbon langka berwarna oranye. Rasa manis, citrus, honey, body sedang-tebal. Sangat diminati di pasar specialty coffee dunia.' },
+  { emoji:'🏔️', judul:'Arabika Blue Mountain',     color:'#2E8B57', isi:'Varietas premium adaptasi Jamaica. Rasa ringan, bersih, balance sempurna, tidak pahit. Salah satu kopi paling prestigious di dunia.' },
 ]
 
 const CARA_PAKAI = [
@@ -611,7 +611,7 @@ export default function HomePage() {
       {/* ---------- Top bar ---------- */}
       <header className="topbar">
         <div className="brand">
-          <div className="logo">☕</div>
+          <div className="logo"><img src="/kopi-cherry.jpg" alt="Ceri kopi arabika" /></div>
           <div>
             <h1>Kopi Arabika Web3</h1>
             <p>Riset Unggulan · Universitas Jember</p>
@@ -632,21 +632,26 @@ export default function HomePage() {
 
       {/* ---------- Hero ---------- */}
       <section className="hero">
-        <h2>Klasifikasi Kopi Arabika dengan AI</h2>
-        <p className="sub">
-          5 varietas arabika unggulan terverifikasi AI &amp; tercatat di blockchain.
-          Deteksi jenis &amp; grade kopi secara cepat, transparan, dan terdesentralisasi
-          untuk kopi specialty Nusantara.
-        </p>
-        <div className="badges">
-          <span className="badge2">🏆 RepViT-M1.1 · 6-Class · 99.78%</span>
-          <span className="badge2">⛓️ Polygon Amoy</span>
-          <span className="badge2">📦 IPFS Pinata</span>
+        <div className="hero-text">
+          <h2>Klasifikasi Kopi Arabika dengan AI</h2>
+          <p className="sub">
+            5 varietas arabika unggulan terverifikasi AI &amp; tercatat di blockchain.
+            Deteksi jenis &amp; grade kopi secara cepat, transparan, dan terdesentralisasi
+            untuk kopi specialty Nusantara.
+          </p>
+          <div className="badges">
+            <span className="badge2">🏆 RepViT-M1.1 · 6-Class · 99.78%</span>
+            <span className="badge2">⛓️ Polygon Amoy</span>
+            <span className="badge2">📦 IPFS Pinata</span>
+          </div>
+          <div className="blocks">
+            <div className="block"><b>HASH</b>{fotoHash ? `${fotoHash.slice(0,8)}…${fotoHash.slice(-3)}` : '0xa3f…9c2'}</div>
+            <div className="block"><b>SERTIFIKAT</b>{tokenId != null ? `#${tokenId}` : '#0042'}</div>
+            <div className="block"><b>DIAGNOSIS</b>{hasilCNN ? 'Verified ✓' : 'Menunggu'}</div>
+          </div>
         </div>
-        <div className="blocks">
-          <div className="block"><b>HASH</b>{fotoHash ? `${fotoHash.slice(0,8)}…${fotoHash.slice(-3)}` : '0xa3f…9c2'}</div>
-          <div className="block"><b>SERTIFIKAT</b>{tokenId != null ? `#${tokenId}` : '#0042'}</div>
-          <div className="block"><b>DIAGNOSIS</b>{hasilCNN ? 'Verified ✓' : 'Menunggu'}</div>
+        <div className="hero-photo">
+          <img src="/kopi-cherry.jpg" alt="Ceri kopi arabika merah, oranye, kuning, dan hijau di pohon" />
         </div>
       </section>
 
