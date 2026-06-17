@@ -647,7 +647,7 @@ export default function HomePage() {
           <div className="blocks">
             <div className="block"><b>HASH</b>{fotoHash ? `${fotoHash.slice(0,8)}…${fotoHash.slice(-3)}` : '0xa3f…9c2'}</div>
             <div className="block"><b>SERTIFIKAT</b>{tokenId != null ? `#${tokenId}` : '#0042'}</div>
-            <div className="block"><b>DIAGNOSIS</b>{hasilCNN ? 'Verified ✓' : 'Menunggu'}</div>
+            <div className="block"><b>VERIFIED</b>{hasilCNN ? '✓ Terverifikasi' : '⏳ Menunggu'}</div>
           </div>
         </div>
         <div className="hero-photo">
