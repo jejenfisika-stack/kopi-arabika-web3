@@ -198,6 +198,9 @@ const STR = {
     addNft:'🦊 Tambah NFT ke MetaMask Wallet', addingNft:'Menambahkan ke wallet...',
     nftAddedMsg:'✅ NFT berhasil masuk ke MetaMask! Buka tab NFTs untuk melihat.',
     verifyPoly:'🔍 Verifikasi di Polygonscan', seePhoto:'🖼️ Lihat Foto di IPFS', newClass:'↩️ Klasifikasi Kopi Baru',
+    btnMeta:'🧾 Cek Metadata', btnMetaHide:'🧾 Sembunyikan Metadata',
+    metaTitle:'🧾 Metadata NFT (ERC-721)', metaLoadingTxt:'Memuat metadata dari IPFS...',
+    metaErr:'Gagal memuat metadata. Buka langsung di IPFS:', metaRaw:'Lihat JSON mentah di IPFS ↗',
     secVarHead:'5 Varietas yang Dikenali', secVarSub:'Model dilatih mengenali lima varietas arabika unggulan, lengkap dengan karakter rasa khasnya.',
     secStepHead:'Cara Menggunakan', secStepSub:'Lima langkah dari foto biji kopi hingga sertifikat digital di blockchain.',
     secTechHead:'Tumpukan Teknologi', secTechSub:'Komponen inti yang menyusun sistem Kopi Arabika Web3.',
@@ -240,6 +243,9 @@ const STR = {
     addNft:'🦊 Add NFT to MetaMask Wallet', addingNft:'Adding to wallet...',
     nftAddedMsg:'✅ NFT added to MetaMask! Open the NFTs tab to view it.',
     verifyPoly:'🔍 Verify on Polygonscan', seePhoto:'🖼️ View Photo on IPFS', newClass:'↩️ Classify New Coffee',
+    btnMeta:'🧾 Check Metadata', btnMetaHide:'🧾 Hide Metadata',
+    metaTitle:'🧾 NFT Metadata (ERC-721)', metaLoadingTxt:'Loading metadata from IPFS...',
+    metaErr:'Failed to load metadata. Open directly on IPFS:', metaRaw:'View raw JSON on IPFS ↗',
     secVarHead:'5 Recognized Varieties', secVarSub:'The model is trained to recognize five premium arabica varieties, each with its distinctive flavor character.',
     secStepHead:'How to Use', secStepSub:'Five steps from a coffee-bean photo to a digital certificate on the blockchain.',
     secTechHead:'Technology Stack', secTechSub:'The core components that make up the Kopi Arabika Web3 system.',
@@ -265,6 +271,10 @@ export default function HomePage() {
   const [hasilCNN, setHasilCNN]     = useState(null)
   const [txHash, setTxHash]         = useState('')
   const [cidFoto, setCidFoto]       = useState('')
+  const [cidMetadata, setCidMetadata] = useState('')
+  const [showMeta, setShowMeta]     = useState(false)
+  const [metaJson, setMetaJson]     = useState(null)
+  const [metaLoading, setMetaLoading] = useState(false)
   const [errorMsg, setErrorMsg]     = useState('')
   const [tokenId, setTokenId]       = useState(null)
   const [addingNFT, setAddingNFT]   = useState(false)
@@ -600,7 +610,29 @@ export default function HomePage() {
     const res = await fetch('/api/upload-ipfs', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ imageBase64:b64, fileName:foto.name, hasilCNN, namaPetani, lokasiKebun:lokasi, hashFoto:fotoHash }) })
     const data = await res.json()
     if (!data.cidFoto) throw new Error(data.error||'Upload IPFS gagal')
-    setCidFoto(data.cidFoto); return data
+    setCidFoto(data.cidFoto)
+    if (data.cidMetadata) setCidMetadata(data.cidMetadata)
+    return data
+  }
+
+  // ============================================================
+  // Cek / tampilkan metadata NFT (di-fetch dari IPFS)
+  // ============================================================
+  async function cekMetadata() {
+    if (showMeta) { setShowMeta(false); return }
+    setShowMeta(true)
+    if (metaJson || !cidMetadata) return
+    setMetaLoading(true)
+    try {
+      const r = await fetch(`https://${PINATA_GATEWAY}/ipfs/${cidMetadata}`)
+      const j = await r.json()
+      setMetaJson(j)
+    } catch (e) {
+      console.warn('Gagal memuat metadata:', e)
+      setMetaJson(null)
+    } finally {
+      setMetaLoading(false)
+    }
   }
 
   async function connectWallet() {
@@ -748,6 +780,7 @@ export default function HomePage() {
     setTxHash(''); setCidFoto(''); setNamaPetani(''); setLokasi('')
     setStatus(''); setErrorMsg(''); setTokenId(null); setNftAdded(false)
     setBukanKopi(false); setDuplikat(null); setFotoHash('')
+    setCidMetadata(''); setShowMeta(false); setMetaJson(null)
   }
 
   // Safe null check untuk gs — hindari crash saat hasilCNN null
@@ -925,6 +958,42 @@ export default function HomePage() {
 
               <a href={`https://amoy.polygonscan.com/tx/${txHash}`} target="_blank" rel="noreferrer" className="link-btn link-blue">{t.verifyPoly}</a>
               {cidFoto && <a href={`https://${PINATA_GATEWAY}/ipfs/${cidFoto}`} target="_blank" rel="noreferrer" className="link-btn link-amber">{t.seePhoto}</a>}
+
+              {cidMetadata && (
+                <button className="link-btn link-meta" onClick={cekMetadata}>
+                  {showMeta ? t.btnMetaHide : t.btnMeta}
+                </button>
+              )}
+              {showMeta && (
+                <div className="meta-panel">
+                  <b>{t.metaTitle}</b>
+                  {metaLoading ? (
+                    <p className="note"><span className="spinner" style={{ borderColor: 'rgba(0,0,0,.2)', borderTopColor: 'var(--green-d)' }} /> {t.metaLoadingTxt}</p>
+                  ) : metaJson ? (
+                    <>
+                      <div className="meta-name">{metaJson.name}</div>
+                      {metaJson.description && <p className="meta-desc">{metaJson.description}</p>}
+                      <div className="meta-attrs">
+                        {(metaJson.attributes || []).map((a, i) => (
+                          <div className="meta-row" key={i}>
+                            <span>{a.trait_type}</span>
+                            <span>{String(a.value)}</span>
+                          </div>
+                        ))}
+                        {metaJson.image && (
+                          <div className="meta-row"><span>Image</span><span>{metaJson.image}</span></div>
+                        )}
+                      </div>
+                      <a href={`https://${PINATA_GATEWAY}/ipfs/${cidMetadata}`} target="_blank" rel="noreferrer">{t.metaRaw}</a>
+                    </>
+                  ) : (
+                    <p className="note">{t.metaErr}{' '}
+                      <a href={`https://${PINATA_GATEWAY}/ipfs/${cidMetadata}`} target="_blank" rel="noreferrer">{t.metaRaw}</a>
+                    </p>
+                  )}
+                </div>
+              )}
+
               <button className="link-btn link-ghost" onClick={resetAll}>{t.newClass}</button>
             </div>
           )}
