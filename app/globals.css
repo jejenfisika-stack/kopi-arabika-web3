@@ -178,8 +178,11 @@ body {
 .btn-ghost { background: var(--bg-2); border: 1px solid var(--line); color: var(--ink); width: 100%; }
 .row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
 
+.topbar-actions { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
 .pill { font-size: 13px; font-weight: 700; padding: 9px 15px; border-radius: 999px;
   background: var(--bg-2); border: 1px solid var(--line); color: var(--ink); cursor: pointer; }
+.pill.lang { background: #fff; border: 1px solid var(--line); color: var(--ink); }
+.pill.lang:hover { border-color: var(--orange); color: var(--orange2); }
 .pill.wallet { background: linear-gradient(135deg,var(--orange),var(--red)); color: #fff; border-color: transparent; }
 .pill.connected { background: #eafaf2; color: #15803d; border-color: #b9e6d2; }
 
