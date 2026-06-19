@@ -940,7 +940,7 @@ export default function HomePage() {
               {tokenId !== null && (
                 <div className="hash-box" style={{ marginTop: 10 }}>
                   <div className="k">{t.tokenIdLbl}</div>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: '#14532D', fontFamily: 'ui-monospace, monospace' }}>#{tokenId}</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: '#6EE7B7', fontFamily: 'ui-monospace, monospace' }}>#{tokenId}</div>
                 </div>
               )}
               <div className="hash-box"><div className="k">{t.txHashLbl}</div><div className="v">{txHash}</div></div>
@@ -951,7 +951,7 @@ export default function HomePage() {
                   {addingNFT ? <><span className="spinner" /> {t.addingNft}</> : <>{t.addNft}</>}
                 </button>
               ) : (
-                <div style={{ marginTop: 8, textAlign: 'center', fontWeight: 700, color: '#14532D' }}>
+                <div style={{ marginTop: 8, textAlign: 'center', fontWeight: 700, color: '#6EE7B7' }}>
                   {t.nftAddedMsg}
                 </div>
               )}
@@ -968,7 +968,7 @@ export default function HomePage() {
                 <div className="meta-panel">
                   <b>{t.metaTitle}</b>
                   {metaLoading ? (
-                    <p className="note"><span className="spinner" style={{ borderColor: 'rgba(0,0,0,.2)', borderTopColor: 'var(--green-d)' }} /> {t.metaLoadingTxt}</p>
+                    <p className="note"><span className="spinner" style={{ borderColor: 'rgba(255,255,255,.25)', borderTopColor: 'var(--cyan)' }} /> {t.metaLoadingTxt}</p>
                   ) : metaJson ? (
                     <>
                       <div className="meta-name">{metaJson.name}</div>
