@@ -5,13 +5,13 @@
       <stop offset="1" stop-color="#0A0E1A"/>
     </linearGradient>
     <radialGradient id="glow" cx="32" cy="22" r="32" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#8B5CF6" stop-opacity="0.6"/>
-      <stop offset="1" stop-color="#8B5CF6" stop-opacity="0"/>
+      <stop stop-color="#EF4444" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#EF4444" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="bean" x1="14" y1="10" x2="50" y2="54" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#A78BFA"/>
-      <stop offset="0.5" stop-color="#4F7DFF"/>
-      <stop offset="1" stop-color="#22D3EE"/>
+      <stop stop-color="#FB7185"/>
+      <stop offset="0.5" stop-color="#EF4444"/>
+      <stop offset="1" stop-color="#B91C1C"/>
     </linearGradient>
   </defs>
 
