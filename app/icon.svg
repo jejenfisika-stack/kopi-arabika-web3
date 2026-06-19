@@ -1,0 +1,29 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bd" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1B2440"/>
+      <stop offset="1" stop-color="#0A0E1A"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="32" cy="22" r="32" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8B5CF6" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#8B5CF6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bean" x1="14" y1="10" x2="50" y2="54" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A78BFA"/>
+      <stop offset="0.5" stop-color="#4F7DFF"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+  </defs>
+
+  <!-- dark squircle + glow + subtle border -->
+  <rect width="64" height="64" rx="16" fill="url(#bd)"/>
+  <rect width="64" height="64" rx="16" fill="url(#glow)"/>
+  <rect x="0.75" y="0.75" width="62.5" height="62.5" rx="15.25" stroke="#ffffff" stroke-opacity="0.12" stroke-width="1.5"/>
+
+  <!-- neon coffee bean -->
+  <g transform="rotate(-18 32 32)">
+    <ellipse cx="32" cy="32" rx="15" ry="21" fill="url(#bean)"/>
+    <path d="M32 13 C 37 22, 27 42, 32 51" stroke="#0A0E1A" stroke-width="3.4" stroke-linecap="round" stroke-opacity="0.92" fill="none"/>
+    <ellipse cx="26" cy="22" rx="4.2" ry="6.6" fill="#ffffff" fill-opacity="0.28" transform="rotate(-18 26 22)"/>
+  </g>
+</svg>
