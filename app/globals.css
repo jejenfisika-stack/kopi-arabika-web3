@@ -290,3 +290,53 @@ body::after {
 .footer { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 46px;
   border-top: 1px solid var(--line); padding-top: 22px; }
 a { color: var(--cyan); }
+
+/* ════════════════ ANIMASI (dark airdrop) ════════════════ */
+
+/* 1) Orb glow background bergerak perlahan */
+@keyframes orbDrift {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(2.5%, -2%) scale(1.06); }
+  100% { transform: translate(-2%, 2.5%) scale(1.03); }
+}
+body::before { inset: -12%; will-change: transform; animation: orbDrift 26s ease-in-out infinite alternate; }
+
+/* 2) Glow berdenyut — logo, foto hero, scorecard */
+@keyframes pulseLogo {
+  0%, 100% { box-shadow: 0 0 18px rgba(139,92,246,.4); }
+  50%      { box-shadow: 0 0 34px rgba(139,92,246,.8); }
+}
+.brand .logo { animation: pulseLogo 4s ease-in-out infinite; }
+
+@keyframes pulsePhoto {
+  0%, 100% { box-shadow: 0 0 28px rgba(139,92,246,.3),  0 14px 40px rgba(0,0,0,.5); }
+  50%      { box-shadow: 0 0 58px rgba(139,92,246,.6),  0 14px 40px rgba(0,0,0,.5); }
+}
+.hero-photo img { animation: pulsePhoto 5s ease-in-out infinite; }
+
+@keyframes pulseScore {
+  0%, 100% { box-shadow: 0 0 40px rgba(139,92,246,.18), var(--shadow); }
+  50%      { box-shadow: 0 0 72px rgba(139,92,246,.42), var(--shadow); }
+}
+.scorecard { animation: pulseScore 5.5s ease-in-out infinite; }
+
+/* 3) Shimmer melintas pada tombol */
+.btn, .pill.wallet { position: relative; overflow: hidden; }
+.btn-primary::after, .btn-mint::after, .pill.wallet::after {
+  content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 55%;
+  background: linear-gradient(110deg, transparent 25%, rgba(255,255,255,.28) 50%, transparent 75%);
+  transform: translateX(-180%); pointer-events: none;
+  animation: shimmer 4.5s ease-in-out infinite;
+}
+.btn:disabled::after { display: none; }
+@keyframes shimmer {
+  0%   { transform: translateX(-180%); }
+  28%  { transform: translateX(320%); }
+  100% { transform: translateX(320%); }
+}
+
+/* Hormati preferensi kurangi-gerak */
+@media (prefers-reduced-motion: reduce) {
+  body::before, .brand .logo, .hero-photo img, .scorecard,
+  .btn-primary::after, .btn-mint::after, .pill.wallet::after { animation: none !important; }
+}
