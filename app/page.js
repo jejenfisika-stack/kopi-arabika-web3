@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { ethers } from 'ethers'
+import Belajar from './Belajar'
 
 const CONTRACT_ADDRESS = '0x5392C2F10d8Dea3e498726BcB8c806E8DA78834b'  // V3 — Open Mint + Verified + 6-Class Fix
 const PINATA_GATEWAY   = 'rose-casual-warbler-710.mypinata.cloud'
@@ -314,6 +315,7 @@ function hitungEntropi(probs) {
 
 export default function HomePage() {
   const [lang, setLang]             = useState('id')
+  const [learnMode, setLearnMode]   = useState(false)
   const [foto, setFoto]             = useState(null)
   const [preview, setPreview]       = useState(null)
   const [namaPetani, setNamaPetani] = useState('')
@@ -348,7 +350,16 @@ export default function HomePage() {
   useEffect(() => {
     const saved = localStorage.getItem('lang')
     if (saved === 'id' || saved === 'en') setLang(saved)
+    if (localStorage.getItem('learnMode') === '1') setLearnMode(true)
   }, [])
+
+  function toggleLearn() {
+    setLearnMode(v => {
+      const nv = !v
+      try { localStorage.setItem('learnMode', nv ? '1' : '0') } catch (_) {}
+      return nv
+    })
+  }
 
   function toggleLang() {
     const next = lang === 'id' ? 'en' : 'id'
@@ -921,6 +932,9 @@ export default function HomePage() {
           </div>
         </div>
         <div className="topbar-actions">
+          <button className={`pill learn ${learnMode ? 'on' : ''}`} onClick={toggleLearn} title="Mode Belajar / Learn Mode">
+            🎓 {lang === 'id' ? 'Belajar' : 'Learn'}
+          </button>
           <button className="pill lang" onClick={toggleLang} title="Ganti bahasa / Switch language">
             {lang === 'id' ? '🇬🇧 EN' : '🇮🇩 ID'}
           </button>
@@ -1163,6 +1177,9 @@ export default function HomePage() {
           )}
         </div>
       </section>
+
+      {/* ---------- Pusat Belajar IPA (toggle) ---------- */}
+      {learnMode && <Belajar lang={lang} />}
 
       {/* ---------- 5 Varietas ---------- */}
       <section className="section">
