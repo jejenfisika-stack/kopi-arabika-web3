@@ -192,6 +192,13 @@ const STR = {
     rejGuide:['Foto biji kopi Arabika (belum digiling/diseduh)','Pencahayaan cukup, latar polos, fokus jelas','Ambil dari atas (top-view) lebih baik','Hindari foto minuman/bubuk kopi atau tanaman kopi'],
     rejBtn:'📷 Upload Foto Biji Kopi yang Benar',
     resConf:'Confidence CNN', resGrade:'Grade Kualitas', resModel:'Model AI',
+    xaiTitle:'🧠 Penjelasan AI (XAI) — Distribusi Probabilitas',
+    xaiEntropy:'Entropy (ketidakpastian)', xaiSure:'Sangat yakin', xaiMid:'Cukup yakin', xaiUnsure:'Kurang yakin',
+    xaiNote:'Semakin merata probabilitas antar kelas → entropy makin tinggi → model makin ragu. Distribusi & entropy ini ikut tercatat di metadata NFT.',
+    camBtn:'🧠 Tampilkan Grad-CAM (XAI)', camHide:'🧠 Sembunyikan Grad-CAM', camLoading:'Membuat heatmap Grad-CAM...',
+    camErr:'Grad-CAM belum tersedia (Space mungkin masih build / endpoint belum aktif). Coba lagi sebentar.',
+    camOrig:'Foto asli', camHeat:'Grad-CAM (fokus model)',
+    camNote:'Area hangat = bagian biji yang paling memengaruhi keputusan model. Heatmap ini ikut disimpan di metadata NFT.',
     btnMint:'🔗 Mint NFT ke Blockchain Polygon',
     successTitle:'🎉 NFT Berhasil Di-mint!',
     tokenIdLbl:'🏷️ Token ID NFT Anda', txHashLbl:'Transaction Hash', cidLbl:'CID Foto IPFS',
@@ -237,6 +244,13 @@ const STR = {
     rejGuide:['Photo of arabica coffee beans (not ground/brewed)','Good lighting, plain background, clear focus','Top-view shots work best','Avoid photos of coffee drinks/powder or coffee plants'],
     rejBtn:'📷 Upload a Proper Coffee-Bean Photo',
     resConf:'CNN Confidence', resGrade:'Quality Grade', resModel:'AI Model',
+    xaiTitle:'🧠 AI Explanation (XAI) — Probability Distribution',
+    xaiEntropy:'Entropy (uncertainty)', xaiSure:'Very confident', xaiMid:'Fairly confident', xaiUnsure:'Low confidence',
+    xaiNote:'The more evenly spread the probabilities → the higher the entropy → the more uncertain the model. This distribution & entropy are also recorded in the NFT metadata.',
+    camBtn:'🧠 Show Grad-CAM (XAI)', camHide:'🧠 Hide Grad-CAM', camLoading:'Generating Grad-CAM heatmap...',
+    camErr:'Grad-CAM not available yet (the Space may still be building / endpoint not active). Try again shortly.',
+    camOrig:'Original photo', camHeat:'Grad-CAM (model focus)',
+    camNote:'Warm areas = the bean regions that most influenced the model’s decision. This heatmap is also stored in the NFT metadata.',
     btnMint:'🔗 Mint NFT to Polygon Blockchain',
     successTitle:'🎉 NFT Minted Successfully!',
     tokenIdLbl:'🏷️ Your NFT Token ID', txHashLbl:'Transaction Hash', cidLbl:'IPFS Photo CID',
@@ -260,6 +274,44 @@ const STR = {
   },
 }
 
+// ============================================================
+// XAI: ekstrak probabilitas semua kelas dari teks output model
+// ============================================================
+function ekstrakProbs(text) {
+  if (!text) return []
+  const out = []
+  const seen = new Set()
+  for (const line of text.split('\n')) {
+    const m = line.match(/([A-Za-z][\w .()\-]+?)\s*:\s*([\d]+(?:\.[\d]+)?)\s*%/)
+    if (!m) continue
+    const name = m[1].trim().replace(/_/g, ' ')
+    const val = parseFloat(m[2])
+    if (isNaN(val)) continue
+    if (/confidence|jenis\s*kopi|grade|akurasi|threshold|entropy|recall|alasan|test/i.test(name)) continue
+    const key = name.toLowerCase()
+    if (seen.has(key)) continue
+    seen.add(key)
+    out.push({ name, value: val })
+  }
+  return out.sort((a, b) => b.value - a.value)
+}
+
+// ============================================================
+// XAI: Shannon entropy + ketidakpastian ternormalisasi (0..1)
+// ============================================================
+function hitungEntropi(probs) {
+  if (!probs || probs.length < 2) return { entropy: null, uncertainty: null }
+  const total = probs.reduce((s, p) => s + p.value, 0) || 1
+  let H = 0
+  for (const p of probs) {
+    const pi = p.value / total
+    if (pi > 0) H += -pi * Math.log2(pi)
+  }
+  const maxH = Math.log2(probs.length)
+  const uncertainty = maxH > 0 ? H / maxH : 0
+  return { entropy: H, uncertainty }
+}
+
 export default function HomePage() {
   const [lang, setLang]             = useState('id')
   const [foto, setFoto]             = useState(null)
@@ -275,6 +327,9 @@ export default function HomePage() {
   const [showMeta, setShowMeta]     = useState(false)
   const [metaJson, setMetaJson]     = useState(null)
   const [metaLoading, setMetaLoading] = useState(false)
+  const [gradcamImg, setGradcamImg]     = useState('')
+  const [gradcamLoading, setGradcamLoading] = useState(false)
+  const [gradcamErr, setGradcamErr]     = useState('')
   const [errorMsg, setErrorMsg]     = useState('')
   const [tokenId, setTokenId]       = useState(null)
   const [addingNFT, setAddingNFT]   = useState(false)
@@ -425,6 +480,7 @@ export default function HomePage() {
     setFoto(file); setPreview(URL.createObjectURL(file))
     setHasilCNN(null); setTxHash(''); setCidFoto(''); setErrorMsg('')
     setStatus(''); setDuplikat(null); setFotoHash(''); setBukanKopi(false)
+    setGradcamImg(''); setGradcamErr('')
 
     hitungHashFoto(file).then(hash => {
       setFotoHash(hash)
@@ -492,7 +548,9 @@ export default function HomePage() {
       }
     }
 
-    return { bukan_kopi: false, jenis_kopi: jenis, confidence, grade }
+    const probs = ekstrakProbs(text)
+    const { entropy, uncertainty } = hitungEntropi(probs)
+    return { bukan_kopi: false, jenis_kopi: jenis, confidence, grade, probs, entropy, uncertainty }
   }
 
   async function klasifikasiCNN() {
@@ -604,10 +662,72 @@ export default function HomePage() {
     finally { setLoading(false) }
   }
 
+  // ============================================================
+  // XAI: ambil Grad-CAM heatmap dari HF Space (endpoint klasifikasi_xai)
+  // ============================================================
+  async function ambilGradcam() {
+    if (gradcamImg) { setGradcamImg(''); return }   // toggle: sembunyikan
+    if (!foto) { alert(t.alPickPhoto); return }
+    setGradcamLoading(true); setGradcamErr('')
+    try {
+      const BASE = 'https://jejenFis06-kopi-arabika-classifier.hf.space'
+      const fd = new FormData(); fd.append('files', foto, foto.name)
+      const upRes = await fetch(`${BASE}/gradio_api/upload`, { method: 'POST', body: fd })
+      if (!upRes.ok) throw new Error(`Upload gagal: ${upRes.status}`)
+      const paths = await upRes.json()
+      const filePath = paths?.[0]
+      if (!filePath) throw new Error('Path file tidak ditemukan')
+
+      const prRes = await fetch(`${BASE}/gradio_api/call/klasifikasi_xai`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: [{ path: filePath, mime_type: foto.type, orig_name: foto.name }] }),
+      })
+      if (!prRes.ok) throw new Error(`Endpoint XAI gagal: ${prRes.status} (Space mungkin masih build)`)
+      const { event_id } = await prRes.json()
+      if (!event_id) throw new Error('event_id tidak ditemukan')
+
+      const resRes = await fetch(`${BASE}/gradio_api/call/klasifikasi_xai/${event_id}`)
+      if (!resRes.ok) throw new Error(`Hasil XAI gagal: ${resRes.status}`)
+
+      const reader = resRes.body.getReader()
+      const dec = new TextDecoder()
+      let out = ''; let buf = ''
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buf += dec.decode(value, { stream: true })
+        const lines = buf.split('\n')
+        buf = lines.pop() || ''
+        for (const line of lines) {
+          if (!line.startsWith('data:')) continue
+          const raw = line.slice(5).trim()
+          if (!raw || raw === '[DONE]') continue
+          try {
+            const parsed = JSON.parse(raw)
+            if (Array.isArray(parsed) && typeof parsed[0] === 'string') out = parsed[0]
+            else if (typeof parsed === 'string') out = parsed
+          } catch (_) {}
+        }
+      }
+      if (!out) throw new Error('Tidak ada output XAI dari Space')
+      const data = JSON.parse(out)
+      if (data?.gradcam) {
+        setGradcamImg(data.gradcam)
+      } else {
+        throw new Error('Heatmap kosong (grad-cam belum aktif di Space)')
+      }
+    } catch (err) {
+      console.warn('Grad-CAM error:', err)
+      setGradcamErr(err.message || 'Grad-CAM gagal')
+    } finally {
+      setGradcamLoading(false)
+    }
+  }
+
   async function uploadIPFS() {
     setStatus(t.stUploadIpfs)
     const b64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(foto) })
-    const res = await fetch('/api/upload-ipfs', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ imageBase64:b64, fileName:foto.name, hasilCNN, namaPetani, lokasiKebun:lokasi, hashFoto:fotoHash }) })
+    const res = await fetch('/api/upload-ipfs', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ imageBase64:b64, fileName:foto.name, hasilCNN, namaPetani, lokasiKebun:lokasi, hashFoto:fotoHash, gradcamBase64:gradcamImg }) })
     const data = await res.json()
     if (!data.cidFoto) throw new Error(data.error||'Upload IPFS gagal')
     setCidFoto(data.cidFoto)
@@ -781,6 +901,7 @@ export default function HomePage() {
     setStatus(''); setErrorMsg(''); setTokenId(null); setNftAdded(false)
     setBukanKopi(false); setDuplikat(null); setFotoHash('')
     setCidMetadata(''); setShowMeta(false); setMetaJson(null)
+    setGradcamImg(''); setGradcamErr(''); setGradcamLoading(false)
   }
 
   // Safe null check untuk gs — hindari crash saat hasilCNN null
@@ -925,6 +1046,49 @@ export default function HomePage() {
               <div className="bar-track"><div className="bar-fill" style={{ width: `${hasilCNN.confidence}%`, background: gs.border }} /></div>
               <div className="hasil-row"><span className="lbl">{t.resGrade}</span><span className="val" style={{ color: gs.text }}>{gs.emoji} {hasilCNN.grade}</span></div>
               <div className="hasil-row"><span className="lbl">{t.resModel}</span><span className="val" style={{ fontSize: 12 }}>RepViT-M1.1 (CVPR 2024)</span></div>
+
+              {hasilCNN.probs && hasilCNN.probs.length >= 2 && (
+                <div className="xai">
+                  <div className="xai-h">{t.xaiTitle}</div>
+                  {hasilCNN.probs.map((p, i) => (
+                    <div className="xai-row" key={i}>
+                      <span className="xai-name" title={p.name}>{p.name}</span>
+                      <span className="xai-track"><span className="xai-fill" style={{ width: `${Math.min(p.value, 100)}%`, opacity: i === 0 ? 1 : 0.55 }} /></span>
+                      <span className="xai-val">{p.value.toFixed(1)}%</span>
+                    </div>
+                  ))}
+                  {hasilCNN.entropy != null && (
+                    <div className="xai-ent">
+                      <span>{t.xaiEntropy}: <b>{hasilCNN.entropy.toFixed(2)} bit</b></span>
+                      <span className={`xai-badge ${hasilCNN.uncertainty < 0.35 ? 'ok' : hasilCNN.uncertainty < 0.6 ? 'mid' : 'low'}`}>
+                        {hasilCNN.uncertainty < 0.35 ? t.xaiSure : hasilCNN.uncertainty < 0.6 ? t.xaiMid : t.xaiUnsure}
+                      </span>
+                    </div>
+                  )}
+                  <div className="xai-note">{t.xaiNote}</div>
+                </div>
+              )}
+
+              <button className="btn btn-cam" onClick={ambilGradcam} disabled={gradcamLoading}>
+                {gradcamLoading ? <><span className="spinner" /> {t.camLoading}</> : (gradcamImg ? t.camHide : t.camBtn)}
+              </button>
+              {gradcamErr && <div className="xai-note" style={{ color: '#b91c1c' }}>{t.camErr}</div>}
+              {gradcamImg && (
+                <>
+                  <div className="xai-cam">
+                    <figure>
+                      <img src={preview} alt="original" />
+                      <figcaption>{t.camOrig}</figcaption>
+                    </figure>
+                    <figure>
+                      <img src={gradcamImg} alt="grad-cam" />
+                      <figcaption>{t.camHeat}</figcaption>
+                    </figure>
+                  </div>
+                  <div className="xai-note">{t.camNote}</div>
+                </>
+              )}
+
               <button className="btn btn-mint" style={{ marginTop: 14 }} onClick={mintNFT} disabled={loading}>
                 {loading ? <><span className="spinner" /> {status}</> : <>{t.btnMint}</>}
               </button>
