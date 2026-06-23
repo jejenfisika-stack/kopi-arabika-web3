@@ -1118,7 +1118,7 @@ export default function HomePage() {
               {tokenId !== null && (
                 <div className="hash-box" style={{ marginTop: 10 }}>
                   <div className="k">{t.tokenIdLbl}</div>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: '#6EE7B7', fontFamily: 'ui-monospace, monospace' }}>#{tokenId}</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: '#15803D', fontFamily: 'ui-monospace, monospace' }}>#{tokenId}</div>
                 </div>
               )}
               <div className="hash-box"><div className="k">{t.txHashLbl}</div><div className="v">{txHash}</div></div>
@@ -1129,7 +1129,7 @@ export default function HomePage() {
                   {addingNFT ? <><span className="spinner" /> {t.addingNft}</> : <>{t.addNft}</>}
                 </button>
               ) : (
-                <div style={{ marginTop: 8, textAlign: 'center', fontWeight: 700, color: '#6EE7B7' }}>
+                <div style={{ marginTop: 8, textAlign: 'center', fontWeight: 700, color: '#15803D' }}>
                   {t.nftAddedMsg}
                 </div>
               )}
