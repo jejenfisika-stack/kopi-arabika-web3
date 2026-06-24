@@ -139,22 +139,95 @@ const GLOSS = {
   ],
 }
 
-const QUIZ = {
-  id: [
-    ['Apa fungsi utama CNN dalam sistem ini?', ['Menyimpan data di blockchain', 'Mengenali pola visual biji kopi', 'Membuat dompet kripto'], 1],
-    ['Jika 1 huruf input hash diubah, apa yang terjadi pada hash SHA-256?', ['Berubah sedikit', 'Tidak berubah', 'Berubah total'], 2],
-    ['Entropy yang TINGGI menandakan model...', ['Sangat yakin', 'Ragu / tidak yakin', 'Sudah benar'], 1],
-    ['Mengapa data di blockchain disebut immutable?', ['Karena gratis', 'Karena tidak bisa diubah setelah dicatat', 'Karena cepat'], 1],
-    ['Grad-CAM berguna untuk...', ['Mempercantik foto', 'Menjelaskan bagian foto yang dilihat AI', 'Menghapus latar'], 1],
-  ],
-  en: [
-    ['What is the main role of the CNN in this system?', ['Store data on the blockchain', 'Recognize visual bean patterns', 'Create a crypto wallet'], 1],
-    ['If 1 input character changes, what happens to the SHA-256 hash?', ['Changes slightly', 'No change', 'Changes completely'], 2],
-    ['HIGH entropy indicates the model is...', ['Very confident', 'Uncertain', 'Always correct'], 1],
-    ['Why is blockchain data called immutable?', ['Because it is free', 'Because it cannot be changed once recorded', 'Because it is fast'], 1],
-    ['Grad-CAM is useful for...', ['Beautifying photos', 'Explaining which photo regions the AI looked at', 'Removing the background'], 1],
-  ],
+const DIM_AILI = {
+  AIL1: { label: 'Know & Understand AI', max: 7, color: '#2563EB', bg: '#EFF6FF', bd: '#BFDBFE', desc: 'Memahami konsep dasar AI, cara kerja CNN, hash & blockchain dalam sistem sertifikasi kopi.' },
+  AIL2: { label: 'Use & Apply AI',        max: 6, color: '#16A34A', bg: '#F0FDF4', bd: '#A7F3D0', desc: 'Menerapkan teknik AI/CNN & alur blockchain secara praktis untuk masalah nyata.' },
+  AIL3: { label: 'Evaluate & Create AI',  max: 6, color: '#EA580C', bg: '#FFF7ED', bd: '#FED7AA', desc: 'Menganalisis & mengevaluasi kualitas model dan merancang sistem AI+blockchain yang tepat.' },
+  AIL4: { label: 'AI Ethics',             max: 6, color: '#7C3AED', bg: '#F5F3FF', bd: '#DDD6FE', desc: 'Mengevaluasi isu etika, bias, privasi, transparansi & dampak sosial AI.' },
 }
+
+// 25 soal AI Literacy Index (AILI) — konteks: Kopi Arabika Web3 (CNN + Blockchain)
+// Framework: Ng, Leung, Chu & Qiao (2021), Computers and Education: AI, 2, 100041.
+const SOAL_AILI = [
+  { no:1, dim:'AIL1', bloom:'C1 – Mengingat', teks:'Apa yang dimaksud dengan Artificial Intelligence (AI)?',
+    opts:['Program komputer yang hanya mengikuti perintah yang sudah diprogram secara kaku','Kemampuan mesin untuk meniru kecerdasan manusia dalam memproses data dan membuat keputusan','Kumpulan database besar berisi informasi tentang berbagai topik','Sistem operasi canggih yang mengontrol perangkat keras komputer'], jwb:1,
+    fb:'AI adalah kemampuan mesin meniru kecerdasan manusia: belajar dari data, mengenali pola, membuat keputusan, dan menyelesaikan masalah.' },
+  { no:2, dim:'AIL1', bloom:'C1 – Mengingat', teks:'Dalam sistem Kopi Arabika Web3, model CNN (RepViT) berfungsi untuk:',
+    opts:['Menyimpan sertifikat ke blockchain','Mengklasifikasikan citra biji kopi arabika ke jenis & grade, serta menolak gambar non-kopi','Membuat dompet kripto MetaMask','Mengontrol sensor IoT di kebun'], jwb:1,
+    fb:'CNN RepViT mengklasifikasikan citra biji kopi ke jenis & grade dan mendeteksi out-of-distribution (Non-Coffee). Pencatatan ke blockchain dilakukan modul terpisah.' },
+  { no:3, dim:'AIL1', bloom:'C2 – Memahami', teks:'Apa perbedaan mendasar antara Machine Learning (ML) dan Deep Learning (DL)?',
+    opts:['ML pakai data lebih banyak, DL lebih sedikit','ML memerlukan rekayasa fitur manual, sedangkan DL mengekstrak fitur otomatis dari data mentah','ML hanya untuk teks, DL hanya untuk gambar','ML butuh GPU, DL hanya butuh CPU biasa'], jwb:1,
+    fb:'ML tradisional butuh feature engineering manual; DL otomatis mempelajari representasi fitur bertingkat dari data mentah lewat lapisan jaringan yang dalam.' },
+  { no:4, dim:'AIL1', bloom:'C2 – Memahami', teks:'CNN dalam klasifikasi biji kopi bekerja dengan cara:',
+    opts:['Membaca teks deskripsi gejala dari petani','Mengekstrak fitur visual hierarkis dari gambar (tepi → tekstur → bentuk → objek) lewat lapisan konvolusi','Menganalisis suhu & kelembaban untuk memprediksi mutu','Menghitung kadar air biji dengan sensor inframerah'], jwb:1,
+    fb:'CNN mengekstrak fitur visual secara hierarkis: dari tepi sederhana di lapisan awal hingga pola kompleks (warna, bentuk, tekstur biji) di lapisan dalam.' },
+  { no:5, dim:'AIL1', bloom:'C2 – Memahami', teks:'Mengapa citra biji kopi perlu di-preprocess (resize & normalisasi piksel) sebelum masuk CNN?',
+    opts:['Agar file tersimpan lebih efisien','Agar foto tidak bisa dibaca demi keamanan','Agar ukuran & skala nilai piksel seragam sehingga model belajar stabil dan konvergen lebih cepat','Agar gambar terlihat lebih menarik'], jwb:2,
+    fb:'Resize menyeragamkan dimensi input; normalisasi piksel menyamakan skala nilai sehingga pelatihan stabil dan konvergensi lebih cepat.' },
+  { no:6, dim:'AIL1', bloom:'C2 – Memahami', teks:'Apa yang dimaksud transfer learning dalam klasifikasi biji kopi?',
+    opts:['Memindahkan file model antar komputer via USB','Memanfaatkan model pretrained (mis. RepViT/ImageNet) sebagai fondasi, lalu fine-tune pada dataset kopi yang lebih kecil','Mentransfer data dari Colab ke komputer lokal','Belajar langsung dari petani kopi berpengalaman'], jwb:1,
+    fb:'Transfer learning memakai model yang sudah dilatih pada jutaan gambar umum sebagai fondasi, lalu di-fine-tune pada dataset biji kopi yang lebih kecil — jauh lebih efektif daripada melatih dari nol.' },
+  { no:7, dim:'AIL1', bloom:'C2 – Memahami', teks:'Apa itu overfitting dalam pelatihan model AI?',
+    opts:['Model selesai training lebih cepat dari jadwal','Model memakai terlalu banyak RAM','Model terlalu menghafal data training sehingga akurasi tinggi di training tapi rendah di data baru','Model melatih terlalu banyak gambar sehingga lambat'], jwb:2,
+    fb:'Overfitting: model menghafal noise/detail spesifik data training, bukan pola umum. Solusi: dropout, regularisasi, augmentasi data, early stopping.' },
+
+  { no:8, dim:'AIL2', bloom:'C3 – Menerapkan', teks:'Data citra biji kopi hanya 200 sampel per kelas. Strategi terbaik melatih CNN:',
+    opts:['Latih dari nol (from scratch) karena data sedikit lebih mudah','Gunakan transfer learning dari model pretrained, lalu fine-tune pada data kopi','Tidak usah pakai CNN karena data terlalu sedikit','Gandakan gambar manual dengan copy-paste'], jwb:1,
+    fb:'Dengan data terbatas, transfer learning adalah pilihan terbaik: representasi visual pretrained mempercepat & menstabilkan pelatihan pada data kopi yang kecil.' },
+  { no:9, dim:'AIL2', bloom:'C3 – Menerapkan', teks:'Model CNN kopi: akurasi training 98% tetapi validasi 71%. Langkah paling tepat:',
+    opts:['Tambah lapisan & neuron agar kapasitas naik','Perpanjang training hingga loss training nol','Atasi overfitting: terapkan dropout, augmentasi, early stopping, atau regularisasi','Ganti framework dari TensorFlow ke PyTorch'], jwb:2,
+    fb:'Selisih besar training–validasi adalah tanda overfitting. Solusi: dropout, augmentasi data, early stopping, regularisasi L2, atau perbanyak data.' },
+  { no:10, dim:'AIL2', bloom:'C3 – Menerapkan', teks:'Augmentasi data (rotasi, flip, zoom, brightness) pada citra biji kopi berguna untuk:',
+    opts:['Mengubah format JPG ke PNG','Memperbesar resolusi gambar','Menciptakan variasi data training agar model lebih robust dan mengurangi overfitting','Mengompres ukuran file'], jwb:2,
+    fb:'Augmentasi membuat variasi artifisial sehingga model lebih tahan terhadap perbedaan sudut/pencahayaan dan generalisasinya meningkat, terutama saat data terbatas.' },
+  { no:11, dim:'AIL2', bloom:'C3 – Menerapkan', teks:'Untuk mengevaluasi model KLASIFIKASI jenis kopi, metrik yang tepat adalah:',
+    opts:['RMSE dan MAE karena umum dipakai di AI','Accuracy, Precision, Recall, dan F1-Score karena ini tugas klasifikasi','R² karena mengukur variasi data','MSE karena menghitung selisih kuadrat'], jwb:1,
+    fb:'Klasifikasi memakai Accuracy, Precision, Recall, F1. RMSE/MAE/R² adalah metrik untuk regresi (prediksi nilai kontinu), bukan klasifikasi.' },
+  { no:12, dim:'AIL2', bloom:'C3 – Menerapkan', teks:'Membuat model klasifikasi kopi dengan Teachable Machine, langkah pertama yang wajib:',
+    opts:['Langsung tekan Train Model tanpa menyiapkan data','Mendefinisikan kelas yang ingin dikenali dan mengumpulkan data gambar representatif tiap kelas','Memilih arsitektur paling kompleks agar akurat','Mengunduh dataset acak dari internet tanpa memeriksanya'], jwb:1,
+    fb:'Definisikan kelas dengan jelas dan kumpulkan data representatif berkualitas. Kualitas data lebih penting dari kompleksitas model — garbage in, garbage out.' },
+  { no:13, dim:'AIL2', bloom:'C3 – Menerapkan', teks:'Sebelum sertifikat dicatat ke blockchain, foto biji kopi di-hash dengan SHA-256 untuk:',
+    opts:['Memperkecil ukuran file foto','Menghasilkan sidik jari unik 256-bit sebagai bukti keaslian dan mencegah sertifikat ganda','Mengenkripsi foto agar tidak bisa dibuka','Mempercepat proses upload ke IPFS'], jwb:1,
+    fb:'SHA-256 menghasilkan sidik jari 256-bit yang unik & satu arah. Hash ini dicatat di registry on-chain untuk mendeteksi foto identik (anti-duplikasi sertifikat).' },
+
+  { no:14, dim:'AIL3', bloom:'C4 – Menganalisis', teks:'Confusion matrix model kopi: TP=95, FP=8, TN=87, FN=10. Hitung Precision:',
+    opts:['95 / (95+10) = 90,5%','95 / (95+8) = 92,2%','87 / (87+8) = 91,6%','(95+87) / 200 = 91,0%'], jwb:1,
+    fb:'Precision = TP/(TP+FP) = 95/103 ≈ 92,2% (dari semua prediksi positif, berapa yang benar). Recall = TP/(TP+FN) = 90,5%. F1 ≈ 91,3%.' },
+  { no:15, dim:'AIL3', bloom:'C5 – Mengevaluasi', teks:'Model A: akurasi 90%, F1 0,88. Model B: akurasi 94%, F1 0,93. Mana lebih baik dan mengapa?',
+    opts:['Model A, karena angka lebih kecil berarti lebih hati-hati','Model B, karena akurasi dan F1 lebih tinggi (lebih banyak prediksi benar & seimbang precision-recall)','Sama saja karena selisihnya kecil','Model A, karena memakai lebih sedikit lapisan'], jwb:1,
+    fb:'Model B unggul: akurasi lebih tinggi dan F1 lebih tinggi (keseimbangan precision-recall lebih baik). Semakin tinggi akurasi & F1, semakin baik model klasifikasi.' },
+  { no:16, dim:'AIL3', bloom:'C5 – Mengevaluasi', teks:'Model CNN 96% di data uji, tapi di kebun nyata akurasinya turun jadi 65%. Evaluasi penyebabnya:',
+    opts:['Model terlalu sederhana, perlu lebih banyak lapisan','Domain shift: data latih (kondisi lab) berbeda dari lapangan (pencahayaan, sudut, latar bervariasi)','65% sudah sangat baik untuk pertanian','Masalah pada GPU yang lambat'], jwb:1,
+    fb:'Domain/distributional shift: distribusi data lapangan beda dari data latih. Solusi: kumpulkan data dari kondisi lapangan nyata & augmentasi yang mensimulasikan variasi pencahayaan/sudut.' },
+  { no:17, dim:'AIL3', bloom:'C6 – Mencipta', teks:'Rancangan sistem sertifikasi kopi paling komprehensif & tepercaya adalah:',
+    opts:['Hanya CNN untuk klasifikasi biji kopi','Sistem terpadu: CNN klasifikasi + Grad-CAM (penjelasan) + SHA-256 anti-duplikat + simpan ke IPFS + sertifikat NFT immutable di blockchain','Hanya database foto yang dicari manual','Hanya pencatatan NFT tanpa klasifikasi'], jwb:1,
+    fb:'Sistem terbaik menggabungkan klasifikasi (CNN), penjelasan yang dapat diaudit (Grad-CAM), keaslian (SHA-256 + IPFS content-addressing), dan sertifikat tak-termodifikasi (NFT/blockchain).' },
+  { no:18, dim:'AIL3', bloom:'C5 – Mengevaluasi', teks:'Mengapa menyimpan penjelasan AI (Grad-CAM, distribusi probabilitas, entropi) secara immutable di blockchain/IPFS itu penting?',
+    opts:['Agar sertifikat terlihat lebih panjang','Agar keputusan AI dapat diaudit dan tidak dapat diubah, sehingga akuntabel & tepercaya','Agar model berjalan lebih cepat','Agar biaya gas lebih murah'], jwb:1,
+    fb:'Menyimpan bukti penjelasan secara tak-termodifikasi menjadikan keputusan AI dapat diverifikasi & diaudit kapan pun — inti dari Explainable + Verifiable AI.' },
+  { no:19, dim:'AIL3', bloom:'C6 – Mencipta', teks:'Desain eksperimen membandingkan RepViT vs MobileNet untuk klasifikasi kopi yang valid harus:',
+    opts:['Membandingkan akurasi akhir saja tanpa pembagian train/test','Menggunakan dataset & split data sama, preprocessing identik, metrik sama, dan beberapa kali run untuk stabilitas','Memilih model dengan grafik paling mulus secara visual','Memakai dataset berbeda untuk tiap model agar adil'], jwb:1,
+    fb:'Eksperimen valid: dataset & split identik, preprocessing sama, metrik konsisten, dan multiple runs (karena DL bersifat stokastik). Dataset berbeda per model = bias eksperimental.' },
+
+  { no:20, dim:'AIL4', bloom:'C5 – Etika', teks:'Model CNN dilatih dengan data 90% dari satu daerah penghasil kopi saja. Masalah yang muncul:',
+    opts:['Tidak ada masalah, data seragam lebih konsisten','Model bias terhadap satu daerah dan bisa tidak akurat/tidak adil di daerah lain dengan kondisi berbeda','Model lebih cepat dilatih','Model tidak bisa di-deploy karena lisensi'], jwb:1,
+    fb:'Bias data training adalah isu etika kritis. Data tidak representatif menghasilkan performa tidak adil bagi daerah yang tak terwakili. Fairness AI menuntut data yang inklusif.' },
+  { no:21, dim:'AIL4', bloom:'C5 – Etika', teks:'AI menentukan harga beli kopi dari petani tetapi tidak bisa menjelaskan alasannya. Isu etika yang relevan:',
+    opts:['Tidak masalah karena AI selalu lebih akurat','Kurang transparansi (explainability) — petani berhak atas penjelasan; keputusan AI harus dapat diaudit & dijelaskan (di sinilah Grad-CAM/XAI berperan)','Hanya masalah teknis kecepatan model','Petani tidak perlu memahami cara kerja AI'], jwb:1,
+    fb:'Explainability & transparency adalah prinsip AI bertanggung jawab. Keputusan yang berdampak finansial harus dapat dijelaskan & diaudit — bukan kotak hitam.' },
+  { no:22, dim:'AIL4', bloom:'C5 – Etika', teks:'Sensor IoT di kebun kopi tanpa sengaja merekam aktivitas harian petani, lalu dipakai untuk pengawasan. Masalahnya:',
+    opts:['Tidak masalah karena kebun milik perusahaan','Pelanggaran privasi — data dikumpulkan tanpa informed consent untuk tujuan pengawasan; penggunaan harus sesuai tujuan awal','Berguna untuk optimasi jadwal sehingga dibenarkan','Hanya masalah bila data bocor ke pihak ketiga'], jwb:1,
+    fb:'Prinsip data minimization & purpose limitation: kumpulkan seperlunya, pakai sesuai tujuan awal, dan dapatkan informed consent. Pengawasan tersembunyi = pelanggaran privasi.' },
+  { no:23, dim:'AIL4', bloom:'C5 – Etika', teks:'AI merekomendasikan pestisida berlebih, lalu petani mengikutinya membabi buta. Siapa yang bertanggung jawab atas dampaknya?',
+    opts:['Hanya developer AI','Hanya petani','Tanggung jawab terdistribusi: developer (validasi model), petani (berpikir kritis), regulator (standar) — AI tidak menghapus tanggung jawab manusia','Tidak ada, karena keputusan dibuat AI'], jwb:2,
+    fb:'Akuntabilitas dalam AI bersifat terdistribusi. "AI yang menyuruh" bukan pembenaran untuk lepas tanggung jawab moral.' },
+  { no:24, dim:'AIL4', bloom:'C5 – Etika', teks:'Foto kebun petani kecil dipakai melatih model AI komersial tanpa kompensasi/izin. Isu yang relevan:',
+    opts:['Normal saja, data publik bebas dipakai','Keadilan (fairness) & kepemilikan data — sumber data berhak atas consent/kompensasi; eksploitasi komunitas rentan untuk keuntungan komersial tidak etis (sertifikat NFT bisa memberi atribusi/kepemilikan ke petani)','Hanya masalah jika ada wajah manusia','Tidak masalah asal sumber dicantumkan di publikasi'], jwb:1,
+    fb:'Data justice: komunitas sumber data berhak atas manfaat proporsional. Sertifikat NFT dapat dipakai memberi atribusi & kepemilikan pada petani — menyelaraskan teknologi dengan keadilan.' },
+  { no:25, dim:'AIL4', bloom:'C5 – Etika', teks:'Pemerintah berencana mengganti seluruh penyuluh manusia dengan AI untuk budidaya kopi. Evaluasi etikanya:',
+    opts:['Tepat, karena AI objektif, konsisten, dan tidak perlu digaji','Perlu dikritisi: AI tak bisa menggantikan empati & konteks lokal; risiko digital divide bagi petani tua; AI bisa salah & tak bisa bertanggung jawab moral','Baik asal diuji satu bulan','Tidak masalah asal dibuat tim yang kompeten'], jwb:1,
+    fb:'Penggantian total menimbulkan isu: digital divide, hilangnya hubungan manusia & kepercayaan, accountability gap, dan dampak besar bila AI salah pada ketahanan pangan.' },
+]
 
 async function sha256(text) {
   const buf = new TextEncoder().encode(text)
@@ -212,49 +285,130 @@ function EntropyLab({ t }) {
   )
 }
 
-function Quiz({ t, qs }) {
-  const [ans, setAns] = useState({})
-  const done = Object.keys(ans).length === qs.length
-  const score = qs.reduce((s, q, i) => s + (ans[i] === q[2] ? 1 : 0), 0)
+function ailiLevel(p) {
+  if (p >= 85) return { t: 'Sangat Tinggi 🌟', cls: 'a' }
+  if (p >= 70) return { t: 'Tinggi ✅', cls: 'b' }
+  if (p >= 55) return { t: 'Sedang ⚠️', cls: 'c' }
+  return { t: 'Rendah — Perlu Penguatan 📚', cls: 'd' }
+}
+
+function QuizAILI({ lang }) {
+  const [cur, setCur] = useState(0)
+  const [ans, setAns] = useState(Array(SOAL_AILI.length).fill(null))
+  const [showResult, setShowResult] = useState(false)
+
+  const pilih = (j) => setAns(a => { if (a[cur] != null) return a; const n = [...a]; n[cur] = j; return n })
+  const go = (d) => setCur(c => Math.max(0, Math.min(SOAL_AILI.length - 1, c + d)))
+  const restart = () => { setCur(0); setAns(Array(SOAL_AILI.length).fill(null)); setShowResult(false) }
+
+  if (showResult) {
+    const total = SOAL_AILI.reduce((s, q, i) => s + (ans[i] === q.jwb ? 1 : 0), 0)
+    const pct = Math.round(total / SOAL_AILI.length * 100)
+    const perDim = { AIL1: 0, AIL2: 0, AIL3: 0, AIL4: 0 }
+    SOAL_AILI.forEach((q, i) => { if (ans[i] === q.jwb) perDim[q.dim]++ })
+    const lv = ailiLevel(pct)
+    return (
+      <div className="card learn-card aili-result">
+        <div className="aili-score">{total}/{SOAL_AILI.length}</div>
+        <div className="aili-pct">{pct}% jawaban benar</div>
+        <div className={`aili-level lv-${lv.cls}`}>{lv.t}</div>
+        <div className="learn-sub-h">Skor per Dimensi AI Literacy</div>
+        <div className="aili-dimgrid">
+          {Object.entries(DIM_AILI).map(([k, v]) => {
+            const sc = perDim[k], dp = Math.round(sc / v.max * 100)
+            return (
+              <div className="aili-dimcard" key={k} style={{ background: v.bg, borderColor: v.bd }}>
+                <div className="aili-dimtop"><b style={{ color: v.color }}>{k}: {v.label}</b><span style={{ color: v.color, fontWeight: 800 }}>{sc}/{v.max}</span></div>
+                <div className="aili-dimbar"><div style={{ width: `${dp}%`, background: v.color }} /></div>
+                <div className="aili-dimdesc">{dp}% — {v.desc}</div>
+              </div>
+            )
+          })}
+        </div>
+        <div className="learn-sub-h">Rekap Jawaban</div>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="aili-table">
+            <thead><tr><th>No</th><th>Dim</th><th>Bloom</th><th>Anda</th><th>Kunci</th><th>Status</th></tr></thead>
+            <tbody>
+              {SOAL_AILI.map((q, i) => {
+                const b = ans[i] === q.jwb
+                return (
+                  <tr key={i}>
+                    <td>{q.no}</td><td>{q.dim}</td><td>{q.bloom}</td>
+                    <td style={{ textAlign: 'center' }}>{ans[i] != null ? 'ABCD'[ans[i]] : '–'}</td>
+                    <td style={{ textAlign: 'center' }}>{'ABCD'[q.jwb]}</td>
+                    <td><span className={b ? 'aili-b' : 'aili-s'}>{b ? '✓' : '✗'}</span></td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div className="learn-sub-h">Interpretasi (AILI)</div>
+        <div className="aili-interp">
+          🌟 85–100% — Sangat Tinggi: mahir di semua dimensi.<br />
+          ✅ 70–84% — Tinggi: paham baik, perkuat dimensi terlemah.<br />
+          ⚠️ 55–69% — Sedang: dasar ada, perdalam konsep & etika AI.<br />
+          📚 &lt;55% — Rendah: perlu pembelajaran lebih intensif.
+        </div>
+        <button className="btn btn-ghost" style={{ marginTop: 14 }} onClick={restart}>🔄 Ulangi Kuis dari Awal</button>
+      </div>
+    )
+  }
+
+  const s = SOAL_AILI[cur], d = DIM_AILI[s.dim], a = ans[cur]
   return (
-    <div className="card learn-card">
-      <h4 className="learn-h">{t.quizHead}</h4>
-      <p className="learn-p">{t.quizSub}</p>
-      {qs.map((q, i) => (
-        <div className="quiz-q" key={i}>
-          <div className="quiz-ask">{i + 1}. {q[0]}</div>
-          <div className="quiz-opts">
-            {q[1].map((opt, j) => {
-              const picked = ans[i] === j
-              const cls = picked ? (j === q[2] ? 'correct' : 'wrong') : (ans[i] != null && j === q[2] ? 'correct' : '')
-              return (
-                <button key={j} className={`quiz-opt ${cls}`} disabled={ans[i] != null}
-                  onClick={() => setAns(a => ({ ...a, [i]: j }))}>{opt}</button>
-              )
-            })}
+    <>
+      <div className="card learn-card">
+        <h4 className="learn-h">🤖 Kuis AI Literacy (AILI) — 25 Soal</h4>
+        <p className="learn-p">
+          Konteks: CNN + Blockchain untuk sertifikasi Kopi Arabika Web3 · Framework Ng et al. (2021), 4 dimensi AI literacy.
+          {lang === 'en' && ' (Soal disajikan dalam Bahasa Indonesia.)'}
+        </p>
+        <div className="aili-prog-top"><span className="learn-note" style={{ margin: 0 }}>Progress</span><span className="aili-prog-num">{cur + 1} / {SOAL_AILI.length}</span></div>
+        <div className="aili-bar"><div className="aili-bar-fill" style={{ width: `${(cur + 1) / SOAL_AILI.length * 100}%` }} /></div>
+        <div className="aili-dots">
+          {Object.entries(DIM_AILI).map(([k, v]) => (
+            <span key={k} className="aili-dot" style={{ background: v.bg, color: v.color, borderColor: v.bd }}>{k} ({v.max})</span>
+          ))}
+        </div>
+      </div>
+
+      <div className="card learn-card">
+        <div className="aili-qhead">
+          <div className="aili-num" style={{ background: d.color }}>{s.no}</div>
+          <div>
+            <span className="aili-dim" style={{ background: d.bg, color: d.color, borderColor: d.bd }}>{s.dim}: {d.label}</span>
+            <div className="aili-bloom">{s.bloom}</div>
           </div>
-          {ans[i] != null && (
-            <div className={`quiz-fb ${ans[i] === q[2] ? 'ok' : 'no'}`}>
-              {ans[i] === q[2] ? '✓ ' + t.correct : '✗ ' + t.wrong}
-            </div>
-          )}
         </div>
-      ))}
-      {done && (
-        <div className="quiz-done">
-          <div className="quiz-score">{t.quizDone}: <b>{score}/{qs.length}</b></div>
-          {score === qs.length && <div className="learn-badge">{t.quizBadge}</div>}
-          <button className="btn btn-ghost" style={{ marginTop: 10 }} onClick={() => setAns({})}>{t.quizRetry}</button>
+        <div className="aili-q">{s.teks}</div>
+        <div className="aili-opts">
+          {s.opts.map((o, j) => {
+            let cls = 'aili-opt'
+            if (a != null) { if (j === s.jwb) cls += ' correct'; else if (j === a) cls += ' wrong' }
+            return (
+              <button key={j} className={cls} disabled={a != null} onClick={() => pilih(j)}>
+                <span className="aili-letter">{'ABCD'[j]}</span><span>{o}</span>
+              </button>
+            )
+          })}
         </div>
-      )}
-    </div>
+        {a != null && <div className={`aili-fb ${a === s.jwb ? 'ok' : 'no'}`}>{a === s.jwb ? '✓ Benar! ' : '✗ Belum tepat. '}{s.fb}</div>}
+        <div className="aili-nav">
+          <button className="btn btn-ghost" style={{ width: 'auto' }} disabled={cur === 0} onClick={() => go(-1)}>← Sebelumnya</button>
+          {cur < SOAL_AILI.length - 1
+            ? <button className="btn btn-primary" style={{ width: 'auto' }} onClick={() => go(1)}>Selanjutnya →</button>
+            : <button className="btn btn-mint" style={{ width: 'auto' }} onClick={() => setShowResult(true)}>🎯 Lihat Hasil</button>}
+        </div>
+      </div>
+    </>
   )
 }
 
 export default function Belajar({ lang }) {
   const t = L[lang] || L.id
   const gloss = GLOSS[lang] || GLOSS.id
-  const qs = QUIZ[lang] || QUIZ.id
   const [teacher, setTeacher] = useState(false)
 
   return (
@@ -288,7 +442,7 @@ export default function Belajar({ lang }) {
         <ul className="learn-ul">{t.camTips.map((c, i) => <li key={i}>{c}</li>)}</ul>
       </div>
 
-      <Quiz t={t} qs={qs} />
+      <QuizAILI lang={lang} />
 
       {/* Glossary */}
       <div className="card learn-card">
