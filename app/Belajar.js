@@ -124,8 +124,8 @@ const GLOSS = {
     ['Traceability', 'Kemampuan menelusuri asal-usul produk dari kebun hingga sertifikat.'],
   ],
   en: [
-    ['AI (Artificial Intelligence)', 'Systems that mimic human thinking to recognize, decide, or predict.'],
-    ['Machine Learning', 'A branch of AI: machines learn patterns from example data instead of hand-coded rules.'],
+    ['AI (Artificial Intelligence)', 'A collection of computational methods designed to mimic human cognitive abilities, such as recognizing patterns, understanding information, making decisions, and generating predictions automatically.'],
+    ['Machine Learning', 'A branch of Artificial Intelligence that enables computers to learn patterns and relationships from example data without being explicitly programmed with rules for every situation.'],
     ['CNN', 'Convolutional Neural Network — a neural net for images; extracts features (edges, texture, shape) in layers.'],
     ['Confidence', 'How sure the model is about its prediction (0–100%).'],
     ['Entropy', 'A measure of uncertainty in a probability distribution; high = the model is unsure.'],
