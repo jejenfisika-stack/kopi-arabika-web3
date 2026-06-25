@@ -110,8 +110,8 @@ const L = {
 
 const GLOSS = {
   id: [
-    ['AI (Kecerdasan Buatan)', 'Sistem yang meniru kemampuan berpikir manusia untuk mengenali, memutuskan, atau memprediksi.'],
-    ['Machine Learning', 'Cabang AI: mesin belajar pola dari data contoh, bukan diprogram aturan satu per satu.'],
+    ['AI (Kecerdasan Buatan)', 'Sekumpulan metode komputasi yang dirancang untuk meniru kemampuan kognitif manusia, seperti mengenali pola, memahami informasi, mengambil keputusan, dan membuat prediksi secara otomatis.'],
+    ['Machine Learning', 'Cabang dari Kecerdasan Buatan yang memungkinkan komputer mempelajari pola dan hubungan dari data contoh tanpa harus diprogram dengan aturan eksplisit untuk setiap kasus.'],
     ['CNN', 'Convolutional Neural Network — jaringan saraf untuk citra; mengekstrak fitur (tepi, tekstur, bentuk) berlapis.'],
     ['Confidence', 'Tingkat keyakinan model terhadap prediksinya (0–100%).'],
     ['Entropy', 'Ukuran ketidakpastian distribusi probabilitas; tinggi = model ragu.'],
