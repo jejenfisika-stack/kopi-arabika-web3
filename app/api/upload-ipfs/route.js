@@ -1,13 +1,58 @@
 import { NextResponse } from 'next/server'
+import { rateLimit, getClientIp } from '../../lib/rateLimit'
 
 const PINATA_API_KEY    = process.env.PINATA_API_KEY
 const PINATA_API_SECRET = process.env.PINATA_API_SECRET
 const PINATA_GATEWAY    = process.env.PINATA_GATEWAY || 'rose-casual-warbler-710.mypinata.cloud'
 
+const MAX_PHOTO_BYTES    = 8 * 1024 * 1024  // 8 MB
+const MAX_GRADCAM_BYTES  = 3 * 1024 * 1024  // 3 MB
+const MAX_TEXT_LEN       = 200
+
+function isDataImage(s) {
+  return typeof s === 'string' && /^data:image\/(jpeg|jpg|png|webp);base64,/.test(s)
+}
+function decodedSize(dataUrl) {
+  const base64 = dataUrl.replace(/^data:image\/\w+;base64,/, '')
+  return Math.ceil(base64.length * 3 / 4)
+}
+
 export async function POST(request) {
+  // ── Rate limit per-IP: cegah penyalahgunaan kuota Pinata ──
+  const ip = getClientIp(request)
+  const rl = rateLimit(`upload-ipfs:${ip}`, { limit: 6, windowMs: 60_000 })
+  if (!rl.ok) {
+    return NextResponse.json({ success: false, error: 'Terlalu banyak permintaan, coba lagi sebentar.' }, { status: 429 })
+  }
+
+  let body
   try {
-    const body = await request.json()
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ success: false, error: 'Body request tidak valid' }, { status: 400 })
+  }
+
+  try {
     const { imageBase64, fileName, hasilCNN, namaPetani, lokasiKebun, gradcamBase64 } = body
+
+    // ============================================================
+    // Validasi input — cegah payload berlebihan / tidak sah
+    // ============================================================
+    if (!isDataImage(imageBase64)) {
+      return NextResponse.json({ success: false, error: 'imageBase64 harus berupa data URL gambar (jpeg/png/webp)' }, { status: 400 })
+    }
+    if (decodedSize(imageBase64) > MAX_PHOTO_BYTES) {
+      return NextResponse.json({ success: false, error: 'Ukuran foto melebihi batas 8MB' }, { status: 413 })
+    }
+    if (gradcamBase64 != null && (!isDataImage(gradcamBase64) || decodedSize(gradcamBase64) > MAX_GRADCAM_BYTES)) {
+      return NextResponse.json({ success: false, error: 'Gambar Grad-CAM tidak valid atau terlalu besar' }, { status: 400 })
+    }
+    if (namaPetani != null && (typeof namaPetani !== 'string' || namaPetani.length > MAX_TEXT_LEN)) {
+      return NextResponse.json({ success: false, error: 'Nama petani tidak valid' }, { status: 400 })
+    }
+    if (lokasiKebun != null && (typeof lokasiKebun !== 'string' || lokasiKebun.length > MAX_TEXT_LEN)) {
+      return NextResponse.json({ success: false, error: 'Lokasi kebun tidak valid' }, { status: 400 })
+    }
 
     // ============================================================
     // Step 1: Upload foto ke Pinata

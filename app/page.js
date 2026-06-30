@@ -426,15 +426,15 @@ export default function HomePage() {
   // ============================================================
   async function cekDuplikatOnChain(hashHex) {
     try {
-      const { ethers } = await import('ethers')
-      const provider = new ethers.JsonRpcProvider(
-        'https://polygon-amoy.g.alchemy.com/v2/coqrH17Ei58tkxqr3rIy4'
-      )
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider)
-      const [sudahAda, tokenIdLama] = await contract.cekHashFoto(hashHex)
-      return { sudahAda, tokenIdLama: Number(tokenIdLama) }
-    } catch(err) {
-      console.log('cekDuplikat error (contract mungkin belum punya fungsi ini):', err.message)
+      const res = await fetch('/api/cek-duplikat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hashHex }),
+      })
+      const data = await res.json()
+      return { sudahAda: !!data.sudahAda, tokenIdLama: Number(data.tokenIdLama) || 0 }
+    } catch (err) {
+      console.log('cekDuplikat error:', err.message)
       return { sudahAda: false, tokenIdLama: 0 }
     }
   }
