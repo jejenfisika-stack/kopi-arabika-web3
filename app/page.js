@@ -351,6 +351,20 @@ export default function HomePage() {
     const saved = localStorage.getItem('lang')
     if (saved === 'id' || saved === 'en') setLang(saved)
     if (localStorage.getItem('learnMode') === '1') setLearnMode(true)
+
+    // ── Pre-warming HF Space (fire-and-forget) ──
+    // Ping kecil agar Space bangun dari sleep SEBELUM user klik Klasifikasi.
+    // Model tetap di server HF — tidak ada yang diunduh ke browser,
+    // dan halaman tidak menunggu respons ini (tidak memblokir render).
+    // Pakai endpoint JSON /gradio_api/info (bukan root HTML) agar browser
+    // tidak ikut mem-preload aset CSS/JS Space dari Link header.
+    try {
+      fetch('https://jejenFis06-kopi-arabika-classifier.hf.space/gradio_api/info', {
+        method: 'GET',
+        mode: 'no-cors',
+        cache: 'no-store',
+      }).catch(() => {})
+    } catch (_) {}
   }, [])
 
   function toggleLearn() {
