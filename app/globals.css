@@ -345,6 +345,19 @@ a { color: var(--cyan); }
 .aili-b { color: #15803D; font-weight: 800; } .aili-s { color: #B91C1C; font-weight: 800; }
 .aili-interp { background: #F8FAFC; border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; font-size: 11.5px; line-height: 1.9; color: var(--ink-soft); text-align: left; }
 
+/* ---------- Verifikasi sertifikat + QR ---------- */
+.verif-grid { display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: start; }
+@media (max-width: 640px) { .verif-grid { grid-template-columns: 1fr; } }
+.verif-media figure { margin: 0 0 12px; }
+.verif-media img { width: 100%; border-radius: 12px; border: 1px solid var(--line); display: block; }
+.verif-media figcaption { font-size: 10.5px; color: #475569; margin-top: 5px; text-align: center; font-weight: 700; }
+.verif-fields .hasil-row { border-bottom: 1px dashed var(--line); padding-bottom: 6px; }
+.qr-box { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-top: 16px;
+  background: #F8FAFC; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+.qr-box img { width: 140px; height: 140px; border-radius: 10px; border: 1px solid var(--line); background: #fff; }
+.qr-box b { color: var(--ink); font-size: 13.5px; }
+.qr-box > div { flex: 1; min-width: 200px; }
+
 /* ---------- Animasi ---------- */
 @keyframes orbDrift { 0% { transform: translate(0,0) scale(1); } 50% { transform: translate(2.5%,-2%) scale(1.06); } 100% { transform: translate(-2%,2.5%) scale(1.03); } }
 @keyframes pulseLogo { 0%,100% { box-shadow: 0 4px 16px rgba(124,58,237,.3); } 50% { box-shadow: 0 4px 26px rgba(124,58,237,.55); } }

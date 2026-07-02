@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { ethers } from 'ethers'
+import QRCode from 'qrcode'
 import Belajar from './Belajar'
 
 const CONTRACT_ADDRESS = '0x5392C2F10d8Dea3e498726BcB8c806E8DA78834b'  // V3 — Open Mint + Verified + 6-Class Fix
@@ -206,6 +207,7 @@ const STR = {
     addNft:'🦊 Tambah NFT ke MetaMask Wallet', addingNft:'Menambahkan ke wallet...',
     nftAddedMsg:'✅ NFT berhasil masuk ke MetaMask! Buka tab NFTs untuk melihat.',
     verifyPoly:'🔍 Verifikasi di Polygonscan', seePhoto:'🖼️ Lihat Foto di IPFS', newClass:'↩️ Klasifikasi Kopi Baru',
+    qrTitle:'📱 QR Sertifikat', qrDesc:'Cetak QR ini di kemasan kopi — pembeli tinggal scan untuk memverifikasi keaslian sertifikat langsung dari blockchain.', qrDownload:'⬇️ Unduh QR (PNG)', verifyNav:'🔎 Verifikasi',
     btnMeta:'🧾 Cek Metadata', btnMetaHide:'🧾 Sembunyikan Metadata',
     metaTitle:'🧾 Metadata NFT (ERC-721)', metaLoadingTxt:'Memuat metadata dari IPFS...',
     metaErr:'Gagal memuat metadata. Buka langsung di IPFS:', metaRaw:'Lihat JSON mentah di IPFS ↗',
@@ -258,6 +260,7 @@ const STR = {
     addNft:'🦊 Add NFT to MetaMask Wallet', addingNft:'Adding to wallet...',
     nftAddedMsg:'✅ NFT added to MetaMask! Open the NFTs tab to view it.',
     verifyPoly:'🔍 Verify on Polygonscan', seePhoto:'🖼️ View Photo on IPFS', newClass:'↩️ Classify New Coffee',
+    qrTitle:'📱 Certificate QR', qrDesc:'Print this QR on the coffee packaging — buyers simply scan it to verify the certificate straight from the blockchain.', qrDownload:'⬇️ Download QR (PNG)', verifyNav:'🔎 Verify',
     btnMeta:'🧾 Check Metadata', btnMetaHide:'🧾 Hide Metadata',
     metaTitle:'🧾 NFT Metadata (ERC-721)', metaLoadingTxt:'Loading metadata from IPFS...',
     metaErr:'Failed to load metadata. Open directly on IPFS:', metaRaw:'View raw JSON on IPFS ↗',
@@ -332,6 +335,7 @@ export default function HomePage() {
   const [gradcamImg, setGradcamImg]     = useState('')
   const [gradcamLoading, setGradcamLoading] = useState(false)
   const [gradcamErr, setGradcamErr]     = useState('')
+  const [qrSertifikat, setQrSertifikat] = useState('')
   const [errorMsg, setErrorMsg]     = useState('')
   const [tokenId, setTokenId]       = useState(null)
   const [addingNFT, setAddingNFT]   = useState(false)
@@ -366,6 +370,17 @@ export default function HomePage() {
       }).catch(() => {})
     } catch (_) {}
   }, [])
+
+  // ── QR sertifikat: dibuat otomatis di browser setelah mint sukses ──
+  // Isi QR hanya URL halaman verifikasi + token ID (tidak ada rahasia).
+  useEffect(() => {
+    if (txHash && tokenId != null) {
+      const link = `${window.location.origin}/verifikasi?id=${tokenId}`
+      QRCode.toDataURL(link, { width: 280, margin: 2, color: { dark: '#0F172A', light: '#FFFFFF' } })
+        .then(setQrSertifikat)
+        .catch(() => setQrSertifikat(''))
+    }
+  }, [txHash, tokenId])
 
   function toggleLearn() {
     setLearnMode(v => {
@@ -927,6 +942,7 @@ export default function HomePage() {
     setBukanKopi(false); setDuplikat(null); setFotoHash('')
     setCidMetadata(''); setShowMeta(false); setMetaJson(null)
     setGradcamImg(''); setGradcamErr(''); setGradcamLoading(false)
+    setQrSertifikat('')
   }
 
   // Safe null check untuk gs — hindari crash saat hasilCNN null
@@ -946,6 +962,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="topbar-actions">
+          <a className="pill lang" href="/verifikasi" style={{ textDecoration: 'none' }}>{t.verifyNav}</a>
           <button className={`pill learn ${learnMode ? 'on' : ''}`} onClick={toggleLearn} title="Mode Belajar / Learn Mode">
             🎓 {lang === 'id' ? 'Belajar' : 'Learn'}
           </button>
@@ -1137,6 +1154,25 @@ export default function HomePage() {
               )}
               <div className="hash-box"><div className="k">{t.txHashLbl}</div><div className="v">{txHash}</div></div>
               {cidFoto && <div className="hash-box"><div className="k">{t.cidLbl}</div><div className="v">{cidFoto}</div></div>}
+
+              {/* QR sertifikat — dibuat otomatis di browser, isi = URL verifikasi */}
+              {qrSertifikat && tokenId != null && (
+                <div className="qr-box">
+                  <img src={qrSertifikat} alt="QR verifikasi sertifikat" />
+                  <div>
+                    <b>{t.qrTitle} — #{tokenId}</b>
+                    <p className="note" style={{ marginTop: 4 }}>{t.qrDesc}</p>
+                    <a className="btn btn-ghost" style={{ width: 'auto', marginTop: 8, textDecoration: 'none' }}
+                       href={qrSertifikat} download={`sertifikat-kopi-${tokenId}-qr.png`}>
+                      {t.qrDownload}
+                    </a>
+                    <a className="btn btn-ghost" style={{ width: 'auto', marginTop: 8, marginLeft: 8, textDecoration: 'none' }}
+                       href={`/verifikasi?id=${tokenId}`} target="_blank" rel="noreferrer">
+                      {t.verifyNav}
+                    </a>
+                  </div>
+                </div>
+              )}
 
               {!nftAdded ? (
                 <button className="btn btn-mint" onClick={addNFTtoWallet} disabled={addingNFT} style={{ marginTop: 6 }}>
