@@ -207,7 +207,7 @@ const STR = {
     addNft:'🦊 Tambah NFT ke MetaMask Wallet', addingNft:'Menambahkan ke wallet...',
     nftAddedMsg:'✅ NFT berhasil masuk ke MetaMask! Buka tab NFTs untuk melihat.',
     verifyPoly:'🔍 Verifikasi di Polygonscan', seePhoto:'🖼️ Lihat Foto di IPFS', newClass:'↩️ Klasifikasi Kopi Baru',
-    qrTitle:'📱 QR Sertifikat', qrDesc:'Cetak QR ini di kemasan kopi — pembeli tinggal scan untuk memverifikasi keaslian sertifikat langsung dari blockchain.', qrDownload:'⬇️ Unduh QR (PNG)', verifyNav:'🔎 Verifikasi',
+    qrTitle:'📱 QR Sertifikat', qrDesc:'Cetak QR ini di kemasan kopi — pembeli tinggal scan untuk memverifikasi keaslian sertifikat langsung dari blockchain.', qrDownload:'⬇️ Unduh QR (PNG)', verifyNav:'🔎 Verifikasi', tesNav:'📝 Tes',
     btnMeta:'🧾 Cek Metadata', btnMetaHide:'🧾 Sembunyikan Metadata',
     metaTitle:'🧾 Metadata NFT (ERC-721)', metaLoadingTxt:'Memuat metadata dari IPFS...',
     metaErr:'Gagal memuat metadata. Buka langsung di IPFS:', metaRaw:'Lihat JSON mentah di IPFS ↗',
@@ -260,7 +260,7 @@ const STR = {
     addNft:'🦊 Add NFT to MetaMask Wallet', addingNft:'Adding to wallet...',
     nftAddedMsg:'✅ NFT added to MetaMask! Open the NFTs tab to view it.',
     verifyPoly:'🔍 Verify on Polygonscan', seePhoto:'🖼️ View Photo on IPFS', newClass:'↩️ Classify New Coffee',
-    qrTitle:'📱 Certificate QR', qrDesc:'Print this QR on the coffee packaging — buyers simply scan it to verify the certificate straight from the blockchain.', qrDownload:'⬇️ Download QR (PNG)', verifyNav:'🔎 Verify',
+    qrTitle:'📱 Certificate QR', qrDesc:'Print this QR on the coffee packaging — buyers simply scan it to verify the certificate straight from the blockchain.', qrDownload:'⬇️ Download QR (PNG)', verifyNav:'🔎 Verify', tesNav:'📝 Test',
     btnMeta:'🧾 Check Metadata', btnMetaHide:'🧾 Hide Metadata',
     metaTitle:'🧾 NFT Metadata (ERC-721)', metaLoadingTxt:'Loading metadata from IPFS...',
     metaErr:'Failed to load metadata. Open directly on IPFS:', metaRaw:'View raw JSON on IPFS ↗',
@@ -962,6 +962,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="topbar-actions">
+          <a className="pill lang" href="/tes" style={{ textDecoration: 'none' }}>{t.tesNav}</a>
           <a className="pill lang" href="/verifikasi" style={{ textDecoration: 'none' }}>{t.verifyNav}</a>
           <button className={`pill learn ${learnMode ? 'on' : ''}`} onClick={toggleLearn} title="Mode Belajar / Learn Mode">
             🎓 {lang === 'id' ? 'Belajar' : 'Learn'}

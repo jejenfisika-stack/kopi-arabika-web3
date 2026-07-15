@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { ethers } from 'ethers'
+import { withContract } from '../../lib/rpc'
 
 const CONTRACT_ADDRESS = '0x5392C2F10d8Dea3e498726BcB8c806E8DA78834b'
 const CONTRACT_ABI = [
@@ -15,10 +15,6 @@ const CONTRACT_ABI = [
   },
 ]
 
-// RPC key disimpan di server (env var), tidak pernah dikirim ke browser.
-// Fallback ke RPC publik Polygon Amoy jika ALCHEMY_RPC_URL belum diset.
-const RPC_URL = process.env.ALCHEMY_RPC_URL || 'https://rpc-amoy.polygon.technology'
-
 export async function POST(request) {
   let body
   try {
@@ -33,9 +29,10 @@ export async function POST(request) {
   }
 
   try {
-    const provider = new ethers.JsonRpcProvider(RPC_URL)
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider)
-    const [sudahAda, tokenIdLama] = await contract.cekHashFoto(hashHex)
+    const [sudahAda, tokenIdLama] = await withContract(
+      CONTRACT_ABI, CONTRACT_ADDRESS,
+      (contract) => contract.cekHashFoto(hashHex),
+    )
     return NextResponse.json({ sudahAda, tokenIdLama: Number(tokenIdLama) })
   } catch (err) {
     console.error('cek-duplikat error:', err.message)

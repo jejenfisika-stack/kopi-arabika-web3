@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { ethers } from 'ethers'
 import { rateLimit, getClientIp } from '../../lib/rateLimit'
+import { withContract } from '../../lib/rpc'
 
 const CONTRACT_ADDRESS = '0x5392C2F10d8Dea3e498726BcB8c806E8DA78834b'
 const CONTRACT_ABI = [
@@ -29,9 +29,6 @@ const CONTRACT_ABI = [
   },
 ]
 
-// RPC key di server (env var); fallback ke RPC publik Polygon Amoy.
-const RPC_URL = process.env.ALCHEMY_RPC_URL || 'https://rpc-amoy.polygon.technology'
-
 export async function GET(request) {
   // ── Rate limit per-IP: lindungi kuota RPC dari spam ──
   const ip = getClientIp(request)
@@ -48,13 +45,13 @@ export async function GET(request) {
   const tokenId = Number(idParam)
 
   try {
-    const provider = new ethers.JsonRpcProvider(RPC_URL)
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider)
-
-    const [data, uri] = await Promise.all([
-      contract.getDataKopi(tokenId),
-      contract.tokenURI(tokenId).catch(() => ''),
-    ])
+    const { data, uri } = await withContract(CONTRACT_ABI, CONTRACT_ADDRESS, async (contract) => {
+      const [data, uri] = await Promise.all([
+        contract.getDataKopi(tokenId),
+        contract.tokenURI(tokenId).catch(() => ''),
+      ])
+      return { data, uri }
+    })
 
     // Kontrak tidak revert untuk token yang belum ada — ia mengembalikan
     // nilai default (string kosong / 0). Deteksi itu sebagai "tidak ditemukan".
