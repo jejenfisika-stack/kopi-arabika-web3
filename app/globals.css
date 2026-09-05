@@ -393,3 +393,71 @@ a { color: var(--cyan); }
   body::before, .brand .logo, .hero-photo img, .scorecard, .hero h2,
   .btn-primary::after, .btn-mint::after, .pill.wallet::after { animation: none !important; }
 }
+
+/* ============ Lab Blockchain ============ */
+.bc-toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin: 10px 0 8px; }
+.bc-mode { display: inline-flex; gap: 6px; background: var(--bg-2); padding: 4px; border-radius: 12px; }
+.bc-mode button { border: 0; background: transparent; color: var(--ink-soft); font: inherit; font-size: 13px; font-weight: 700;
+  padding: 8px 12px; border-radius: 9px; cursor: pointer; }
+.bc-mode button.on { background: var(--card); color: var(--purple); box-shadow: 0 2px 8px rgba(15,23,42,.10); }
+.bc-mode button:disabled { opacity: .55; cursor: not-allowed; }
+.bc-diff { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-soft); flex: 1 1 240px; }
+.bc-diff .learn-slider { flex: 1; min-width: 110px; }
+
+.bc-scenario { margin: 10px 0; padding: 10px 12px; border-radius: 11px; font-size: 13.5px; line-height: 1.55;
+  background: linear-gradient(135deg, rgba(124,58,237,.09), rgba(37,99,235,.07));
+  border: 1px solid rgba(124,58,237,.22); color: var(--ink-soft); }
+.bc-busy { margin: 8px 0; font-size: 13px; font-weight: 700; color: var(--purple); }
+
+.bc-chain { display: grid; gap: 10px; margin: 12px 0; }
+.bc-block { border: 1.5px solid var(--line); border-radius: 13px; padding: 12px; background: var(--card);
+  position: relative; transition: border-color .18s, box-shadow .18s; }
+.bc-block + .bc-block::before { content: '↓'; position: absolute; top: -14px; left: 22px; font-size: 13px; color: var(--muted); }
+.bc-block.ok  { border-color: rgba(22,163,74,.42); box-shadow: 0 4px 16px rgba(22,163,74,.08); }
+.bc-block.bad { border-color: rgba(220,38,38,.55); box-shadow: 0 4px 18px rgba(220,38,38,.12); background: #FFFAFA; }
+.bc-block.db  { border-color: var(--line); }
+
+.bc-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.bc-head b { font-size: 14px; color: var(--ink); }
+.bc-badges { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.bc-badge { font-size: 11px; font-weight: 800; padding: 4px 9px; border-radius: 999px; white-space: nowrap; }
+.bc-badge.ok  { background: rgba(22,163,74,.13);  color: var(--green-d); }
+.bc-badge.bad { background: rgba(220,38,38,.13);  color: #B91C1C; }
+.bc-badge.db  { background: var(--bg-2); color: var(--muted); }
+
+.bc-row { margin-top: 8px; }
+.bc-lbl { display: block; font-size: 11.5px; font-weight: 700; color: var(--muted); margin-bottom: 3px; }
+.bc-input { width: 100%; padding: 9px 11px; border: 1px solid var(--glass-bd); border-radius: 9px;
+  font: inherit; font-size: 13.5px; color: var(--ink); background: var(--card); }
+.bc-input:focus { outline: 2px solid rgba(124,58,237,.35); outline-offset: 1px; }
+.bc-input:disabled { opacity: .6; }
+.bc-mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 11.5px; word-break: break-all;
+  padding: 7px 9px; border-radius: 8px; background: var(--bg-2); color: var(--ink-soft); }
+.bc-mono.bad { background: rgba(220,38,38,.09); color: #B91C1C; font-weight: 700; }
+.bc-mine { margin-top: 10px; max-width: 220px; font-size: 13px; }
+
+.bc-verdict { margin: 12px 0 8px; padding: 10px 12px; border-radius: 11px; font-size: 14px; font-weight: 800; text-align: center; }
+.bc-verdict.ok  { background: rgba(22,163,74,.12); color: var(--green-d); }
+.bc-verdict.bad { background: rgba(220,38,38,.10); color: #B91C1C; }
+.bc-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.bc-actions .btn { flex: 1 1 190px; max-width: 260px; }
+.bc-cost { margin: 10px 0 0; font-size: 13px; color: var(--ink-soft); }
+.bc-lesson { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--line); }
+
+@media (max-width: 560px) {
+  .bc-toolbar { flex-direction: column; align-items: stretch; }
+  .bc-mode { justify-content: center; }
+  .bc-actions .btn { max-width: none; }
+}
+
+/* Panduan & istilah di dalam Lab Blockchain */
+.bc-intro { margin: 8px 0 12px; padding: 11px 13px; border-radius: 11px; font-size: 13.5px; line-height: 1.65;
+  color: var(--ink-soft); background: var(--bg-2); border-left: 4px solid var(--purple); }
+.bc-guide { margin-bottom: 8px; }
+.bc-guide > summary { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+.bc-steps { margin: 8px 0 2px; padding-left: 20px; }
+.bc-steps li { font-size: 13.5px; line-height: 1.65; color: var(--ink-soft); margin-bottom: 7px; }
+.bc-terms { margin: 8px 0 2px; }
+.bc-terms > div { margin-bottom: 10px; }
+.bc-terms dt { font-weight: 800; font-size: 13px; color: var(--purple); }
+.bc-terms dd { margin: 2px 0 0; font-size: 13px; line-height: 1.6; color: var(--ink-soft); }

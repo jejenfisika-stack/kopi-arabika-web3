@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 // ============================================================
 // Konten dwibahasa Pusat Belajar IPA (Web3 style, bukan LMS)
@@ -367,6 +367,355 @@ function EntropyLab({ t }) {
   )
 }
 
+// ============================================================
+// Lab Blockchain — rantai 4 blok, proof of work, pembanding basis data
+// Seluruhnya berjalan di peramban: tanpa jaringan, tanpa dompet, tanpa transaksi.
+// ============================================================
+const NOL64 = '0'.repeat(64)
+
+const DATA_AWAL = [
+  'GENESIS · Kopi Arabika Web3',
+  'Arabika Natural Ijen · Grade B · Pak Ramli',
+  'Arabika Peaberry · Grade A · Bu Sari',
+  'Arabika Anaerob Carbonic · Grade A · Pak Sumantri',
+]
+
+const BC_CH = {
+  id: {
+    title: '⛓️ Lab Blockchain — Coba Palsukan Sertifikat',
+    sub: 'Empat blok berisi sertifikat kopi. Ubah satu huruf saja pada blok mana pun, lalu amati apa yang terjadi pada blok-blok sesudahnya.',
+    intro: 'Belum pernah menyentuh blockchain? Tidak apa-apa. Bayangkan buku catatan yang setiap halamannya menyalin sidik jari halaman sebelumnya. Merobek atau mengubah satu halaman langsung membuat semua halaman sesudahnya tidak cocok — itulah inti blockchain, dan hal itulah yang akan kamu buktikan sendiri di bawah ini.',
+    caraHead: '📖 Cara memakai lab ini — ikuti tujuh langkah berikut',
+    cara: [
+      'Perhatikan empat blok di bawah. Semuanya bertanda hijau, artinya rantai masih sah.',
+      'Isi dulu kotak prediksi: menurutmu, apa yang terjadi pada blok sesudahnya bila satu blok diubah?',
+      'Pada Blok 2, ubah tulisan "Grade B" menjadi "Grade A", lalu klik di luar kolom.',
+      'Amati blok mana saja yang berubah merah. Cocok dengan dugaanmu tadi?',
+      'Tekan "Perbaiki Seluruh Rantai". Catat berapa percobaan dan berapa milidetik yang dibutuhkan.',
+      'Naikkan tingkat kesulitan menjadi 3, lalu tekan perbaiki lagi. Bandingkan biayanya dengan langkah 5.',
+      'Terakhir, pindah ke mode "Basis Data Biasa" dan ulangi langkah 3. Perhatikan bedanya.',
+    ],
+    istilahHead: '❓ Istilah penting — buka bila ada kata yang asing',
+    istilah: [
+      ['Hash', 'Sidik jari digital sepanjang 64 karakter yang dihitung dari isi data. Ubah satu huruf saja, seluruh sidik jarinya berubah total. Tidak bisa dibalik menjadi data aslinya.'],
+      ['prevHash', 'Salinan hash milik blok sebelumnya. Inilah "rantai" yang mengikat satu blok ke blok lain. Kalau tidak cocok lagi, berarti ada yang diubah.'],
+      ['Nonce', 'Angka pembantu yang diubah-ubah sampai hash memenuhi syarat. Nonce tidak punya arti lain selain sebagai bahan coba-coba.'],
+      ['Proof of work (bukti kerja)', 'Syarat bahwa hash harus diawali sejumlah angka nol. Tidak ada jalan pintas — satu-satunya cara adalah mencoba nonce berulang kali sampai kebetulan cocok.'],
+      ['Mining', 'Proses mencoba nonce sampai syarat bukti kerja terpenuhi. Makin tinggi tingkat kesulitannya, makin banyak percobaan yang dibutuhkan.'],
+      ['Blok genesis', 'Blok pertama dalam rantai. Ia tidak punya blok sebelumnya, sehingga prevHash-nya berisi angka nol semua.'],
+    ],
+    modeChain: '⛓️ Blockchain', modeDb: '🗄️ Basis Data Biasa',
+    noteChain: 'Mode blockchain: setiap blok mengunci blok sebelumnya lewat prevHash, dan hash-nya wajib memenuhi bukti kerja.',
+    noteDb: 'Mode basis data biasa: setiap baris berdiri sendiri. Ubah apa pun — tidak ada jejak, tidak ada tanda, tidak ada yang rusak.',
+    diff: 'Tingkat kesulitan — jumlah angka 0 di depan hash',
+    diffNote: 'Menaikkan tingkat kesulitan membuat seluruh hash lama tidak lagi memenuhi syarat, sehingga rantai menjadi tidak sah. Tekan Perbaiki Seluruh Rantai, lalu bandingkan biayanya.',
+    predictLbl: '🔮 Sebelum mengedit, tulis dugaanmu: apa yang akan terjadi pada blok sesudahnya?',
+    predictPh: 'Menurut saya blok 3 dan 4 akan…',
+    scenario: '🎯 Skenario: kamu ingin menaikkan mutu kopi pada Blok 2. Ubah "Grade B" menjadi "Grade A", lalu amati rantainya.',
+    block: 'Blok', genesis: 'Genesis',
+    dataLbl: 'Data sertifikat (boleh diedit)',
+    prevLbl: 'prevHash — kunci ke blok sebelumnya',
+    hashLbl: 'hash blok ini', nonceLbl: 'nonce',
+    linkOk: '🔗 Tautan sah', linkBad: '⛓️‍💥 Tautan putus',
+    powOk: '⛏️ Bukti kerja sah', powBad: '⚠️ Bukti kerja gagal', terdampak: '⛔ Terdampak blok rusak di hulu',
+    dbOk: '💾 Tersimpan', dbNote: 'Tidak ada jejak perubahan.',
+    mineOne: '⛏️ Mining blok ini', fixAll: '🔧 Perbaiki Seluruh Rantai', reset: '↩️ Atur Ulang',
+    mining: 'Mining…', attempts: 'percobaan',
+    costLbl: 'Biaya perbaikan terakhir',
+    chainOk: '✅ Seluruh rantai sah.', chainBad: '❌ Rantai rusak — ada blok yang tidak sah.',
+    lessonH: 'Apa yang baru saja kamu buktikan?',
+    lesson: [
+      'Mengubah satu huruf mengubah seluruh hash — inilah efek longsoran (avalanche effect).',
+      'Hash yang berubah membuat prevHash blok berikutnya tidak lagi cocok, sehingga kerusakan menjalar ke semua blok sesudahnya.',
+      'Memperbaikinya menuntut mining ulang setiap blok yang terdampak. Naikkan tingkat kesulitan, lalu rasakan biayanya melonjak.',
+      'Bandingkan dengan mode basis data biasa: di sana pemalsuan tidak meninggalkan jejak sama sekali.',
+    ],
+  },
+  en: {
+    title: '⛓️ Blockchain Lab — Try Forging a Certificate',
+    sub: 'Four blocks hold coffee certificates. Change a single character in any block, then watch what happens to the blocks after it.',
+    intro: 'Never touched a blockchain before? That’s fine. Picture a notebook where every page copies the fingerprint of the page before it. Tear out or alter one page and every page after it stops matching — that is the heart of a blockchain, and it is exactly what you are about to prove for yourself below.',
+    caraHead: '📖 How to use this lab — follow these seven steps',
+    cara: [
+      'Look at the four blocks below. All of them are green, meaning the chain is still valid.',
+      'First write your prediction: if one block is changed, what will happen to the blocks after it?',
+      'In Block 2, change "Grade B" to "Grade A", then click outside the field.',
+      'Observe which blocks turn red. Does it match your prediction?',
+      'Press "Repair Whole Chain". Note how many attempts and how many milliseconds it took.',
+      'Raise the difficulty to 3, then repair again. Compare the cost with step 5.',
+      'Finally, switch to "Ordinary Database" mode and repeat step 3. Notice the difference.',
+    ],
+    istilahHead: '❓ Key terms — open this if any word is unfamiliar',
+    istilah: [
+      ['Hash', 'A 64-character digital fingerprint computed from the data. Change a single character and the whole fingerprint changes completely. It cannot be reversed back into the original data.'],
+      ['prevHash', 'A copy of the previous block’s hash. This is the "chain" that binds one block to another. If it no longer matches, something was altered.'],
+      ['Nonce', 'A helper number that is varied until the hash meets the requirement. The nonce has no meaning beyond being trial material.'],
+      ['Proof of work', 'The requirement that a hash must begin with a certain number of zeros. There is no shortcut — the only way is to try nonces repeatedly until one happens to fit.'],
+      ['Mining', 'The process of trying nonces until the proof-of-work requirement is met. The higher the difficulty, the more attempts it takes.'],
+      ['Genesis block', 'The first block in the chain. It has no predecessor, so its prevHash is all zeros.'],
+    ],
+    modeChain: '⛓️ Blockchain', modeDb: '🗄️ Ordinary Database',
+    noteChain: 'Blockchain mode: each block locks the previous one through prevHash, and its hash must satisfy proof of work.',
+    noteDb: 'Ordinary database mode: each row stands alone. Change anything — no trace, no warning, nothing breaks.',
+    diff: 'Difficulty — number of leading zeros required',
+    diffNote: 'Raising the difficulty makes every existing hash fall short, so the chain becomes invalid. Press Repair Whole Chain, then compare the cost.',
+    predictLbl: '🔮 Before editing, write your prediction: what will happen to the blocks after it?',
+    predictPh: 'I think blocks 3 and 4 will…',
+    scenario: '🎯 Scenario: you want to upgrade the coffee grade in Block 2. Change "Grade B" to "Grade A", then watch the chain.',
+    block: 'Block', genesis: 'Genesis',
+    dataLbl: 'Certificate data (editable)',
+    prevLbl: 'prevHash — link to the previous block',
+    hashLbl: 'this block’s hash', nonceLbl: 'nonce',
+    linkOk: '🔗 Link valid', linkBad: '⛓️‍💥 Link broken',
+    powOk: '⛏️ Proof of work valid', powBad: '⚠️ Proof of work failed', terdampak: '⛔ Invalidated by a broken block upstream',
+    dbOk: '💾 Saved', dbNote: 'No trace of the change.',
+    mineOne: '⛏️ Mine this block', fixAll: '🔧 Repair Whole Chain', reset: '↩️ Reset',
+    mining: 'Mining…', attempts: 'attempts',
+    costLbl: 'Last repair cost',
+    chainOk: '✅ The whole chain is valid.', chainBad: '❌ Chain broken — some blocks are invalid.',
+    lessonH: 'What did you just prove?',
+    lesson: [
+      'Changing one character changes the entire hash — this is the avalanche effect.',
+      'A changed hash makes the next block’s prevHash stop matching, so the damage cascades to every block after it.',
+      'Repairing it demands re-mining every affected block. Raise the difficulty and feel the cost climb.',
+      'Compare with ordinary database mode: there, forgery leaves no trace at all.',
+    ],
+  },
+}
+
+// Cari nonce sampai hash memenuhi jumlah nol di depan. Diselingi jeda agar tampilan tidak membeku.
+async function tambang(idx, data, prevHash, sulit, onTick) {
+  const target = '0'.repeat(sulit)
+  const MAKS = 400000
+  let nonce = 0, coba = 0, h = ''
+  while (coba < MAKS) {
+    h = await sha256(`${idx}|${data}|${nonce}|${prevHash}`)
+    coba++
+    if (h.startsWith(target)) return { nonce, hash: h, coba }
+    nonce++
+    // Jeda dibuat jarang: tiap jeda memicu render ulang React yang jauh lebih mahal
+    // daripada hashing itu sendiri (24.800 hash/detik tanpa jeda vs 1.800 dengan jeda tiap 400).
+    if (coba % 2500 === 0) { onTick && onTick(coba); await new Promise(r => setTimeout(r, 0)) }
+  }
+  return { nonce, hash: h, coba, gagal: true }
+}
+
+function LabBlockchain({ lang }) {
+  const c = BC_CH[lang] || BC_CH.id
+  const [mode, setMode]   = useState('chain')
+  const [sulit, setSulit] = useState(2)
+  const [blocks, setBlocks] = useState([])
+  const [sibuk, setSibuk] = useState(false)
+  const [tick, setTick]   = useState(0)
+  const [biaya, setBiaya] = useState(null)
+  const [duga, setDuga]   = useState('')
+  const [seed, setSeed]   = useState(0)
+  const batal = useRef(0)
+
+  // Bangun ulang rantai saat mode atau tingkat kesulitan berubah
+  useEffect(() => {
+    const sesi = ++batal.current
+    let hidup = true
+    ;(async () => {
+      setSibuk(true); setBiaya(null)
+      const out = []
+      let prev = NOL64
+      for (let i = 0; i < DATA_AWAL.length; i++) {
+        if (mode === 'db') {
+          out.push({ data: DATA_AWAL[i], nonce: 0, hash: '', prevHash: '' })
+        } else {
+          const r = await tambang(i, DATA_AWAL[i], prev, sulit, setTick)
+          if (!hidup || sesi !== batal.current) return
+          out.push({ data: DATA_AWAL[i], nonce: r.nonce, hash: r.hash, prevHash: prev })
+          prev = r.hash
+        }
+      }
+      if (!hidup || sesi !== batal.current) return
+      setBlocks(out); setSibuk(false); setTick(0)
+    })()
+    return () => { hidup = false }
+    // Sengaja TIDAK bergantung pada `sulit`: menaikkan kesulitan justru harus membuat
+    // rantai menjadi tidak sah, lalu siswa merasakan biayanya lewat tombol perbaikan.
+  }, [mode, seed])
+
+  // Edit data: hash blok itu dihitung ulang, blok sesudahnya sengaja TIDAK disentuh
+  async function editData(i, nilai) {
+    const nb = [...blocks]
+    nb[i] = { ...nb[i], data: nilai }
+    if (mode === 'chain') {
+      nb[i].hash = await sha256(`${i}|${nilai}|${nb[i].nonce}|${nb[i].prevHash}`)
+    }
+    setBlocks(nb)
+  }
+
+  // Sebuah blok hanya sah bila pemeriksaannya sendiri lolos DAN seluruh blok di hulunya sah.
+  // Inilah sebabnya kerusakan satu blok menjalar ke semua blok sesudahnya.
+  function status(i) {
+    const b = blocks[i]
+    if (!b) return { powOk: true, linkOk: true, sendiriOk: true, ok: true, terdampak: false }
+    const nol = '0'.repeat(sulit)
+    const cek = (k) => {
+      const p = blocks[k]
+      const pow  = p.hash.startsWith(nol)
+      const link = k === 0 ? p.prevHash === NOL64 : p.prevHash === blocks[k - 1].hash
+      return pow && link
+    }
+    const powOk  = b.hash.startsWith(nol)
+    const linkOk = i === 0 ? b.prevHash === NOL64 : b.prevHash === blocks[i - 1].hash
+    const sendiriOk = powOk && linkOk
+    let huluSah = true
+    for (let k = 0; k < i; k++) { if (!cek(k)) { huluSah = false; break } }
+    return { powOk, linkOk, sendiriOk, ok: sendiriOk && huluSah, terdampak: sendiriOk && !huluSah }
+  }
+
+  async function miningSatu(i) {
+    setSibuk(true); setTick(0)
+    const t0 = performance.now()
+    const prev = i === 0 ? NOL64 : blocks[i - 1].hash
+    const r = await tambang(i, blocks[i].data, prev, sulit, setTick)
+    const nb = [...blocks]
+    nb[i] = { ...nb[i], nonce: r.nonce, hash: r.hash, prevHash: prev }
+    setBlocks(nb)
+    setBiaya({ n: r.coba, ms: Math.round(performance.now() - t0) })
+    setSibuk(false); setTick(0)
+  }
+
+  async function perbaikiSemua() {
+    setSibuk(true); setTick(0)
+    const t0 = performance.now()
+    const nb = [...blocks]
+    let prev = NOL64, total = 0
+    for (let i = 0; i < nb.length; i++) {
+      const cocok = nb[i].prevHash === prev &&
+        nb[i].hash === await sha256(`${i}|${nb[i].data}|${nb[i].nonce}|${prev}`) &&
+        nb[i].hash.startsWith('0'.repeat(sulit))
+      if (cocok) { prev = nb[i].hash; continue }
+      const r = await tambang(i, nb[i].data, prev, sulit, setTick)
+      total += r.coba
+      nb[i] = { ...nb[i], nonce: r.nonce, hash: r.hash, prevHash: prev }
+      prev = r.hash
+    }
+    setBlocks(nb)
+    setBiaya({ n: total, ms: Math.round(performance.now() - t0) })
+    setSibuk(false); setTick(0)
+  }
+
+  function aturUlang() { setBiaya(null); setDuga(''); setSeed(s => s + 1) }
+
+  const rantaiSah = mode === 'chain' && blocks.length > 0 && blocks.every((_, i) => status(i).ok)
+  const pot = (h) => h ? `${h.slice(0, 20)}…${h.slice(-8)}` : '—'
+
+  return (
+    <div className="card learn-card">
+      <h4 className="learn-h">{c.title}</h4>
+      <p className="learn-p">{c.sub}</p>
+
+      <div className="bc-intro">{c.intro}</div>
+
+      <details className="gloss bc-guide" open>
+        <summary>{c.caraHead}</summary>
+        <ol className="bc-steps">{c.cara.map((x, i) => <li key={i}>{x}</li>)}</ol>
+      </details>
+
+      <details className="gloss bc-guide">
+        <summary>{c.istilahHead}</summary>
+        <dl className="bc-terms">
+          {c.istilah.map(([k, d], i) => (
+            <div key={i}><dt>{k}</dt><dd>{d}</dd></div>
+          ))}
+        </dl>
+      </details>
+
+      <div className="bc-toolbar">
+        <div className="bc-mode">
+          <button className={mode === 'chain' ? 'on' : ''} onClick={() => setMode('chain')} disabled={sibuk}>{c.modeChain}</button>
+          <button className={mode === 'db' ? 'on' : ''} onClick={() => setMode('db')} disabled={sibuk}>{c.modeDb}</button>
+        </div>
+        {mode === 'chain' && (
+          <div className="bc-diff">
+            <span>{c.diff}: <b>{sulit}</b></span>
+            <input className="learn-slider" type="range" min="1" max="3" value={sulit} disabled={sibuk}
+              onChange={e => setSulit(Number(e.target.value))} />
+          </div>
+        )}
+      </div>
+
+      <p className="learn-note">{mode === 'chain' ? c.noteChain : c.noteDb}</p>
+      {mode === 'chain' && <p className="learn-note">{c.diffNote}</p>}
+
+      {mode === 'chain' && (
+        <>
+          <div className="bc-scenario">{c.scenario}</div>
+          <div className="field">
+            <label>{c.predictLbl}</label>
+            <input value={duga} placeholder={c.predictPh} onChange={e => setDuga(e.target.value)} />
+          </div>
+        </>
+      )}
+
+      {sibuk && <div className="bc-busy">{c.mining} {tick > 0 && <b>{tick.toLocaleString()} {c.attempts}</b>}</div>}
+
+      <div className="bc-chain">
+        {blocks.map((b, i) => {
+          const s = status(i)
+          const rusak = mode === 'chain' && !s.ok
+          return (
+            <div key={i} className={`bc-block ${mode === 'db' ? 'db' : rusak ? 'bad' : 'ok'}`}>
+              <div className="bc-head">
+                <b>{c.block} {i + 1}{i === 0 ? ` · ${c.genesis}` : ''}</b>
+                {mode === 'db'
+                  ? <span className="bc-badge db">{c.dbOk}</span>
+                  : <span className="bc-badges">
+                      <span className={`bc-badge ${s.linkOk ? 'ok' : 'bad'}`}>{s.linkOk ? c.linkOk : c.linkBad}</span>
+                      <span className={`bc-badge ${s.powOk ? 'ok' : 'bad'}`}>{s.powOk ? c.powOk : c.powBad}</span>
+                      {s.terdampak && <span className="bc-badge bad">{c.terdampak}</span>}
+                    </span>}
+              </div>
+
+              <div className="bc-row">
+                <span className="bc-lbl">{c.dataLbl}</span>
+                <input className="bc-input" value={b.data} disabled={sibuk}
+                  onChange={e => editData(i, e.target.value)} />
+              </div>
+
+              {mode === 'chain' ? (
+                <>
+                  <div className="bc-row">
+                    <span className="bc-lbl">{c.prevLbl}</span>
+                    <div className={`bc-mono ${s.linkOk ? '' : 'bad'}`}>{pot(b.prevHash)}</div>
+                  </div>
+                  <div className="bc-row">
+                    <span className="bc-lbl">{c.hashLbl} · {c.nonceLbl} {b.nonce}</span>
+                    <div className={`bc-mono ${s.powOk ? '' : 'bad'}`}>{pot(b.hash)}</div>
+                  </div>
+                  {!s.ok && (
+                    <button className="btn btn-ghost bc-mine" disabled={sibuk} onClick={() => miningSatu(i)}>{c.mineOne}</button>
+                  )}
+                </>
+              ) : <p className="learn-note" style={{ margin: '2px 0 0' }}>{c.dbNote}</p>}
+            </div>
+          )
+        })}
+      </div>
+
+      {mode === 'chain' && blocks.length > 0 && (
+        <>
+          <div className={`bc-verdict ${rantaiSah ? 'ok' : 'bad'}`}>{rantaiSah ? c.chainOk : c.chainBad}</div>
+          <div className="bc-actions">
+            <button className="btn btn-ghost" disabled={sibuk || rantaiSah} onClick={perbaikiSemua}>{c.fixAll}</button>
+            <button className="btn btn-ghost" disabled={sibuk} onClick={aturUlang}>{c.reset}</button>
+          </div>
+          {biaya && <p className="bc-cost">{c.costLbl}: <b>{biaya.n.toLocaleString()}</b> {c.attempts} · <b>{biaya.ms} ms</b></p>}
+          <div className="bc-lesson">
+            <b className="learn-sub-h">{c.lessonH}</b>
+            <ul className="learn-ul">{c.lesson.map((x, i) => <li key={i}>{x}</li>)}</ul>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 function ailiLevelCls(p) {
   if (p >= 85) return 'a'
   if (p >= 70) return 'b'
@@ -517,6 +866,8 @@ export default function Belajar({ lang }) {
         <HashPlayground t={t} />
         <EntropyLab t={t} />
       </div>
+
+      <LabBlockchain lang={lang} />
 
       {/* Grad-CAM guide */}
       <div className="card learn-card">
