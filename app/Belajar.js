@@ -716,6 +716,450 @@ function LabBlockchain({ lang }) {
   )
 }
 
+// ============================================================
+// Lab Konvolusi — bagaimana CNN sebenarnya "melihat"
+// Empat miskonsepsi yang sengaja dilawan di lab ini:
+//  1) kernel BUKAN diambil dari citra, melainkan bobot hasil pelatihan
+//  2) jendela BERTUMPANG TINDIH, bukan citra yang dicacah jadi kepingan
+//  3) tujuannya MEMBUANG informasi (abstraksi), bukan mencerminkan citra
+//  4) RGB hanya ada di lapisan pertama; sesudahnya kanal bukan lagi warna
+// ============================================================
+const POLA = {
+  tepi:   { r: 8, f: (y, x) => (x < 4 ? 40 : 210) },
+  biji:   { r: 8, f: (y, x) => { const dy = y - 3.5, dx = x - 3.5; const d = Math.sqrt(dy * dy / 1.15 + dx * dx); return d < 2.6 ? 215 - d * 22 : 45 } },
+  garis:  { r: 8, f: (y, x) => (Math.abs(y - x) <= 1 ? 220 : 50) },
+}
+
+const KERNEL = [
+  { id: 'identitas', m: [[0, 0, 0], [0, 1, 0], [0, 0, 0]], bagi: 1 },
+  { id: 'tepi',      m: [[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]], bagi: 1 },
+  { id: 'tegak',     m: [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], bagi: 1 },
+  { id: 'datar',     m: [[-1, -2, -1], [0, 0, 0], [1, 2, 1]], bagi: 1 },
+  { id: 'halus',     m: [[1, 1, 1], [1, 1, 1], [1, 1, 1]], bagi: 9 },
+  { id: 'tajam',     m: [[0, -1, 0], [-1, 5, -1], [0, -1, 0]], bagi: 1 },
+]
+
+function buatPola(nama) {
+  const p = POLA[nama] || POLA.biji
+  const out = []
+  for (let y = 0; y < p.r; y++) { const b = []; for (let x = 0; x < p.r; x++) b.push(Math.max(0, Math.min(255, Math.round(p.f(y, x))))); out.push(b) }
+  return out
+}
+
+// Konvolusi tanpa padding: keluaran menyusut (8x8 -> 6x6). Penyusutan itu disengaja
+// dan menjadi bukti kasat mata bahwa informasi memang dibuang bertahap.
+function konvolusi(mat, ker, bagi) {
+  const n = mat.length, k = ker.length, o = n - k + 1
+  const out = []
+  for (let y = 0; y < o; y++) {
+    const row = []
+    for (let x = 0; x < o; x++) {
+      let s = 0
+      for (let j = 0; j < k; j++) for (let i = 0; i < k; i++) s += mat[y + j][x + i] * ker[j][i]
+      row.push(s / (bagi || 1))
+    }
+    out.push(row)
+  }
+  return out
+}
+
+// Menjepit nilai negatif menjadi 0 — persis yang dilakukan ReLU pada CNN sungguhan.
+const relu = (v) => Math.max(0, Math.min(255, Math.round(v)))
+const abuStyle = (v) => { const g = relu(v); return { background: `rgb(${g},${g},${g})`, color: g > 130 ? '#111' : '#eee' } }
+
+const KV_CH = {
+  id: {
+    title: '🔍 Lab Konvolusi — Cara CNN Sebenarnya Melihat',
+    sub: 'Grad-CAM menunjukkan bagian mana yang dilihat model. Lab ini menunjukkan bagaimana model itu melihat — dan ternyata seluruhnya hanya perkalian dan penjumlahan.',
+    intro: 'Citra digital bukan "gambar" bagi komputer, melainkan tabel angka. Lab ini membongkar satu operasi paling mendasar pada CNN, yaitu konvolusi, sampai ke aritmetikanya. Setelah ini, istilah "lapisan konvolusi" tidak lagi terdengar seperti sihir.',
+    caraHead: '📖 Cara memakai lab ini — enam langkah',
+    cara: [
+      'Perhatikan Petak Masukan: setiap kotak adalah satu piksel, angkanya tingkat keabuan 0 (hitam) sampai 255 (putih).',
+      'Pilih sebuah kernel. Perhatikan bahwa kernel adalah tabel bobot yang TERPISAH dari citra — nilainya boleh kamu ubah sendiri.',
+      'Lihat Peta Fitur di sebelahnya. Ia langsung berubah setiap kali kernel diganti.',
+      'Ketuk salah satu kotak pada Peta Fitur. Jendela 3×3 yang dipakai akan tersorot, dan seluruh perhitungannya muncul di bawah.',
+      'Bandingkan ukuran petak masukan dengan peta fitur. Mengapa menyusut? Itu bukan kesalahan.',
+      'Turun ke bagian citra kopi nyata, terapkan kernel yang sama, lalu lihat tepi biji kopi benar-benar muncul.',
+    ],
+    istilahHead: '❓ Istilah penting — buka bila ada kata yang asing',
+    istilah: [
+      ['Piksel', 'Satu kotak terkecil pada citra. Nilainya angka: 0 berarti hitam, 255 berarti putih. Citra berwarna menyimpan tiga angka per piksel (merah, hijau, biru).'],
+      ['Kernel (filter)', 'Tabel bobot berukuran kecil, di sini 3×3. PENTING: kernel tidak diambil dari citra. Pada CNN sungguhan, nilai kernel adalah hasil pelatihan — itulah yang dipelajari model dari ribuan gambar.'],
+      ['Konvolusi', 'Menggeser kernel ke seluruh posisi citra. Di tiap posisi, angka jendela dikalikan dengan angka kernel lalu dijumlahkan menjadi satu angka.'],
+      ['Peta fitur', 'Hasil konvolusi. Ia menandai di mana pola yang dicari kernel itu muncul — misalnya di mana ada tepi tegak.'],
+      ['ReLU', 'Fungsi yang mengubah semua nilai negatif menjadi nol. Tanpa fungsi semacam ini, menumpuk banyak lapisan konvolusi tidak ada gunanya karena runtuh menjadi satu lapisan.'],
+      ['Stride & padding', 'Seberapa jauh kernel melompat, dan apakah tepi citra diberi bingkai tambahan. Di lab ini stride 1 dan tanpa padding, sehingga keluarannya menyusut.'],
+    ],
+    polaHead: 'Petak Masukan (citra sebagai tabel angka)',
+    pola: { tepi: 'Tepi tegak', biji: 'Bentuk biji', garis: 'Garis diagonal' },
+    kernelHead: 'Kernel — tabel bobot',
+    kernelNote: 'Pada CNN sungguhan, angka-angka ini TIDAK dirancang manusia dan TIDAK diambil dari citra. Semuanya hasil pelatihan. Di lab ini kernel dipilih tangan supaya efeknya mudah dikenali.',
+    kernelNama: { identitas: 'Identitas (tanpa perubahan)', tepi: 'Deteksi tepi', tegak: 'Deteksi garis tegak', datar: 'Deteksi garis datar', halus: 'Penghalus (blur)', tajam: 'Penajam' },
+    bagiLbl: 'dibagi',
+    petaHead: 'Peta Fitur (hasil konvolusi)',
+    petaHint: '👆 Ketuk salah satu kotak untuk melihat perhitungannya',
+    hitungHead: 'Perhitungan untuk kotak terpilih',
+    hitungJendela: 'Jendela 3×3 yang dipakai (tersorot kuning di petak masukan)',
+    hitungHasil: 'Jumlah seluruh perkalian',
+    hitungRelu: 'Setelah ReLU (negatif dijadikan nol)',
+    susutHead: '📉 Mengapa peta fitur lebih kecil?',
+    susut: (a, b) => `Petak masukan ${a}×${a} menjadi peta fitur ${b}×${b}. Kernel 3×3 tidak bisa ditempatkan di luar tepi, sehingga baris dan kolom terluar tidak menghasilkan keluaran. Penyusutan ini bukan cacat — justru inilah cara CNN membuang informasi bertahap. Tujuannya BUKAN mencerminkan kembali gambarnya, melainkan menyaring sampai tersisa ciri yang membedakan satu kelas dari kelas lain.`,
+    susutNyataHead: 'Tapi bukan itu penyebab utamanya',
+    susutNyata: 'Pada CNN sungguhan, penyusutan karena tepi seperti di atas hanyalah penyebab kecil. Penyusutan utamanya berasal dari stride (kernel melompat lebih dari satu piksel sekali geser) dan pooling (beberapa piksel diringkas menjadi satu nilai). Karena keduanya, citra 224×224 menyusut menjadi 112, lalu 56, lalu 28, dan seterusnya — jauh lebih cepat daripada sekadar berkurang dua piksel tiap lapisan. Lab ini sengaja memakai stride 1 tanpa pooling agar aritmetikanya tetap terbaca.',
+    banyakHead: '🎛️ Satu lapisan memakai banyak kernel sekaligus',
+    banyakNote: 'Semua peta fitur di bawah dihasilkan dari petak masukan yang SAMA, hanya kernelnya berbeda. Inilah yang terjadi pada satu lapisan konvolusi: bukan satu kernel, melainkan puluhan hingga ratusan sekaligus, masing-masing mencari pola berbeda. Karena itu satu lapisan menghasilkan banyak peta fitur, bukan satu.',
+    tumpukLbl: '🔁 Terapkan kernel kedua di atas hasil pertama (konvolusi bertumpuk)',
+    tumpukNote: 'Inilah arti kata "dalam" pada deep learning: lapisan awal menangkap tepi, lapisan berikutnya menyusun tepi menjadi bentuk. Perhatikan ukurannya menyusut sekali lagi. Perhatikan juga bahwa sebelum masuk lapisan kedua, seluruh nilai negatif dijepit menjadi nol oleh ReLU — persis seperti pada CNN sungguhan. Tanpa fungsi non-linear semacam itu, dua lapisan konvolusi yang ditumpuk secara matematis runtuh menjadi satu lapisan saja, sehingga menambah kedalaman tidak ada gunanya.',
+    tumpukHead: 'Peta Fitur Lapisan Kedua',
+    fotoHead: '📷 Terapkan pada citra kopi sungguhan',
+    fotoSub: 'Citra diperkecil menjadi 64×64 dan diubah ke keabuan, lalu kernel yang sama di atas diterapkan ke seluruh posisinya.',
+    fotoAsli: 'Sesudah diperkecil & diabukan', fotoHasil: 'Setelah konvolusi',
+    fotoPilih: '🖼️ Pakai contoh biji kopi', fotoUnggah: '📁 Pakai foto sendiri',
+    kuisHead: '🎯 Latihan: tebak kernelnya',
+    kuisSub: 'Peta fitur di bawah dihasilkan oleh salah satu kernel. Kernel mana?',
+    kuisBenar: '✓ Tepat! Perhatikan pola terang pada peta fiturnya.',
+    kuisSalah: '✗ Belum tepat. Coba perhatikan arah garis yang menyala.',
+    kuisUlang: '🔄 Soal lain',
+    koreksiHead: '⚠️ Empat hal yang sering disalahpahami',
+    koreksi: [
+      'Kernel tidak diambil dari gambar. Ia matriks bobot hasil pelatihan; gambar hanya menyediakan jendela pikselnya.',
+      'Gambar tidak dicacah menjadi kepingan terpisah. Jendela bertumpang tindih — satu piksel ikut dihitung pada sampai sembilan jendela berbeda.',
+      'Tujuannya bukan mencerminkan gambar, melainkan membuang informasi bertahap sampai tersisa ciri pembeda kelas.',
+      'RGB hanya dikenali lapisan pertama. Kernel 3×3 pada masukan RGB sebenarnya 3×3×3 dan tetap menghasilkan satu angka. Setelah itu kanalnya bukan warna lagi, melainkan puluhan kanal fitur abstrak.',
+    ],
+    sederhanaHead: 'Penyederhanaan di lab ini',
+    sederhana: 'Lab ini memakai satu kanal keabuan dan satu kernel pilihan tangan agar aritmetikanya terbaca. Model RepViT-M1.1 pada situs ini memakai RGB di lapisan pertama, puluhan hingga ratusan kernel per lapisan yang seluruhnya hasil pelatihan, serta fungsi non-linear di antara lapisannya.',
+    jembatanHead: '🔗 Hubungannya dengan Grad-CAM',
+    jembatan: 'Grad-CAM yang kamu lihat pada hasil klasifikasi adalah peta panas yang dihitung dari peta fitur lapisan konvolusi terakhir. Jadi peta fitur yang baru saja kamu buat di sini adalah bahan dasar yang sama.',
+    biayaHead: '⚙️ Mengapa arsitektur ringan itu penting',
+    biaya: (n) => `Satu kernel 3×3 pada citra 224×224 membutuhkan sekitar ${n} perkalian. Satu lapisan memakai puluhan kernel, dan satu model punya puluhan lapisan. Dari sinilah kebutuhan akan CNN ringan untuk perangkat bergerak bermula.`,
+  },
+  en: {
+    title: '🔍 Convolution Lab — How a CNN Actually Sees',
+    sub: 'Grad-CAM shows which part the model looked at. This lab shows how it looks — and it turns out to be nothing but multiplication and addition.',
+    intro: 'To a computer a digital image is not a “picture” but a table of numbers. This lab takes apart the most fundamental operation in a CNN, convolution, right down to its arithmetic. After this, the phrase “convolutional layer” will no longer sound like magic.',
+    caraHead: '📖 How to use this lab — six steps',
+    cara: [
+      'Look at the Input Grid: each square is one pixel, its number is the grey level from 0 (black) to 255 (white).',
+      'Pick a kernel. Notice it is a table of weights SEPARATE from the image — you may edit the values yourself.',
+      'Watch the Feature Map beside it. It updates the moment you change the kernel.',
+      'Tap any square on the Feature Map. The 3×3 window used is highlighted and the full calculation appears below.',
+      'Compare the size of the input grid with the feature map. Why did it shrink? That is not a mistake.',
+      'Scroll to the real coffee image, apply the same kernel, and watch the bean edges genuinely appear.',
+    ],
+    istilahHead: '❓ Key terms — open this if any word is unfamiliar',
+    istilah: [
+      ['Pixel', 'The smallest square of an image. Its value is a number: 0 is black, 255 is white. Colour images store three numbers per pixel (red, green, blue).'],
+      ['Kernel (filter)', 'A small table of weights, here 3×3. IMPORTANT: the kernel is not taken from the image. In a real CNN its values are the result of training — that is what the model learns from thousands of images.'],
+      ['Convolution', 'Sliding the kernel across every position of the image. At each position the window numbers are multiplied by the kernel numbers and summed into a single number.'],
+      ['Feature map', 'The result of convolution. It marks where the pattern the kernel looks for appears — for instance where the vertical edges are.'],
+      ['ReLU', 'A function that turns every negative value into zero. Without something like it, stacking many convolutional layers is pointless because they collapse into a single layer.'],
+      ['Stride & padding', 'How far the kernel jumps, and whether the image edge gets an extra border. This lab uses stride 1 and no padding, so the output shrinks.'],
+    ],
+    polaHead: 'Input Grid (an image as a table of numbers)',
+    pola: { tepi: 'Vertical edge', biji: 'Bean shape', garis: 'Diagonal line' },
+    kernelHead: 'Kernel — table of weights',
+    kernelNote: 'In a real CNN these numbers are NOT designed by humans and are NOT taken from the image. They all come from training. This lab hand-picks kernels so their effect is easy to recognise.',
+    kernelNama: { identitas: 'Identity (no change)', tepi: 'Edge detection', tegak: 'Vertical line detection', datar: 'Horizontal line detection', halus: 'Blur', tajam: 'Sharpen' },
+    bagiLbl: 'divided by',
+    petaHead: 'Feature Map (result of convolution)',
+    petaHint: '👆 Tap any square to see its calculation',
+    hitungHead: 'Calculation for the selected square',
+    hitungJendela: '3×3 window used (highlighted yellow in the input grid)',
+    hitungHasil: 'Sum of all products',
+    hitungRelu: 'After ReLU (negatives become zero)',
+    susutHead: '📉 Why is the feature map smaller?',
+    susut: (a, b) => `A ${a}×${a} input grid becomes a ${b}×${b} feature map. A 3×3 kernel cannot be placed past the border, so the outermost rows and columns produce no output. This shrinking is not a flaw — it is exactly how a CNN discards information step by step. The goal is NOT to mirror the picture back, but to filter until only the features that separate one class from another remain.`,
+    susutNyataHead: 'But that is not the main cause',
+    susutNyata: 'In a real CNN, border shrinking like the above is only a minor cause. The main shrinking comes from stride (the kernel jumping more than one pixel per step) and pooling (several pixels summarised into one value). Because of these, a 224×224 image shrinks to 112, then 56, then 28, and so on — far faster than merely losing two pixels per layer. This lab deliberately uses stride 1 with no pooling so the arithmetic stays readable.',
+    banyakHead: '🎛️ One layer uses many kernels at once',
+    banyakNote: 'Every feature map below comes from the SAME input grid — only the kernel differs. This is what happens inside a single convolutional layer: not one kernel but dozens to hundreds at once, each hunting a different pattern. That is why one layer produces many feature maps, not one.',
+    tumpukLbl: '🔁 Apply a second kernel on top of the first result (stacked convolution)',
+    tumpukNote: 'This is what “deep” in deep learning means: early layers catch edges, later layers assemble edges into shapes. Notice the size shrinks once again. Notice too that before entering the second layer every negative value is clamped to zero by ReLU — exactly as in a real CNN. Without such a non-linear function, two stacked convolutional layers mathematically collapse into a single layer, so adding depth would achieve nothing.',
+    tumpukHead: 'Second-Layer Feature Map',
+    fotoHead: '📷 Apply it to a real coffee image',
+    fotoSub: 'The image is scaled down to 64×64 and converted to greyscale, then the same kernel above is applied across every position.',
+    fotoAsli: 'After downscaling & greyscaling', fotoHasil: 'After convolution',
+    fotoPilih: '🖼️ Use the coffee sample', fotoUnggah: '📁 Use your own photo',
+    kuisHead: '🎯 Practice: guess the kernel',
+    kuisSub: 'The feature map below was produced by one of the kernels. Which one?',
+    kuisBenar: '✓ Correct! Look at the bright pattern in the feature map.',
+    kuisSalah: '✗ Not quite. Look again at the direction of the bright lines.',
+    kuisUlang: '🔄 Another question',
+    koreksiHead: '⚠️ Four things that are commonly misunderstood',
+    koreksi: [
+      'The kernel is not taken from the image. It is a matrix of trained weights; the image only supplies the pixel window.',
+      'The image is not chopped into separate pieces. The windows overlap — one pixel takes part in up to nine different windows.',
+      'The goal is not to mirror the image, but to discard information step by step until only class-distinguishing features remain.',
+      'RGB exists only at the first layer. A 3×3 kernel on RGB input is really 3×3×3 and still yields one number. After that the channels are no longer colours but dozens of abstract feature channels.',
+    ],
+    sederhanaHead: 'Simplifications in this lab',
+    sederhana: 'This lab uses a single greyscale channel and one hand-picked kernel so the arithmetic stays readable. The RepViT-M1.1 model on this site uses RGB at its first layer, dozens to hundreds of fully trained kernels per layer, and non-linear functions between layers.',
+    jembatanHead: '🔗 How this connects to Grad-CAM',
+    jembatan: 'The Grad-CAM you see on a classification result is a heatmap computed from the feature maps of the last convolutional layer. So the feature map you just built here is made of exactly the same material.',
+    biayaHead: '⚙️ Why lightweight architectures matter',
+    biaya: (n) => `A single 3×3 kernel on a 224×224 image needs roughly ${n} multiplications. One layer uses dozens of kernels, and one model has dozens of layers. This is where the need for lightweight CNNs on mobile devices begins.`,
+  },
+}
+
+function PetakAngka({ mat, sorot, kecil, onKlik, pilih }) {
+  const n = mat.length
+  return (
+    <div className={`kv-grid ${kecil ? 'kecil' : ''}`} style={{ gridTemplateColumns: `repeat(${n}, 1fr)` }}>
+      {mat.map((row, y) => row.map((v, x) => {
+        const disorot = sorot && y >= sorot.y && y < sorot.y + 3 && x >= sorot.x && x < sorot.x + 3
+        const dipilih = pilih && pilih.y === y && pilih.x === x
+        return (
+          <div key={`${y}-${x}`}
+            className={`kv-sel ${disorot ? 'sorot' : ''} ${dipilih ? 'pilih' : ''} ${onKlik ? 'klik' : ''}`}
+            style={abuStyle(v)}
+            onClick={onKlik ? () => onKlik(y, x) : undefined}>
+            <span>{Math.round(v)}</span>
+          </div>
+        )
+      }))}
+    </div>
+  )
+}
+
+function LabKonvolusi({ lang }) {
+  const c = KV_CH[lang] || KV_CH.id
+  const [pola, setPola]   = useState('biji')
+  const [kIdx, setKIdx]   = useState(1)
+  const [kMat, setKMat]   = useState(KERNEL[1].m.map(r => [...r]))
+  const [bagi, setBagi]   = useState(KERNEL[1].bagi)
+  const [pilih, setPilih] = useState(null)
+  const [tumpuk, setTumpuk]   = useState(false)
+  const [k2Idx, setK2Idx]     = useState(3)
+  const [kuis, setKuis]       = useState({ jawab: null, kunci: 2 })
+  const cvAsli  = useRef(null)
+  const cvHasil = useRef(null)
+  const [imgSrc, setImgSrc] = useState('/kopi-cherry.jpg')
+
+  const masukan = buatPola(pola)
+  const peta    = konvolusi(masukan, kMat, bagi)
+  const peta2   = tumpuk ? konvolusi(peta.map(r => r.map(relu)), KERNEL[k2Idx].m, KERNEL[k2Idx].bagi) : null
+
+  function pilihKernel(i) { setKIdx(i); setKMat(KERNEL[i].m.map(r => [...r])); setBagi(KERNEL[i].bagi); setPilih(null) }
+  function ubahBobot(j, i, v) { const nk = kMat.map(r => [...r]); nk[j][i] = Number(v) || 0; setKMat(nk); setKIdx(-1) }
+
+  // Terapkan kernel ke citra nyata
+  useEffect(() => {
+    let batal = false
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      if (batal || !cvAsli.current || !cvHasil.current) return
+      const N = 64
+      const off = document.createElement('canvas'); off.width = N; off.height = N
+      const ox = off.getContext('2d'); ox.drawImage(img, 0, 0, N, N)
+      let d
+      try { d = ox.getImageData(0, 0, N, N).data } catch { return }
+      const abu = []
+      for (let y = 0; y < N; y++) { const row = []; for (let x = 0; x < N; x++) { const i = (y * N + x) * 4; row.push(Math.round(0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2])) } abu.push(row) }
+      const lukis = (m, cv) => {
+        const s = m.length; cv.width = s; cv.height = s
+        const ctx = cv.getContext('2d'); const im = ctx.createImageData(s, s)
+        for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) { const g = relu(m[y][x]); const i = (y * s + x) * 4; im.data[i] = im.data[i + 1] = im.data[i + 2] = g; im.data[i + 3] = 255 }
+        ctx.putImageData(im, 0, 0)
+      }
+      lukis(abu, cvAsli.current)
+      lukis(konvolusi(abu, kMat, bagi), cvHasil.current)
+    }
+    img.src = imgSrc
+    return () => { batal = true }
+  }, [imgSrc, kMat, bagi])
+
+  function unggah(e) {
+    const f = e.target.files && e.target.files[0]
+    if (!f) return
+    const fr = new FileReader()
+    fr.onload = () => setImgSrc(String(fr.result))
+    fr.readAsDataURL(f)
+  }
+
+  // Data perhitungan untuk kotak terpilih
+  let rinci = null
+  if (pilih) {
+    const suku = []
+    let jml = 0
+    for (let j = 0; j < 3; j++) for (let i = 0; i < 3; i++) {
+      const p = masukan[pilih.y + j][pilih.x + i], w = kMat[j][i]
+      suku.push({ p, w, hasil: p * w }); jml += p * w
+    }
+    rinci = { suku, jml, akhir: jml / (bagi || 1) }
+  }
+
+  const petaKuis = konvolusi(buatPola('garis'), KERNEL[kuis.kunci].m, KERNEL[kuis.kunci].bagi)
+  const opsiKuis = [1, 2, 3, 4]
+
+  return (
+    <div className="card learn-card">
+      <h4 className="learn-h">{c.title}</h4>
+      <p className="learn-p">{c.sub}</p>
+      <div className="bc-intro">{c.intro}</div>
+
+      <details className="gloss bc-guide" open>
+        <summary>{c.caraHead}</summary>
+        <ol className="bc-steps">{c.cara.map((x, i) => <li key={i}>{x}</li>)}</ol>
+      </details>
+      <details className="gloss bc-guide">
+        <summary>{c.istilahHead}</summary>
+        <dl className="bc-terms">{c.istilah.map(([k, d], i) => <div key={i}><dt>{k}</dt><dd>{d}</dd></div>)}</dl>
+      </details>
+
+      {/* ---- Kernel ---- */}
+      <div className="kv-blok">
+        <b className="learn-sub-h">{c.kernelHead}</b>
+        <div className="kv-kernel-pilih">
+          {KERNEL.map((k, i) => (
+            <button key={k.id} className={`kv-chip ${kIdx === i ? 'on' : ''}`} onClick={() => pilihKernel(i)}>
+              {c.kernelNama[k.id]}
+            </button>
+          ))}
+        </div>
+        <div className="kv-kernel-baris">
+          <div className="kv-kernel">
+            {kMat.map((row, j) => row.map((v, i) => (
+              <input key={`${j}-${i}`} type="number" value={v} onChange={e => ubahBobot(j, i, e.target.value)} />
+            )))}
+          </div>
+          {bagi !== 1 && <span className="kv-bagi">{c.bagiLbl} {bagi}</span>}
+        </div>
+        <p className="learn-note kv-warn">{c.kernelNote}</p>
+      </div>
+
+      {/* ---- Petak & peta fitur ---- */}
+      <div className="kv-dua">
+        <div>
+          <b className="learn-sub-h">{c.polaHead}</b>
+          <div className="kv-kernel-pilih">
+            {Object.keys(POLA).map(p => (
+              <button key={p} className={`kv-chip ${pola === p ? 'on' : ''}`} onClick={() => { setPola(p); setPilih(null) }}>{c.pola[p]}</button>
+            ))}
+          </div>
+          <PetakAngka mat={masukan} sorot={pilih} />
+        </div>
+        <div>
+          <b className="learn-sub-h">{c.petaHead} — {peta.length}×{peta.length}</b>
+          <p className="learn-note" style={{ margin: '2px 0 6px' }}>{c.petaHint}</p>
+          <PetakAngka mat={peta} onKlik={(y, x) => setPilih({ y, x })} pilih={pilih} />
+        </div>
+      </div>
+
+      {/* ---- Aritmetika ---- */}
+      {rinci && (
+        <div className="kv-hitung">
+          <b className="learn-sub-h">{c.hitungHead}</b>
+          <p className="learn-note" style={{ margin: '2px 0 8px' }}>{c.hitungJendela}</p>
+          <div className="kv-suku">
+            {rinci.suku.map((s, i) => (
+              <span key={i} className="kv-term">
+                <b>{s.p}</b> × <i>{s.w}</i> = {s.hasil}
+              </span>
+            ))}
+          </div>
+          <div className="kv-jumlah">
+            <span>{c.hitungHasil}: <b>{bagi !== 1 ? `${rinci.jml} ÷ ${bagi} = ${rinci.akhir.toFixed(1)}` : rinci.jml}</b></span>
+            <span className="kv-relu">{c.hitungRelu}: <b>{relu(rinci.akhir)}</b></span>
+          </div>
+        </div>
+      )}
+
+      {/* ---- Satu lapisan = banyak kernel ---- */}
+      <div className="kv-blok">
+        <b className="learn-sub-h">{c.banyakHead}</b>
+        <p className="learn-p">{c.banyakNote}</p>
+        <div className="kv-banyak">
+          {[1, 2, 3, 5].map(i => (
+            <figure key={i}>
+              <PetakAngka mat={konvolusi(masukan, KERNEL[i].m, KERNEL[i].bagi)} kecil />
+              <figcaption>{c.kernelNama[KERNEL[i].id]}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+
+      {/* ---- Penyusutan ---- */}
+      <div className="kv-catatan">
+        <b className="learn-sub-h">{c.susutHead}</b>
+        <p className="learn-p">{c.susut(masukan.length, peta.length)}</p>
+        <b className="learn-sub-h">{c.susutNyataHead}</b>
+        <p className="learn-p" style={{ marginBottom: 0 }}>{c.susutNyata}</p>
+      </div>
+
+      {/* ---- Konvolusi bertumpuk ---- */}
+      <label className="kv-toggle">
+        <input type="checkbox" checked={tumpuk} onChange={e => setTumpuk(e.target.checked)} />
+        <span>{c.tumpukLbl}</span>
+      </label>
+      {tumpuk && peta2 && (
+        <div className="kv-blok">
+          <div className="kv-kernel-pilih">
+            {KERNEL.map((k, i) => (
+              <button key={k.id} className={`kv-chip ${k2Idx === i ? 'on' : ''}`} onClick={() => setK2Idx(i)}>{c.kernelNama[k.id]}</button>
+            ))}
+          </div>
+          <b className="learn-sub-h">{c.tumpukHead} — {peta2.length}×{peta2.length}</b>
+          <PetakAngka mat={peta2} />
+          <p className="learn-note">{c.tumpukNote}</p>
+        </div>
+      )}
+
+      {/* ---- Citra nyata ---- */}
+      <div className="kv-blok">
+        <b className="learn-sub-h">{c.fotoHead}</b>
+        <p className="learn-p">{c.fotoSub}</p>
+        <div className="kv-foto">
+          <figure><canvas ref={cvAsli} className="kv-canvas" /><figcaption>{c.fotoAsli}</figcaption></figure>
+          <figure><canvas ref={cvHasil} className="kv-canvas" /><figcaption>{c.fotoHasil}</figcaption></figure>
+        </div>
+        <div className="kv-foto-aksi">
+          <button className="btn btn-ghost" onClick={() => setImgSrc('/kopi-cherry.jpg')}>{c.fotoPilih}</button>
+          <label className="btn btn-ghost kv-unggah">{c.fotoUnggah}
+            <input type="file" accept="image/*" onChange={unggah} style={{ display: 'none' }} />
+          </label>
+        </div>
+      </div>
+
+      {/* ---- Kuis ---- */}
+      <div className="kv-blok">
+        <b className="learn-sub-h">{c.kuisHead}</b>
+        <p className="learn-p">{c.kuisSub}</p>
+        <PetakAngka mat={petaKuis} kecil />
+        <div className="kv-kernel-pilih" style={{ marginTop: 8 }}>
+          {opsiKuis.map(i => (
+            <button key={i} className={`kv-chip ${kuis.jawab === i ? (i === kuis.kunci ? 'benar' : 'salah') : ''}`}
+              onClick={() => setKuis(k => ({ ...k, jawab: i }))}>{c.kernelNama[KERNEL[i].id]}</button>
+          ))}
+        </div>
+        {kuis.jawab !== null && (
+          <p className={`kv-umpan ${kuis.jawab === kuis.kunci ? 'ok' : 'no'}`}>
+            {kuis.jawab === kuis.kunci ? c.kuisBenar : c.kuisSalah}
+          </p>
+        )}
+        <button className="btn btn-ghost" style={{ maxWidth: 200, marginTop: 8 }}
+          onClick={() => setKuis({ jawab: null, kunci: opsiKuis[Math.floor(Math.random() * opsiKuis.length)] })}>{c.kuisUlang}</button>
+      </div>
+
+      {/* ---- Koreksi miskonsepsi ---- */}
+      <div className="kv-koreksi">
+        <b className="learn-sub-h">{c.koreksiHead}</b>
+        <ol className="bc-steps">{c.koreksi.map((x, i) => <li key={i}>{x}</li>)}</ol>
+        <b className="learn-sub-h">{c.sederhanaHead}</b>
+        <p className="learn-p">{c.sederhana}</p>
+      </div>
+
+      <div className="kv-catatan">
+        <b className="learn-sub-h">{c.jembatanHead}</b>
+        <p className="learn-p">{c.jembatan}</p>
+        <b className="learn-sub-h">{c.biayaHead}</b>
+        <p className="learn-p" style={{ marginBottom: 0 }}>{c.biaya((222 * 222 * 9).toLocaleString(lang === 'en' ? 'en-US' : 'id-ID'))}</p>
+      </div>
+    </div>
+  )
+}
+
 function ailiLevelCls(p) {
   if (p >= 85) return 'a'
   if (p >= 70) return 'b'
@@ -868,6 +1312,8 @@ export default function Belajar({ lang }) {
       </div>
 
       <LabBlockchain lang={lang} />
+
+      <LabKonvolusi lang={lang} />
 
       {/* Grad-CAM guide */}
       <div className="card learn-card">
