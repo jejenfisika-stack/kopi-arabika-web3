@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { ethers } from 'ethers'
 import QRCode from 'qrcode'
 import Belajar from './Belajar'
+import LKPD from './Lkpd'
 
 const CONTRACT_ADDRESS = '0x5392C2F10d8Dea3e498726BcB8c806E8DA78834b'  // V3 — Open Mint + Verified + 6-Class Fix
 const PINATA_GATEWAY   = 'rose-casual-warbler-710.mypinata.cloud'
@@ -341,6 +342,7 @@ export default function HomePage() {
   const [addingNFT, setAddingNFT]   = useState(false)
   const [nftAdded, setNftAdded]     = useState(false)
   const [fotoHash, setFotoHash]     = useState('')
+  const [lkpdKunci, setLkpdKunci]   = useState(null)
   const [duplikat, setDuplikat]     = useState(null)
   const [verifying, setVerifying]   = useState(false)
   const [bukanKopi, setBukanKopi]   = useState(false)
@@ -1027,7 +1029,7 @@ export default function HomePage() {
           </div>
 
           <div className="row">
-            <button className="btn btn-primary" onClick={klasifikasiCNN} disabled={!foto || loading}>
+            <button className="btn btn-primary" onClick={klasifikasiCNN} disabled={!foto || loading || lkpdKunci === false}>
               {loading && !hasilCNN
                 ? <><span className="spinner" /> {status || t.processing}</>
                 : <>{t.btnClassify}</>}
@@ -1227,6 +1229,11 @@ export default function HomePage() {
             </div>
           )}
         </div>
+      </section>
+
+      {/* ---------- LKPD Digital POE (menempel pada alur klasifikasi) ---------- */}
+      <section className="section">
+        <LKPD lang={lang} hasil={hasilCNN} gradcam={gradcamImg} onStatus={setLkpdKunci} />
       </section>
 
       {/* ---------- Pusat Belajar IPA (toggle) ---------- */}
