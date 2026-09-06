@@ -9,6 +9,8 @@ const L = {
   id: {
     title: '🎓 Pusat Belajar IPA',
     sub: 'Pelajari AI, Machine Learning, CNN, Blockchain & Traceability langsung dari sistem yang berjalan — melatih computational thinking, AI literacy, dan keterampilan abad-21.',
+    navHead: 'Lompat ke bagian:',
+    nav: [['ct','🧩 Cara Kerja Sistem'],['dasar','🔬 Lab Hash & Entropi'],['blockchain','⛓️ Lab Blockchain'],['konvolusi','🔍 Lab Konvolusi'],['cam','🔥 Panduan Grad-CAM'],['kuis','🤖 Kuis AI Literacy'],['gloss','📚 Glosarium']],
     ctHead: '🧩 Cara Kerja Sistem (Computational Thinking)',
     ctSub: 'Empat pilar berpikir komputasional yang dipakai sistem ini:',
     ct: [
@@ -59,6 +61,8 @@ const L = {
   en: {
     title: '🎓 Science Learning Hub',
     sub: 'Learn AI, Machine Learning, CNN, Blockchain & Traceability straight from a live system — training computational thinking, AI literacy, and 21st-century skills.',
+    navHead: 'Jump to section:',
+    nav: [['ct','🧩 How It Works'],['dasar','🔬 Hash & Entropy Labs'],['blockchain','⛓️ Blockchain Lab'],['konvolusi','🔍 Convolution Lab'],['cam','🔥 Grad-CAM Guide'],['kuis','🤖 AI Literacy Quiz'],['gloss','📚 Glossary']],
     ctHead: '🧩 How the System Works (Computational Thinking)',
     ctSub: 'The four computational-thinking pillars this system uses:',
     ct: [
@@ -796,6 +800,7 @@ const KV_CH = {
     kernelNote: 'Pada CNN sungguhan, angka-angka ini TIDAK dirancang manusia dan TIDAK diambil dari citra. Semuanya hasil pelatihan. Di lab ini kernel dipilih tangan supaya efeknya mudah dikenali.',
     kernelNama: { identitas: 'Identitas (tanpa perubahan)', tepi: 'Deteksi tepi', tegak: 'Deteksi garis tegak', datar: 'Deteksi garis datar', halus: 'Penghalus (blur)', tajam: 'Penajam' },
     bagiLbl: 'dibagi',
+    bobotDiubah: '✏️ Bobot kernel sudah kamu ubah sendiri. Tekan salah satu tombol kernel di atas untuk mengembalikannya ke nilai semula.',
     petaHead: 'Peta Fitur (hasil konvolusi)',
     petaHint: '👆 Ketuk salah satu kotak untuk melihat perhitungannya',
     hitungHead: 'Perhitungan untuk kotak terpilih',
@@ -862,6 +867,7 @@ const KV_CH = {
     kernelNote: 'In a real CNN these numbers are NOT designed by humans and are NOT taken from the image. They all come from training. This lab hand-picks kernels so their effect is easy to recognise.',
     kernelNama: { identitas: 'Identity (no change)', tepi: 'Edge detection', tegak: 'Vertical line detection', datar: 'Horizontal line detection', halus: 'Blur', tajam: 'Sharpen' },
     bagiLbl: 'divided by',
+    bobotDiubah: '✏️ You have edited the kernel weights yourself. Press any kernel button above to restore the original values.',
     petaHead: 'Feature Map (result of convolution)',
     petaHint: '👆 Tap any square to see its calculation',
     hitungHead: 'Calculation for the selected square',
@@ -1026,6 +1032,7 @@ function LabKonvolusi({ lang }) {
           </div>
           {bagi !== 1 && <span className="kv-bagi">{c.bagiLbl} {bagi}</span>}
         </div>
+        {kIdx === -1 && <p className="kv-diubah">{c.bobotDiubah}</p>}
         <p className="learn-note kv-warn">{c.kernelNote}</p>
       </div>
 
@@ -1292,8 +1299,18 @@ export default function Belajar({ lang }) {
       <div className="section-head"><span className="ic">🎓</span><h3>{t.title}</h3></div>
       <p className="section-sub">{t.sub}</p>
 
+      {/* Tautan lompat — halaman ini panjang, terutama di ponsel */}
+      <nav className="learn-nav" aria-label={t.navHead}>
+        <span className="learn-nav-lbl">{t.navHead}</span>
+        <div className="learn-nav-list">
+          {t.nav.map(([id, label]) => (
+            <a key={id} href={`#bg-${id}`} className="learn-nav-a">{label}</a>
+          ))}
+        </div>
+      </nav>
+
       {/* Computational Thinking / step-explainer */}
-      <div className="card learn-card">
+      <div className="card learn-card" id="bg-ct">
         <h4 className="learn-h">{t.ctHead}</h4>
         <p className="learn-p">{t.ctSub}</p>
         <div className="ct-grid">
@@ -1306,26 +1323,26 @@ export default function Belajar({ lang }) {
         </div>
       </div>
 
-      <div className="learn-grid">
+      <div className="learn-grid" id="bg-dasar">
         <HashPlayground t={t} />
         <EntropyLab t={t} />
       </div>
 
-      <LabBlockchain lang={lang} />
+      <div id="bg-blockchain"><LabBlockchain lang={lang} /></div>
 
-      <LabKonvolusi lang={lang} />
+      <div id="bg-konvolusi"><LabKonvolusi lang={lang} /></div>
 
       {/* Grad-CAM guide */}
-      <div className="card learn-card">
+      <div className="card learn-card" id="bg-cam">
         <h4 className="learn-h">{t.camHead}</h4>
         <p className="learn-p">{t.camSub}</p>
         <ul className="learn-ul">{t.camTips.map((c, i) => <li key={i}>{c}</li>)}</ul>
       </div>
 
-      <QuizAILI lang={lang} />
+      <div id="bg-kuis"><QuizAILI lang={lang} /></div>
 
       {/* Glossary */}
-      <div className="card learn-card">
+      <div className="card learn-card" id="bg-gloss">
         <h4 className="learn-h">{t.glossHead}</h4>
         {gloss.map(([term, def], i) => (
           <details className="gloss" key={i}>

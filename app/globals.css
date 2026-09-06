@@ -535,3 +535,20 @@ a { color: var(--cyan); }
 .kv-banyak .kv-grid.kecil { max-width: 100%; }
 .kv-banyak figcaption { margin-top: 5px; font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; line-height: 1.35; }
 @media (max-width: 620px) { .kv-banyak { grid-template-columns: repeat(2, 1fr); gap: 14px; } }
+
+/* Tautan lompat Pusat Belajar + penanda bobot kernel diubah */
+html { scroll-behavior: smooth; }
+[id^="bg-"] { scroll-margin-top: 18px; }
+.learn-nav { margin: 4px 0 18px; padding: 12px 14px; border-radius: 13px;
+  background: linear-gradient(135deg, rgba(124,58,237,.07), rgba(37,99,235,.05));
+  border: 1px solid rgba(124,58,237,.18); }
+.learn-nav-lbl { display: block; font-size: 12px; font-weight: 800; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .4px; margin-bottom: 9px; }
+.learn-nav-list { display: flex; flex-wrap: wrap; gap: 7px; }
+.learn-nav-a { font-size: 12.5px; font-weight: 700; color: var(--ink-soft); text-decoration: none;
+  background: var(--card); border: 1px solid var(--glass-bd); border-radius: 999px;
+  padding: 7px 13px; transition: background .15s, color .15s, border-color .15s; }
+.learn-nav-a:hover, .learn-nav-a:focus-visible { background: var(--purple); color: #fff; border-color: var(--purple); }
+.kv-diubah { margin: 10px 0 0; padding: 9px 11px; border-radius: 9px; font-size: 12.5px; line-height: 1.55;
+  background: rgba(234,88,12,.09); border: 1px solid rgba(234,88,12,.28); color: #9A3412; font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
