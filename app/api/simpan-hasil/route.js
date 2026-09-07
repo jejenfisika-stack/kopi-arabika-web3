@@ -13,11 +13,13 @@ function bersih(s) {
 }
 
 export async function POST(request) {
-  // ── Rate limit per-IP ──
+  // ── Lapis 1: batas kasar per-IP, sekadar penjaga penyalahgunaan ──
+  // Dibuat longgar karena SATU KELAS di WiFi kampus tampak sebagai satu IP.
+  // Batas ketat per-mahasiswa dilakukan di lapis 2 (berdasarkan NIM).
   const ip = getClientIp(request)
-  const rl = rateLimit(`simpan-hasil:${ip}`, { limit: 10, windowMs: 60_000 })
-  if (!rl.ok) {
-    return NextResponse.json({ status: 'error', error: 'Terlalu banyak permintaan.' }, { status: 429 })
+  const rlIp = rateLimit(`simpan-hasil-ip:${ip}`, { limit: 120, windowMs: 60_000 })
+  if (!rlIp.ok) {
+    return NextResponse.json({ status: 'error', error: 'Terlalu banyak permintaan dari jaringan ini. Tunggu sebentar lalu coba lagi.' }, { status: 429 })
   }
 
   if (!SHEET_WEBHOOK_URL || !SHEET_WEBHOOK_TOKEN) {
@@ -45,6 +47,15 @@ export async function POST(request) {
     return NextResponse.json({ status: 'error', error: 'Skor tidak valid.' }, { status: 400 })
   }
 
+  // ── Lapis 2: batas ketat per-MAHASISWA ──
+  // Inilah pembatas yang sebenarnya. Satu mahasiswa wajar mengirim beberapa kali
+  // (mis. percobaan ulang otomatis saat jaringan tersendat), tetapi tidak puluhan.
+  // Dengan kunci NIM, satu kelas tidak lagi saling menghabiskan jatah.
+  const rlNim = rateLimit(`simpan-hasil-nim:${nim}:${form}`, { limit: 6, windowMs: 60_000 })
+  if (!rlNim.ok) {
+    return NextResponse.json({ status: 'error', error: 'Terlalu banyak percobaan untuk NIM ini. Tunggu sebentar.' }, { status: 429 })
+  }
+
   const payload = {
     token: SHEET_WEBHOOK_TOKEN,
     nim, nama, kelas, form, skor, maks,
@@ -60,8 +71,11 @@ export async function POST(request) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
-      // Apps Script bisa lambat saat cold start
-      signal: AbortSignal.timeout(20_000),
+      // Sengaja 9 detik, DI BAWAH batas durasi fungsi Vercel (Hobby ±10 detik).
+      // Kalau lebih lama, Vercel yang memutus lebih dulu dan pesan gagalnya jadi
+      // menyesatkan. Dengan 9 detik, kegagalan dilaporkan jujur dan sisi klien
+      // masih sempat mencoba ulang.
+      signal: AbortSignal.timeout(9_000),
     })
     const text = await res.text()
     let data

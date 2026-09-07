@@ -73,31 +73,51 @@ export default function TesPage() {
     })
 
     setKirim(true); setErrMsg('')
-    try {
-      const res = await fetch('/api/simpan-hasil', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nama, nim, kelas, form, skor, maks: MAKS, perDim, jawaban }),
-      })
-      const data = await res.json()
-      if (data.status === 'duplicate') {
-        setHasil({ duplicate: true, skor, perDim })
-      } else if (data.status === 'ok') {
-        setHasil({
-          skor, perDim,
-          ngain: data.ngain != null ? Number(data.ngain) : null,
-          skorPre: data.skorPre != null ? Number(data.skorPre) : null,
-        })
-      } else {
-        // tetap tampilkan skor lokal walau simpan gagal
-        setHasil({ skor, perDim, gagalSimpan: data.error || 'Gagal menyimpan ke server.' })
+
+    // Kirim dengan percobaan ulang. Satu kelas biasanya selesai berbarengan,
+    // sehingga sebagian pengiriman bisa tertolak sesaat atau kena gangguan
+    // jaringan. Tanpa percobaan ulang, data mahasiswa itu HILANG diam-diam.
+    const JEDA = [0, 1500, 4000, 8000]   // 4 percobaan, jeda menaik
+    let data = null, galat = 'Gagal menyimpan ke server.'
+
+    for (let coba = 0; coba < JEDA.length; coba++) {
+      if (JEDA[coba] > 0) {
+        setErrMsg(`Menyimpan ulang… percobaan ${coba + 1} dari ${JEDA.length}`)
+        await new Promise(r => setTimeout(r, JEDA[coba]))
       }
-    } catch (e) {
-      setHasil({ skor, perDim, gagalSimpan: 'Gangguan jaringan saat menyimpan.' })
-    } finally {
-      setKirim(false)
-      setStep('result')
+      try {
+        const res = await fetch('/api/simpan-hasil', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nama, nim, kelas, form, skor, maks: MAKS, perDim, jawaban }),
+        })
+        const j = await res.json().catch(() => ({}))
+
+        // Berhasil, duplikat, atau ditolak validasi → semuanya final, jangan diulang
+        if (j.status === 'ok' || j.status === 'duplicate') { data = j; break }
+        if (res.status === 400 || res.status === 503) { galat = j.error || galat; break }
+
+        galat = j.error || `Gagal menyimpan (kode ${res.status}).`
+      } catch (e) {
+        galat = 'Gangguan jaringan saat menyimpan.'
+      }
     }
+
+    setErrMsg('')
+    if (data && data.status === 'duplicate') {
+      setHasil({ duplicate: true, skor, perDim })
+    } else if (data && data.status === 'ok') {
+      setHasil({
+        skor, perDim,
+        ngain: data.ngain != null ? Number(data.ngain) : null,
+        skorPre: data.skorPre != null ? Number(data.skorPre) : null,
+      })
+    } else {
+      // tetap tampilkan skor lokal walau simpan gagal
+      setHasil({ skor, perDim, gagalSimpan: galat })
+    }
+    setKirim(false)
+    setStep('result')
   }
 
   // ---------- STEP: FORM IDENTITAS ----------
