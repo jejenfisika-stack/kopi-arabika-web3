@@ -586,3 +586,26 @@ html { scroll-behavior: smooth; }
   .lkpd-aksi .btn { max-width: none; }
   .lkpd-toggle { max-width: none; }
 }
+
+/* ============ Lab Uji Batas Model ============ */
+.ub-hemat { margin: 14px 0; padding: 12px 14px; border-radius: 12px;
+  background: rgba(234,88,12,.07); border: 1px solid rgba(234,88,12,.28); }
+.ub-hemat b { display: block; font-size: 13.5px; color: #9A3412; margin-bottom: 5px; }
+.ub-hemat p { margin: 0; font-size: 13px; line-height: 1.6; color: var(--ink-soft); }
+.ub-foto { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 14px; }
+.ub-foto figure { margin: 0; }
+.ub-foto img { width: 180px; height: 180px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); display: block; }
+.ub-foto figcaption { margin-top: 5px; font-size: 11.5px; color: var(--muted); text-align: center; max-width: 180px; }
+.ub-scroll { overflow-x: auto; margin: 10px 0; }
+.ub-tabel { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 460px; }
+.ub-tabel th, .ub-tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; white-space: nowrap; }
+.ub-tabel thead th { background: var(--bg-2); font-weight: 800; color: var(--ink-soft); }
+.ub-tabel tr.ub-dasar td { background: rgba(37,99,235,.06); }
+.ub-tabel tr.ub-sama  td { background: rgba(22,163,74,.07); }
+.ub-tabel tr.ub-beda  td { background: rgba(220,38,38,.11); color: #B91C1C; font-weight: 600; }
+.ub-tabel tr.ub-tolak td { background: rgba(234,179,8,.15); color: #92400E; font-weight: 600; }
+.ub-ringkas { margin: 4px 0 0; font-size: 13px; font-weight: 700; color: var(--ink-soft); }
+@media (max-width: 620px) {
+  .ub-foto img { width: 140px; height: 140px; }
+  .ub-foto figcaption { max-width: 140px; }
+}
