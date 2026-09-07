@@ -162,9 +162,9 @@ const LAYERS = [
            en:'Transactions are cryptographically signed by MetaMask; the private key never leaves the user’s device. Supports permissionless minting with an audit trail.' },
     code:'ECDSA signature · private key never leaves device' },
   { title:{ id:'Deteksi OOD (AI)', en:'OOD Detection (AI)' },
-    desc:{ id:'Validasi 3 lapis: kelas "Non-Coffee" eksplisit, ambang confidence <60%, dan entropy >1.40. Test accuracy 99.78%, OOD recall 98.7%.',
-           en:'3-layer validation: an explicit "Non-Coffee" class, a confidence threshold <60%, and entropy >1.40. Test accuracy 99.78%, OOD recall 98.7%.' },
-    code:'Non-Coffee / conf<60% / entropy>1.40 → REJECTED' },
+    desc:{ id:'Validasi 3 lapis: kelas "Non-Coffee" eksplisit, ambang confidence <72%, dan entropy >1,50. Test accuracy 99.78%, OOD recall 98.7%.',
+           en:'3-layer validation: an explicit "Non-Coffee" class, a confidence threshold <72%, and entropy >1.50. Test accuracy 99.78%, OOD recall 98.7%.' },
+    code:'Non-Coffee / conf<72% / entropy>1.50 → REJECTED' },
 ]
 
 // ============================================================
@@ -581,6 +581,9 @@ export default function HomePage() {
       }
     }
 
+    // Jaring pengaman KEDUA di sisi peramban, sengaja lebih longgar daripada
+    // ambang utama di model (CONFIDENCE_THRESHOLD = 0,72). Model sudah menolak
+    // di bawah 72%; cek ini hanya menangkap keluaran ganjil yang lolos parsing.
     if (confidence > 0 && confidence < 40) {
       return {
         bukan_kopi: true,
