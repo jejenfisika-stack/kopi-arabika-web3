@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import LabBatas from './LabBatas'
+import KartuEtika from './KartuEtika'
 
 // ============================================================
 // Konten dwibahasa Pusat Belajar IPA (Web3 style, bukan LMS)
@@ -11,7 +12,7 @@ const L = {
     title: '🎓 Pusat Belajar IPA',
     sub: 'Pelajari AI, Machine Learning, CNN, Blockchain & Traceability langsung dari sistem yang berjalan — melatih computational thinking, AI literacy, dan keterampilan abad-21.',
     navHead: 'Lompat ke bagian:',
-    nav: [['ct','🧩 Cara Kerja Sistem'],['dasar','🔬 Lab Hash & Entropi'],['blockchain','⛓️ Lab Blockchain'],['konvolusi','🔍 Lab Konvolusi'],['batas','🧪 Lab Uji Batas Model'],['cam','🔥 Panduan Grad-CAM'],['kuis','🤖 Kuis AI Literacy'],['gloss','📚 Glosarium']],
+    nav: [['ct','🧩 Cara Kerja Sistem'],['dasar','🔬 Lab Hash & Entropi'],['blockchain','⛓️ Lab Blockchain'],['konvolusi','🔍 Lab Konvolusi'],['batas','🧪 Lab Uji Batas Model'],['etika','⚖️ Kartu Dilema Etika'],['cam','🔥 Panduan Grad-CAM'],['kuis','🤖 Kuis AI Literacy'],['gloss','📚 Glosarium']],
     ctHead: '🧩 Cara Kerja Sistem (Computational Thinking)',
     ctSub: 'Empat pilar berpikir komputasional yang dipakai sistem ini:',
     ct: [
@@ -63,7 +64,7 @@ const L = {
     title: '🎓 Science Learning Hub',
     sub: 'Learn AI, Machine Learning, CNN, Blockchain & Traceability straight from a live system — training computational thinking, AI literacy, and 21st-century skills.',
     navHead: 'Jump to section:',
-    nav: [['ct','🧩 How It Works'],['dasar','🔬 Hash & Entropy Labs'],['blockchain','⛓️ Blockchain Lab'],['konvolusi','🔍 Convolution Lab'],['batas','🧪 Model Boundary Lab'],['cam','🔥 Grad-CAM Guide'],['kuis','🤖 AI Literacy Quiz'],['gloss','📚 Glossary']],
+    nav: [['ct','🧩 How It Works'],['dasar','🔬 Hash & Entropy Labs'],['blockchain','⛓️ Blockchain Lab'],['konvolusi','🔍 Convolution Lab'],['batas','🧪 Model Boundary Lab'],['etika','⚖️ Ethics Dilemma Cards'],['cam','🔥 Grad-CAM Guide'],['kuis','🤖 AI Literacy Quiz'],['gloss','📚 Glossary']],
     ctHead: '🧩 How the System Works (Computational Thinking)',
     ctSub: 'The four computational-thinking pillars this system uses:',
     ct: [
@@ -1334,6 +1335,8 @@ export default function Belajar({ lang }) {
       <div id="bg-konvolusi"><LabKonvolusi lang={lang} /></div>
 
       <div id="bg-batas"><LabBatas lang={lang} /></div>
+
+      <div id="bg-etika"><KartuEtika lang={lang} /></div>
 
       {/* Grad-CAM guide */}
       <div className="card learn-card" id="bg-cam">
