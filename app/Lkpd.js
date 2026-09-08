@@ -148,6 +148,12 @@ export default function LKPD({ lang, hasil, gradcam, onStatus }) {
     onStatus && onStatus(aktif ? d.terkunci : null)
   }, [aktif, d.terkunci, onStatus])
 
+  // Saat komponen ini hilang dari layar — misalnya menu Belajar ditutup —
+  // status WAJIB dikembalikan ke null. Tanpa ini, tombol klasifikasi di
+  // halaman utama tetap terkunci padahal LKPD tidak terlihat lagi, dan
+  // mahasiswa tidak punya cara membukanya kembali.
+  useEffect(() => () => { onStatus && onStatus(null) }, [onStatus])
+
   const set = (k, v) => setD(p => ({ ...p, [k]: v }))
 
   function kunciPrediksi() {

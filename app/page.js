@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { ethers } from 'ethers'
 import QRCode from 'qrcode'
 import Belajar from './Belajar'
-import LKPD from './Lkpd'
+import Lab from './Lab'
 
 const CONTRACT_ADDRESS = '0x5392C2F10d8Dea3e498726BcB8c806E8DA78834b'  // V3 — Open Mint + Verified + 6-Class Fix
 const PINATA_GATEWAY   = 'rose-casual-warbler-710.mypinata.cloud'
@@ -320,6 +320,7 @@ function hitungEntropi(probs) {
 export default function HomePage() {
   const [lang, setLang]             = useState('id')
   const [learnMode, setLearnMode]   = useState(false)
+  const [labMode, setLabMode]       = useState(false)
   const [foto, setFoto]             = useState(null)
   const [preview, setPreview]       = useState(null)
   const [namaPetani, setNamaPetani] = useState('')
@@ -357,6 +358,7 @@ export default function HomePage() {
     const saved = localStorage.getItem('lang')
     if (saved === 'id' || saved === 'en') setLang(saved)
     if (localStorage.getItem('learnMode') === '1') setLearnMode(true)
+    if (localStorage.getItem('labMode') === '1') setLabMode(true)
 
     // ── Pre-warming HF Space (fire-and-forget) ──
     // Ping kecil agar Space bangun dari sleep SEBELUM user klik Klasifikasi.
@@ -383,6 +385,14 @@ export default function HomePage() {
         .catch(() => setQrSertifikat(''))
     }
   }, [txHash, tokenId])
+
+  function toggleLab() {
+    setLabMode(v => {
+      const nv = !v
+      try { localStorage.setItem('labMode', nv ? '1' : '0') } catch (_) {}
+      return nv
+    })
+  }
 
   function toggleLearn() {
     setLearnMode(v => {
@@ -975,6 +985,9 @@ export default function HomePage() {
               Pusat Belajar yang bank soalnya terpisah.
               Halaman /tes tetap ada dan bisa diakses langsung bila dibutuhkan. */}
           <a className="pill lang" href="/verifikasi" style={{ textDecoration: 'none' }}>{t.verifyNav}</a>
+          <button className={`pill learn ${labMode ? 'on' : ''}`} onClick={toggleLab} title="Menu Lab / Lab menu">
+            🧪 Lab
+          </button>
           <button className={`pill learn ${learnMode ? 'on' : ''}`} onClick={toggleLearn} title="Mode Belajar / Learn Mode">
             🎓 {lang === 'id' ? 'Belajar' : 'Learn'}
           </button>
@@ -1240,13 +1253,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ---------- LKPD Digital POE (menempel pada alur klasifikasi) ---------- */}
-      <section className="section">
-        <LKPD lang={lang} hasil={hasilCNN} gradcam={gradcamImg} onStatus={setLkpdKunci} />
-      </section>
-
       {/* ---------- Pusat Belajar IPA (toggle) ---------- */}
-      {learnMode && <Belajar lang={lang} />}
+      {labMode && <Lab lang={lang} />}
+
+      {learnMode && <Belajar lang={lang} hasilCNN={hasilCNN} gradcam={gradcamImg} onLkpdStatus={setLkpdKunci} />}
 
       {/* ---------- 5 Varietas ---------- */}
       <section className="section">
