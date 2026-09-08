@@ -1177,20 +1177,57 @@ function ailiLevelCls(p) {
 }
 
 const AILI_CH = {
-  id: { title: '🤖 Kuis AI Literacy (AILI) — 25 Soal', ctx: 'Konteks: CNN + Blockchain untuk sertifikasi Kopi Arabika Web3 · Framework Ng et al. (2021), 4 dimensi AI literacy.', progress: 'Progress', prev: '← Sebelumnya', next: 'Selanjutnya →', see: '🎯 Lihat Hasil', ok: '✓ Benar! ', no: '✗ Belum tepat. ', correctAns: 'jawaban benar', dimScore: 'Skor per Dimensi AI Literacy', recap: 'Rekap Jawaban', th: ['No', 'Dim', 'Bloom', 'Anda', 'Kunci', 'Status'], interpH: 'Interpretasi (AILI)', interp: ['🌟 85–100% — Sangat Tinggi: mahir di semua dimensi.', '✅ 70–84% — Tinggi: paham baik, perkuat dimensi terlemah.', '⚠️ 55–69% — Sedang: dasar ada, perdalam konsep & etika AI.', '📚 <55% — Rendah: perlu pembelajaran lebih intensif.'], restart: '🔄 Ulangi Kuis dari Awal', levels: { a: 'Sangat Tinggi 🌟', b: 'Tinggi ✅', c: 'Sedang ⚠️', d: 'Rendah — Perlu Penguatan 📚' } },
-  en: { title: '🤖 AI Literacy Quiz (AILI) — 25 Questions', ctx: 'Context: CNN + Blockchain for Kopi Arabika Web3 certification · Framework: Ng et al. (2021), 4 AI-literacy dimensions.', progress: 'Progress', prev: '← Previous', next: 'Next →', see: '🎯 See Results', ok: '✓ Correct! ', no: '✗ Not quite. ', correctAns: 'correct answers', dimScore: 'Score per AI Literacy Dimension', recap: 'Answer Recap', th: ['No', 'Dim', 'Bloom', 'You', 'Key', 'Status'], interpH: 'Interpretation (AILI)', interp: ['🌟 85–100% — Very High: mastery in all dimensions.', '✅ 70–84% — High: good understanding, strengthen the weakest dimension.', '⚠️ 55–69% — Medium: basics present, deepen concepts & AI ethics.', '📚 <55% — Low: needs more intensive learning.'], restart: '🔄 Restart Quiz', levels: { a: 'Very High 🌟', b: 'High ✅', c: 'Medium ⚠️', d: 'Low — Needs Strengthening 📚' } },
+  id: { title: '🤖 Kuis AI Literacy (AILI) — 25 Soal', ctx: 'Konteks: CNN + Blockchain untuk sertifikasi Kopi Arabika Web3 · Framework Ng et al. (2021), 4 dimensi AI literacy.', progress: 'Progress', prev: '← Sebelumnya', next: 'Selanjutnya →', see: '🎯 Lihat Hasil', ok: '✓ Benar! ', no: '✗ Belum tepat. ', correctAns: 'jawaban benar', dimScore: 'Skor per Dimensi AI Literacy', recap: 'Rekap Jawaban', th: ['No', 'Dim', 'Bloom', 'Anda', 'Kunci', 'Status'], interpH: 'Interpretasi (AILI)', interp: ['🌟 85–100% — Sangat Tinggi: mahir di semua dimensi.', '✅ 70–84% — Tinggi: paham baik, perkuat dimensi terlemah.', '⚠️ 55–69% — Sedang: dasar ada, perdalam konsep & etika AI.', '📚 <55% — Rendah: perlu pembelajaran lebih intensif.'], restart: '🔄 Ulangi Kuis dari Awal', levels: { a: 'Sangat Tinggi 🌟', b: 'Tinggi ✅', c: 'Sedang ⚠️', d: 'Rendah — Perlu Penguatan 📚' }, ngHead: '📈 Pantau Kemajuanmu Sendiri', ngSub: 'Kerjakan kuis ini SEBELUM belajar, lalu ulangi SESUDAH belajar. Sistem menghitung peningkatanmu memakai rumus N-gain. Boleh diulang sesukamu — acuannya tetap pengerjaan "sebelum" yang pertama dan "sesudah" yang terakhir.', ngSimpanPre: '💾 Simpan sebagai SEBELUM belajar', ngSimpanPost: '💾 Simpan sebagai SESUDAH belajar', ngPre: 'Sebelum', ngPost: 'Sesudah', ngTersimpan: (f, sk) => `✓ Skor ${sk} tersimpan sebagai "${f} belajar".`, ngBelum: 'N-gain muncul setelah kamu punya minimal satu skor "sebelum" dan satu skor "sesudah".', ngKat: { tinggi: 'Peningkatan Tinggi 🌟', sedang: 'Peningkatan Sedang ✅', rendah: 'Peningkatan Rendah 📚' }, ngRinci: (pre, post, maks) => `dari ${pre}/${maks} menjadi ${post}/${maks}`, ngHapus: '🗑️ Hapus riwayat skor', ngPrivasi: '🔒 Riwayat ini tersimpan di peramban perangkatmu sendiri dan tidak dikirim ke mana pun.' },
+  en: { title: '🤖 AI Literacy Quiz (AILI) — 25 Questions', ctx: 'Context: CNN + Blockchain for Kopi Arabika Web3 certification · Framework: Ng et al. (2021), 4 AI-literacy dimensions.', progress: 'Progress', prev: '← Previous', next: 'Next →', see: '🎯 See Results', ok: '✓ Correct! ', no: '✗ Not quite. ', correctAns: 'correct answers', dimScore: 'Score per AI Literacy Dimension', recap: 'Answer Recap', th: ['No', 'Dim', 'Bloom', 'You', 'Key', 'Status'], interpH: 'Interpretation (AILI)', interp: ['🌟 85–100% — Very High: mastery in all dimensions.', '✅ 70–84% — High: good understanding, strengthen the weakest dimension.', '⚠️ 55–69% — Medium: basics present, deepen concepts & AI ethics.', '📚 <55% — Low: needs more intensive learning.'], restart: '🔄 Restart Quiz', levels: { a: 'Very High 🌟', b: 'High ✅', c: 'Medium ⚠️', d: 'Low — Needs Strengthening 📚' }, ngHead: '📈 Track Your Own Progress', ngSub: 'Take this quiz BEFORE studying, then again AFTER. The system computes your improvement using the N-gain formula. Retake as often as you like — the reference stays your FIRST "before" and your LATEST "after".', ngSimpanPre: '💾 Save as BEFORE studying', ngSimpanPost: '💾 Save as AFTER studying', ngPre: 'Before', ngPost: 'After', ngTersimpan: (f, sk) => `✓ Score ${sk} saved as "${f} studying".`, ngBelum: 'N-gain appears once you have at least one "before" score and one "after" score.', ngKat: { tinggi: 'High Gain 🌟', sedang: 'Medium Gain ✅', rendah: 'Low Gain 📚' }, ngRinci: (pre, post, maks) => `from ${pre}/${maks} to ${post}/${maks}`, ngHapus: '🗑️ Clear score history', ngPrivasi: '🔒 This history is stored in your own browser and is never sent anywhere.' },
+}
+
+// ── Riwayat skor kuis, disimpan di peramban mahasiswa sendiri ──
+// TIDAK dikirim ke mana pun. Ini alat LATIHAN; data penelitian yang sahih
+// diambil lewat pra-tes/pasca-tes berbasis kertas dengan instrumen terpisah.
+const KUNCI_RIWAYAT = 'aili-riwayat'
+
+function bacaRiwayat() {
+  try { const s = localStorage.getItem(KUNCI_RIWAYAT); return s ? JSON.parse(s) : [] } catch (_) { return [] }
+}
+function tulisRiwayat(r) {
+  try { localStorage.setItem(KUNCI_RIWAYAT, JSON.stringify(r.slice(-20))) } catch (_) {}
+}
+// N-gain Hake: acuannya pengerjaan "sebelum" PERTAMA dan "sesudah" TERAKHIR,
+// supaya mengulang tidak menggeser titik awal maupun menyembunyikan kemajuan.
+function hitungNgain(riwayat, maks) {
+  const pre = riwayat.find(x => x.fase === 'sebelum')
+  const posts = riwayat.filter(x => x.fase === 'sesudah')
+  if (!pre || posts.length === 0) return null
+  const post = posts[posts.length - 1]
+  const pembagi = maks - pre.skor
+  const g = pembagi <= 0 ? 1 : (post.skor - pre.skor) / pembagi
+  const kat = g >= 0.7 ? 'tinggi' : g >= 0.3 ? 'sedang' : 'rendah'
+  return { pre: pre.skor, post: post.skor, g: Math.round(g * 100) / 100, kat }
 }
 
 function QuizAILI({ lang }) {
   const [cur, setCur] = useState(0)
   const [ans, setAns] = useState(Array(SOAL_AILI.length).fill(null))
   const [showResult, setShowResult] = useState(false)
+  const [riwayat, setRiwayat] = useState([])
+  const [tersimpan, setTersimpan] = useState('')
   const Q = lang === 'en' ? SOAL_AILI_EN : SOAL_AILI
   const C = AILI_CH[lang] || AILI_CH.id
 
+  useEffect(() => { setRiwayat(bacaRiwayat()) }, [])
+
   const pilih = (j) => setAns(a => { if (a[cur] != null) return a; const n = [...a]; n[cur] = j; return n })
   const go = (d) => setCur(c => Math.max(0, Math.min(SOAL_AILI.length - 1, c + d)))
-  const restart = () => { setCur(0); setAns(Array(SOAL_AILI.length).fill(null)); setShowResult(false) }
+  const restart = () => { setCur(0); setAns(Array(SOAL_AILI.length).fill(null)); setShowResult(false); setTersimpan('') }
+
+  function simpanSkor(fase, skor) {
+    const baru = [...bacaRiwayat(), { fase, skor, waktu: Date.now() }]
+    tulisRiwayat(baru); setRiwayat(baru.slice(-20)); setTersimpan(fase)
+  }
+  function hapusRiwayat() {
+    try { localStorage.removeItem(KUNCI_RIWAYAT) } catch (_) {}
+    setRiwayat([]); setTersimpan('')
+  }
 
   if (showResult) {
     const total = Q.reduce((s, q, i) => s + (ans[i] === q.jwb ? 1 : 0), 0)
@@ -1239,6 +1276,49 @@ function QuizAILI({ lang }) {
         <div className="aili-interp">
           {C.interp.map((line, i) => <span key={i}>{line}<br /></span>)}
         </div>
+
+        {/* ── Pantau kemajuan sendiri: simpan skor, lalu bandingkan ── */}
+        <div className="ng-blok">
+          <b className="learn-sub-h">{C.ngHead}</b>
+          <p className="learn-p" style={{ fontSize: 13 }}>{C.ngSub}</p>
+
+          {!tersimpan ? (
+            <div className="ng-tombol">
+              <button className="btn btn-ghost" onClick={() => simpanSkor('sebelum', total)}>{C.ngSimpanPre}</button>
+              <button className="btn btn-ghost" onClick={() => simpanSkor('sesudah', total)}>{C.ngSimpanPost}</button>
+            </div>
+          ) : (
+            <p className="ng-ok">{C.ngTersimpan(tersimpan === 'sebelum' ? C.ngPre : C.ngPost, total)}</p>
+          )}
+
+          {riwayat.length > 0 && (
+            <>
+              <div className="ng-riwayat">
+                {riwayat.map((r, i) => (
+                  <div className="ng-baris" key={i}>
+                    <span className={`ng-tag ${r.fase}`}>{r.fase === 'sebelum' ? C.ngPre : C.ngPost}</span>
+                    <b>{r.skor}/{Q.length}</b>
+                    <span className="ng-waktu">{new Date(r.waktu).toLocaleDateString(lang === 'en' ? 'en-GB' : 'id-ID')}</span>
+                  </div>
+                ))}
+              </div>
+              {(() => {
+                const n = hitungNgain(riwayat, Q.length)
+                if (!n) return <p className="learn-note">{C.ngBelum}</p>
+                return (
+                  <div className={`ng-hasil ${n.kat}`}>
+                    <span className="ng-angka">N-gain {n.g.toFixed(2)}</span>
+                    <span className="ng-kat">{C.ngKat[n.kat]}</span>
+                    <span className="ng-rinci">{C.ngRinci(n.pre, n.post, Q.length)}</span>
+                  </div>
+                )
+              })()}
+              <button className="btn btn-ghost ng-hapus" onClick={hapusRiwayat}>{C.ngHapus}</button>
+            </>
+          )}
+          <p className="learn-note">{C.ngPrivasi}</p>
+        </div>
+
         <button className="btn btn-ghost" style={{ marginTop: 14 }} onClick={restart}>{C.restart}</button>
       </div>
     )

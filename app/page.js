@@ -967,7 +967,13 @@ export default function HomePage() {
           </div>
         </div>
         <div className="topbar-actions">
-          <a className="pill lang" href="/tes" style={{ textDecoration: 'none' }}>{t.tesNav}</a>
+          {/* Tautan ke /tes SENGAJA DITUTUP. Halaman itu memakai instrumen
+              penelitian (Form A/B di data/soalPrePost.js) yang juga dipakai
+              untuk pra-tes & pasca-tes berbasis kertas. Bila dibuka sebagai
+              latihan, mahasiswa berlatih memakai soal ujiannya sendiri dan
+              data penelitian menjadi tidak sahih. Latihan memakai kuis di
+              Pusat Belajar yang bank soalnya terpisah.
+              Halaman /tes tetap ada dan bisa diakses langsung bila dibutuhkan. */}
           <a className="pill lang" href="/verifikasi" style={{ textDecoration: 'none' }}>{t.verifyNav}</a>
           <button className={`pill learn ${learnMode ? 'on' : ''}`} onClick={toggleLearn} title="Mode Belajar / Learn Mode">
             🎓 {lang === 'id' ? 'Belajar' : 'Learn'}
