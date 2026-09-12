@@ -160,166 +160,171 @@ const DIM_AILI = {
 
 // 25 soal AI Literacy Index (AILI) — konteks: Kopi Arabika Web3 (CNN + Blockchain)
 // Framework: Ng, Leung, Chu & Qiao (2021), Computers and Education: AI, 2, 100041.
+//
+// Kunci jawaban SENGAJA disebar merata A–E (masing-masing 5 soal) dan tidak
+// pernah berulang di dua soal berurutan. Sebelumnya 21 dari 25 kunci ada di
+// opsi B, sehingga mahasiswa bisa lulus dengan membaca pola, bukan konsep.
+// Bila menambah atau menyunting soal, jaga sebarannya tetap merata.
 const SOAL_AILI = [
   { no:1, dim:'AIL1', bloom:'C1 – Mengingat', teks:'Apa yang dimaksud dengan Artificial Intelligence (AI)?',
-    opts:['Program komputer yang hanya mengikuti perintah yang sudah diprogram secara kaku','Kemampuan mesin untuk meniru kecerdasan manusia dalam memproses data dan membuat keputusan','Kumpulan database besar berisi informasi tentang berbagai topik','Sistem operasi canggih yang mengontrol perangkat keras komputer'], jwb:1,
+    opts:['Program komputer yang hanya mengikuti perintah yang sudah diprogram secara kaku','Kumpulan database besar berisi informasi tentang berbagai topik','Kemampuan mesin untuk meniru kecerdasan manusia dalam memproses data dan membuat keputusan','Sistem operasi canggih yang mengontrol perangkat keras komputer','Robot fisik berbentuk manusia yang bergerak secara otomatis'], jwb:2,
     fb:'AI adalah kemampuan mesin meniru kecerdasan manusia: belajar dari data, mengenali pola, membuat keputusan, dan menyelesaikan masalah.' },
   { no:2, dim:'AIL1', bloom:'C1 – Mengingat', teks:'Dalam sistem Kopi Arabika Web3, model CNN (RepViT) berfungsi untuk:',
-    opts:['Menyimpan sertifikat ke blockchain','Mengklasifikasikan citra biji kopi arabika ke jenis & grade, serta menolak gambar non-kopi','Membuat dompet kripto MetaMask','Mengontrol sensor IoT di kebun'], jwb:1,
+    opts:['Menyimpan sertifikat ke blockchain','Membuat dompet kripto MetaMask','Mengunggah berkas gambar ke IPFS dan menghasilkan CID','Mengontrol sensor IoT di kebun','Mengklasifikasikan citra biji kopi arabika ke jenis & grade, serta menolak gambar non-kopi'], jwb:4,
     fb:'CNN RepViT mengklasifikasikan citra biji kopi ke jenis & grade dan mendeteksi out-of-distribution (Non-Coffee). Pencatatan ke blockchain dilakukan modul terpisah.' },
   { no:3, dim:'AIL1', bloom:'C2 – Memahami', teks:'Apa perbedaan mendasar antara Machine Learning (ML) dan Deep Learning (DL)?',
-    opts:['ML pakai data lebih banyak, DL lebih sedikit','ML memerlukan rekayasa fitur manual, sedangkan DL mengekstrak fitur otomatis dari data mentah','ML hanya untuk teks, DL hanya untuk gambar','ML butuh GPU, DL hanya butuh CPU biasa'], jwb:1,
+    opts:['ML memerlukan rekayasa fitur manual, sedangkan DL mengekstrak fitur otomatis dari data mentah','ML pakai data lebih banyak, DL lebih sedikit','ML hanya untuk teks, DL hanya untuk gambar','DL adalah nama lain ML, hanya berbeda istilah pemasaran','ML butuh GPU, DL hanya butuh CPU biasa'], jwb:0,
     fb:'ML tradisional butuh feature engineering manual; DL otomatis mempelajari representasi fitur bertingkat dari data mentah lewat lapisan jaringan yang dalam.' },
   { no:4, dim:'AIL1', bloom:'C2 – Memahami', teks:'CNN dalam klasifikasi biji kopi bekerja dengan cara:',
-    opts:['Membaca teks deskripsi gejala dari petani','Mengekstrak fitur visual hierarkis dari gambar (tepi → tekstur → bentuk → objek) lewat lapisan konvolusi','Menganalisis suhu & kelembaban untuk memprediksi mutu','Menghitung kadar air biji dengan sensor inframerah'], jwb:1,
+    opts:['Membaca teks deskripsi gejala dari petani','Menganalisis suhu & kelembaban untuk memprediksi mutu','Membandingkan foto dengan seluruh gambar di internet satu per satu','Mengekstrak fitur visual hierarkis dari gambar (tepi → tekstur → bentuk → objek) lewat lapisan konvolusi','Menghitung kadar air biji dengan sensor inframerah'], jwb:3,
     fb:'CNN mengekstrak fitur visual secara hierarkis: dari tepi sederhana di lapisan awal hingga pola kompleks (warna, bentuk, tekstur biji) di lapisan dalam.' },
   { no:5, dim:'AIL1', bloom:'C2 – Memahami', teks:'Mengapa citra biji kopi perlu di-preprocess (resize & normalisasi piksel) sebelum masuk CNN?',
-    opts:['Agar file tersimpan lebih efisien','Agar foto tidak bisa dibaca demi keamanan','Agar ukuran & skala nilai piksel seragam sehingga model belajar stabil dan konvergen lebih cepat','Agar gambar terlihat lebih menarik'], jwb:2,
+    opts:['Agar file tersimpan lebih efisien','Agar ukuran & skala nilai piksel seragam sehingga model belajar stabil dan konvergen lebih cepat','Agar gambar terlihat lebih menarik','Agar jumlah gambar dalam dataset bertambah secara otomatis','Agar foto tidak bisa dibaca demi keamanan'], jwb:1,
     fb:'Resize menyeragamkan dimensi input; normalisasi piksel menyamakan skala nilai sehingga pelatihan stabil dan konvergensi lebih cepat.' },
   { no:6, dim:'AIL1', bloom:'C2 – Memahami', teks:'Apa yang dimaksud transfer learning dalam klasifikasi biji kopi?',
-    opts:['Memindahkan file model antar komputer via USB','Memanfaatkan model pretrained (mis. RepViT/ImageNet) sebagai fondasi, lalu fine-tune pada dataset kopi yang lebih kecil','Mentransfer data dari Colab ke komputer lokal','Belajar langsung dari petani kopi berpengalaman'], jwb:1,
+    opts:['Memindahkan file model antar komputer via USB','Mentransfer data dari Colab ke komputer lokal','Memindahkan beban komputasi dari CPU ke GPU saat pelatihan','Belajar langsung dari petani kopi berpengalaman','Memanfaatkan model pretrained (mis. RepViT/ImageNet) sebagai fondasi, lalu fine-tune pada dataset kopi yang lebih kecil'], jwb:4,
     fb:'Transfer learning memakai model yang sudah dilatih pada jutaan gambar umum sebagai fondasi, lalu di-fine-tune pada dataset biji kopi yang lebih kecil — jauh lebih efektif daripada melatih dari nol.' },
   { no:7, dim:'AIL1', bloom:'C2 – Memahami', teks:'Apa itu overfitting dalam pelatihan model AI?',
-    opts:['Model selesai training lebih cepat dari jadwal','Model memakai terlalu banyak RAM','Model terlalu menghafal data training sehingga akurasi tinggi di training tapi rendah di data baru','Model melatih terlalu banyak gambar sehingga lambat'], jwb:2,
+    opts:['Model terlalu menghafal data training sehingga akurasi tinggi di training tapi rendah di data baru','Model memakai terlalu banyak RAM','Model selesai training lebih cepat dari jadwal','Model gagal dimuat karena ukuran berkasnya melebihi batas','Model melatih terlalu banyak gambar sehingga lambat'], jwb:0,
     fb:'Overfitting: model menghafal noise/detail spesifik data training, bukan pola umum. Solusi: dropout, regularisasi, augmentasi data, early stopping.' },
 
   { no:8, dim:'AIL2', bloom:'C3 – Menerapkan', teks:'Data citra biji kopi hanya 200 sampel per kelas. Strategi terbaik melatih CNN:',
-    opts:['Latih dari nol (from scratch) karena data sedikit lebih mudah','Gunakan transfer learning dari model pretrained, lalu fine-tune pada data kopi','Tidak usah pakai CNN karena data terlalu sedikit','Gandakan gambar manual dengan copy-paste'], jwb:1,
+    opts:['Latih dari nol (from scratch) karena data sedikit lebih mudah','Gandakan gambar manual dengan copy-paste','Perbesar resolusi tiap gambar agar informasinya bertambah','Gunakan transfer learning dari model pretrained, lalu fine-tune pada data kopi','Tidak usah pakai CNN karena data terlalu sedikit'], jwb:3,
     fb:'Dengan data terbatas, transfer learning adalah pilihan terbaik: representasi visual pretrained mempercepat & menstabilkan pelatihan pada data kopi yang kecil.' },
   { no:9, dim:'AIL2', bloom:'C3 – Menerapkan', teks:'Model CNN kopi: akurasi training 98% tetapi validasi 71%. Langkah paling tepat:',
-    opts:['Tambah lapisan & neuron agar kapasitas naik','Perpanjang training hingga loss training nol','Atasi overfitting: terapkan dropout, augmentasi, early stopping, atau regularisasi','Ganti framework dari TensorFlow ke PyTorch'], jwb:2,
+    opts:['Tambah lapisan & neuron agar kapasitas naik','Atasi overfitting: terapkan dropout, augmentasi, early stopping, atau regularisasi','Perpanjang training hingga loss training nol','Laporkan akurasi training 98% sebagai hasil akhir','Ganti framework dari TensorFlow ke PyTorch'], jwb:1,
     fb:'Selisih besar training–validasi adalah tanda overfitting. Solusi: dropout, augmentasi data, early stopping, regularisasi L2, atau perbanyak data.' },
   { no:10, dim:'AIL2', bloom:'C3 – Menerapkan', teks:'Augmentasi data (rotasi, flip, zoom, brightness) pada citra biji kopi berguna untuk:',
-    opts:['Mengubah format JPG ke PNG','Memperbesar resolusi gambar','Menciptakan variasi data training agar model lebih robust dan mengurangi overfitting','Mengompres ukuran file'], jwb:2,
+    opts:['Mengubah format JPG ke PNG','Memperbesar resolusi gambar','Menciptakan variasi data training agar model lebih robust dan mengurangi overfitting','Mengompres ukuran file','Menghapus gambar yang kualitasnya kurang baik dari dataset'], jwb:2,
     fb:'Augmentasi membuat variasi artifisial sehingga model lebih tahan terhadap perbedaan sudut/pencahayaan dan generalisasinya meningkat, terutama saat data terbatas.' },
   { no:11, dim:'AIL2', bloom:'C3 – Menerapkan', teks:'Untuk mengevaluasi model KLASIFIKASI jenis kopi, metrik yang tepat adalah:',
-    opts:['RMSE dan MAE karena umum dipakai di AI','Accuracy, Precision, Recall, dan F1-Score karena ini tugas klasifikasi','R² karena mengukur variasi data','MSE karena menghitung selisih kuadrat'], jwb:1,
-    fb:'Klasifikasi memakai Accuracy, Precision, Recall, F1. RMSE/MAE/R² adalah metrik untuk regresi (prediksi nilai kontinu), bukan klasifikasi.' },
+    opts:['RMSE dan MAE karena umum dipakai di AI','R² karena mengukur variasi data','Silhouette score karena mengukur kualitas pengelompokan','Accuracy, Precision, Recall, dan F1-Score karena ini tugas klasifikasi','MSE karena menghitung selisih kuadrat'], jwb:3,
+    fb:'Klasifikasi memakai Accuracy, Precision, Recall, F1. RMSE/MAE/R² adalah metrik untuk regresi (prediksi nilai kontinu), sedangkan Silhouette untuk clustering — bukan klasifikasi.' },
   { no:12, dim:'AIL2', bloom:'C3 – Menerapkan', teks:'Membuat model klasifikasi kopi dengan Teachable Machine, langkah pertama yang wajib:',
-    opts:['Langsung tekan Train Model tanpa menyiapkan data','Mendefinisikan kelas yang ingin dikenali dan mengumpulkan data gambar representatif tiap kelas','Memilih arsitektur paling kompleks agar akurat','Mengunduh dataset acak dari internet tanpa memeriksanya'], jwb:1,
+    opts:['Mendefinisikan kelas yang ingin dikenali dan mengumpulkan data gambar representatif tiap kelas','Langsung tekan Train Model tanpa menyiapkan data','Memilih arsitektur paling kompleks agar akurat','Menentukan lebih dulu berapa akurasi yang ingin dilaporkan','Mengunduh dataset acak dari internet tanpa memeriksanya'], jwb:0,
     fb:'Definisikan kelas dengan jelas dan kumpulkan data representatif berkualitas. Kualitas data lebih penting dari kompleksitas model — garbage in, garbage out.' },
   { no:13, dim:'AIL2', bloom:'C3 – Menerapkan', teks:'Sebelum sertifikat dicatat ke blockchain, foto biji kopi di-hash dengan SHA-256 untuk:',
-    opts:['Memperkecil ukuran file foto','Menghasilkan sidik jari unik 256-bit sebagai bukti keaslian dan mencegah sertifikat ganda','Mengenkripsi foto agar tidak bisa dibuka','Mempercepat proses upload ke IPFS'], jwb:1,
+    opts:['Memperkecil ukuran file foto','Mengenkripsi foto agar tidak bisa dibuka','Mempercepat proses upload ke IPFS','Menyembunyikan lokasi kebun yang tersimpan di metadata foto','Menghasilkan sidik jari unik 256-bit sebagai bukti keaslian dan mencegah sertifikat ganda'], jwb:4,
     fb:'SHA-256 menghasilkan sidik jari 256-bit yang unik & satu arah. Hash ini dicatat di registry on-chain untuk mendeteksi foto identik (anti-duplikasi sertifikat).' },
 
   { no:14, dim:'AIL3', bloom:'C4 – Menganalisis', teks:'Confusion matrix model kopi: TP=95, FP=8, TN=87, FN=10. Hitung Precision:',
-    opts:['95 / (95+10) = 90,5%','95 / (95+8) = 92,2%','87 / (87+8) = 91,6%','(95+87) / 200 = 91,0%'], jwb:1,
+    opts:['95 / (95+10) = 90,5%','(95+87) / 200 = 91,0%','95 / (95+8) = 92,2%','87 / (87+8) = 91,6%','95 / (95+8+10) = 84,1%'], jwb:2,
     fb:'Precision = TP/(TP+FP) = 95/103 ≈ 92,2% (dari semua prediksi positif, berapa yang benar). Recall = TP/(TP+FN) = 90,5%. F1 ≈ 91,3%.' },
   { no:15, dim:'AIL3', bloom:'C5 – Mengevaluasi', teks:'Model A: akurasi 90%, F1 0,88. Model B: akurasi 94%, F1 0,93. Mana lebih baik dan mengapa?',
-    opts:['Model A, karena angka lebih kecil berarti lebih hati-hati','Model B, karena akurasi dan F1 lebih tinggi (lebih banyak prediksi benar & seimbang precision-recall)','Sama saja karena selisihnya kecil','Model A, karena memakai lebih sedikit lapisan'], jwb:1,
+    opts:['Model A, karena angka lebih kecil berarti lebih hati-hati','Model B, karena akurasi dan F1 lebih tinggi (lebih banyak prediksi benar & seimbang precision-recall)','Sama saja karena selisihnya kecil','Model A, karena memakai lebih sedikit lapisan','Tidak bisa dibandingkan karena akurasi dan F1 mengukur hal yang berbeda'], jwb:1,
     fb:'Model B unggul: akurasi lebih tinggi dan F1 lebih tinggi (keseimbangan precision-recall lebih baik). Semakin tinggi akurasi & F1, semakin baik model klasifikasi.' },
   { no:16, dim:'AIL3', bloom:'C5 – Mengevaluasi', teks:'Model CNN 96% di data uji, tapi di kebun nyata akurasinya turun jadi 65%. Evaluasi penyebabnya:',
-    opts:['Model terlalu sederhana, perlu lebih banyak lapisan','Domain shift: data latih (kondisi lab) berbeda dari lapangan (pencahayaan, sudut, latar bervariasi)','65% sudah sangat baik untuk pertanian','Masalah pada GPU yang lambat'], jwb:1,
+    opts:['Domain shift: data latih (kondisi lab) berbeda dari lapangan (pencahayaan, sudut, latar bervariasi)','Model terlalu sederhana, perlu lebih banyak lapisan','Kamera ponsel petani resolusinya terlalu tinggi untuk model','65% sudah sangat baik untuk pertanian','Masalah pada GPU yang lambat'], jwb:0,
     fb:'Domain/distributional shift: distribusi data lapangan beda dari data latih. Solusi: kumpulkan data dari kondisi lapangan nyata & augmentasi yang mensimulasikan variasi pencahayaan/sudut.' },
   { no:17, dim:'AIL3', bloom:'C6 – Mencipta', teks:'Rancangan sistem sertifikasi kopi paling komprehensif & tepercaya adalah:',
-    opts:['Hanya CNN untuk klasifikasi biji kopi','Sistem terpadu: CNN klasifikasi + Grad-CAM (penjelasan) + SHA-256 anti-duplikat + simpan ke IPFS + sertifikat NFT immutable di blockchain','Hanya database foto yang dicari manual','Hanya pencatatan NFT tanpa klasifikasi'], jwb:1,
+    opts:['Hanya CNN untuk klasifikasi biji kopi','Hanya database foto yang dicari manual','Hanya Grad-CAM untuk menampilkan peta panas tanpa klasifikasi','Sistem terpadu: CNN klasifikasi + Grad-CAM (penjelasan) + SHA-256 anti-duplikat + simpan ke IPFS + sertifikat NFT immutable di blockchain','Hanya pencatatan NFT tanpa klasifikasi'], jwb:3,
     fb:'Sistem terbaik menggabungkan klasifikasi (CNN), penjelasan yang dapat diaudit (Grad-CAM), keaslian (SHA-256 + IPFS content-addressing), dan sertifikat tak-termodifikasi (NFT/blockchain).' },
   { no:18, dim:'AIL3', bloom:'C5 – Mengevaluasi', teks:'Mengapa menyimpan penjelasan AI (Grad-CAM, distribusi probabilitas, entropi) secara immutable di blockchain/IPFS itu penting?',
-    opts:['Agar sertifikat terlihat lebih panjang','Agar keputusan AI dapat diaudit dan tidak dapat diubah, sehingga akuntabel & tepercaya','Agar model berjalan lebih cepat','Agar biaya gas lebih murah'], jwb:1,
+    opts:['Agar sertifikat terlihat lebih panjang','Agar biaya gas lebih murah','Agar keputusan AI dapat diaudit dan tidak dapat diubah, sehingga akuntabel & tepercaya','Agar model berjalan lebih cepat','Agar model dapat dilatih ulang langsung dari data di blockchain'], jwb:2,
     fb:'Menyimpan bukti penjelasan secara tak-termodifikasi menjadikan keputusan AI dapat diverifikasi & diaudit kapan pun — inti dari Explainable + Verifiable AI.' },
   { no:19, dim:'AIL3', bloom:'C6 – Mencipta', teks:'Desain eksperimen membandingkan RepViT vs MobileNet untuk klasifikasi kopi yang valid harus:',
-    opts:['Membandingkan akurasi akhir saja tanpa pembagian train/test','Menggunakan dataset & split data sama, preprocessing identik, metrik sama, dan beberapa kali run untuk stabilitas','Memilih model dengan grafik paling mulus secara visual','Memakai dataset berbeda untuk tiap model agar adil'], jwb:1,
+    opts:['Membandingkan akurasi akhir saja tanpa pembagian train/test','Cukup menjalankan satu kali percobaan karena hasil deep learning selalu sama','Memilih model dengan grafik paling mulus secara visual','Memakai dataset berbeda untuk tiap model agar adil','Menggunakan dataset & split data sama, preprocessing identik, metrik sama, dan beberapa kali run untuk stabilitas'], jwb:4,
     fb:'Eksperimen valid: dataset & split identik, preprocessing sama, metrik konsisten, dan multiple runs (karena DL bersifat stokastik). Dataset berbeda per model = bias eksperimental.' },
 
   { no:20, dim:'AIL4', bloom:'C5 – Etika', teks:'Model CNN dilatih dengan data 90% dari satu daerah penghasil kopi saja. Masalah yang muncul:',
-    opts:['Tidak ada masalah, data seragam lebih konsisten','Model bias terhadap satu daerah dan bisa tidak akurat/tidak adil di daerah lain dengan kondisi berbeda','Model lebih cepat dilatih','Model tidak bisa di-deploy karena lisensi'], jwb:1,
+    opts:['Tidak ada masalah, data seragam lebih konsisten','Model bias terhadap satu daerah dan bisa tidak akurat/tidak adil di daerah lain dengan kondisi berbeda','Model lebih cepat dilatih','Cukup diatasi dengan menaikkan jumlah epoch pelatihan','Model tidak bisa di-deploy karena lisensi'], jwb:1,
     fb:'Bias data training adalah isu etika kritis. Data tidak representatif menghasilkan performa tidak adil bagi daerah yang tak terwakili. Fairness AI menuntut data yang inklusif.' },
   { no:21, dim:'AIL4', bloom:'C5 – Etika', teks:'AI menentukan harga beli kopi dari petani tetapi tidak bisa menjelaskan alasannya. Isu etika yang relevan:',
-    opts:['Tidak masalah karena AI selalu lebih akurat','Kurang transparansi (explainability) — petani berhak atas penjelasan; keputusan AI harus dapat diaudit & dijelaskan (di sinilah Grad-CAM/XAI berperan)','Hanya masalah teknis kecepatan model','Petani tidak perlu memahami cara kerja AI'], jwb:1,
+    opts:['Tidak masalah karena AI selalu lebih akurat','Petani tidak perlu memahami cara kerja AI','Cukup diselesaikan dengan menampilkan skor confidence tanpa penjelasan lain','Kurang transparansi (explainability) — petani berhak atas penjelasan; keputusan AI harus dapat diaudit & dijelaskan (di sinilah Grad-CAM/XAI berperan)','Hanya masalah teknis kecepatan model'], jwb:3,
     fb:'Explainability & transparency adalah prinsip AI bertanggung jawab. Keputusan yang berdampak finansial harus dapat dijelaskan & diaudit — bukan kotak hitam.' },
   { no:22, dim:'AIL4', bloom:'C5 – Etika', teks:'Sensor IoT di kebun kopi tanpa sengaja merekam aktivitas harian petani, lalu dipakai untuk pengawasan. Masalahnya:',
-    opts:['Tidak masalah karena kebun milik perusahaan','Pelanggaran privasi — data dikumpulkan tanpa informed consent untuk tujuan pengawasan; penggunaan harus sesuai tujuan awal','Berguna untuk optimasi jadwal sehingga dibenarkan','Hanya masalah bila data bocor ke pihak ketiga'], jwb:1,
+    opts:['Pelanggaran privasi — data dikumpulkan tanpa informed consent untuk tujuan pengawasan; penggunaan harus sesuai tujuan awal','Tidak masalah karena kebun milik perusahaan','Berguna untuk optimasi jadwal sehingga dibenarkan','Hanya masalah bila data bocor ke pihak ketiga','Tidak masalah selama rekamannya dihapus setelah satu tahun'], jwb:0,
     fb:'Prinsip data minimization & purpose limitation: kumpulkan seperlunya, pakai sesuai tujuan awal, dan dapatkan informed consent. Pengawasan tersembunyi = pelanggaran privasi.' },
   { no:23, dim:'AIL4', bloom:'C5 – Etika', teks:'AI merekomendasikan pestisida berlebih, lalu petani mengikutinya membabi buta. Siapa yang bertanggung jawab atas dampaknya?',
-    opts:['Hanya developer AI','Hanya petani','Tanggung jawab terdistribusi: developer (validasi model), petani (berpikir kritis), regulator (standar) — AI tidak menghapus tanggung jawab manusia','Tidak ada, karena keputusan dibuat AI'], jwb:2,
+    opts:['Hanya developer AI','Hanya petani','Hanya penyedia layanan cloud tempat model dijalankan','Tidak ada, karena keputusan dibuat AI','Tanggung jawab terdistribusi: developer (validasi model), petani (berpikir kritis), regulator (standar) — AI tidak menghapus tanggung jawab manusia'], jwb:4,
     fb:'Akuntabilitas dalam AI bersifat terdistribusi. "AI yang menyuruh" bukan pembenaran untuk lepas tanggung jawab moral.' },
   { no:24, dim:'AIL4', bloom:'C5 – Etika', teks:'Foto kebun petani kecil dipakai melatih model AI komersial tanpa kompensasi/izin. Isu yang relevan:',
-    opts:['Normal saja, data publik bebas dipakai','Keadilan (fairness) & kepemilikan data — sumber data berhak atas consent/kompensasi; eksploitasi komunitas rentan untuk keuntungan komersial tidak etis (sertifikat NFT bisa memberi atribusi/kepemilikan ke petani)','Hanya masalah jika ada wajah manusia','Tidak masalah asal sumber dicantumkan di publikasi'], jwb:1,
+    opts:['Normal saja, data publik bebas dipakai','Hanya masalah jika ada wajah manusia','Keadilan (fairness) & kepemilikan data — sumber data berhak atas consent/kompensasi; eksploitasi komunitas rentan untuk keuntungan komersial tidak etis (sertifikat NFT bisa memberi atribusi/kepemilikan ke petani)','Tidak masalah asal sumber dicantumkan di publikasi','Hanya masalah bila model tersebut dijual ke luar negeri'], jwb:2,
     fb:'Data justice: komunitas sumber data berhak atas manfaat proporsional. Sertifikat NFT dapat dipakai memberi atribusi & kepemilikan pada petani — menyelaraskan teknologi dengan keadilan.' },
   { no:25, dim:'AIL4', bloom:'C5 – Etika', teks:'Pemerintah berencana mengganti seluruh penyuluh manusia dengan AI untuk budidaya kopi. Evaluasi etikanya:',
-    opts:['Tepat, karena AI objektif, konsisten, dan tidak perlu digaji','Perlu dikritisi: AI tak bisa menggantikan empati & konteks lokal; risiko digital divide bagi petani tua; AI bisa salah & tak bisa bertanggung jawab moral','Baik asal diuji satu bulan','Tidak masalah asal dibuat tim yang kompeten'], jwb:1,
+    opts:['Tepat, karena AI objektif, konsisten, dan tidak perlu digaji','Perlu dikritisi: AI tak bisa menggantikan empati & konteks lokal; risiko digital divide bagi petani tua; AI bisa salah & tak bisa bertanggung jawab moral','Baik asal diuji satu bulan','Tidak masalah asal dibuat tim yang kompeten','Tepat, asalkan penyuluh lama dialihkan menjadi operator aplikasi'], jwb:1,
     fb:'Penggantian total menimbulkan isu: digital divide, hilangnya hubungan manusia & kepercayaan, accountability gap, dan dampak besar bila AI salah pada ketahanan pangan.' },
 ]
 
-// English parallel set (same order, dim & jwb as SOAL_AILI)
+// English parallel set — urutan opsi & kunci (jwb) HARUS identik dengan SOAL_AILI
 const SOAL_AILI_EN = [
   { no:1, dim:'AIL1', bloom:'C1 – Remembering', teks:'What is Artificial Intelligence (AI)?',
-    opts:['A computer program that only follows rigidly pre-programmed instructions','The ability of machines to mimic human intelligence in processing data and making decisions','A large database containing information on various topics','An advanced operating system that controls computer hardware'], jwb:1,
+    opts:['A computer program that only follows rigidly pre-programmed instructions','A large database containing information on various topics','The ability of machines to mimic human intelligence in processing data and making decisions','An advanced operating system that controls computer hardware','A physical human-shaped robot that moves automatically'], jwb:2,
     fb:'AI is the ability of machines to mimic human intelligence: learning from data, recognizing patterns, making decisions, and solving problems.' },
   { no:2, dim:'AIL1', bloom:'C1 – Remembering', teks:'In the Kopi Arabika Web3 system, the CNN model (RepViT) functions to:',
-    opts:['Store certificates on the blockchain','Classify arabica coffee-bean images into type & grade, and reject non-coffee images','Create a MetaMask crypto wallet','Control IoT sensors in the field'], jwb:1,
+    opts:['Store certificates on the blockchain','Create a MetaMask crypto wallet','Upload image files to IPFS and produce a CID','Control IoT sensors in the field','Classify arabica coffee-bean images into type & grade, and reject non-coffee images'], jwb:4,
     fb:'RepViT CNN classifies bean images into type & grade and detects out-of-distribution (Non-Coffee). Recording to the blockchain is a separate module.' },
   { no:3, dim:'AIL1', bloom:'C2 – Understanding', teks:'What is the fundamental difference between Machine Learning (ML) and Deep Learning (DL)?',
-    opts:['ML uses more data, DL uses less','ML requires manual feature engineering, while DL extracts features automatically from raw data','ML is only for text, DL only for images','ML needs a GPU, DL only needs a regular CPU'], jwb:1,
+    opts:['ML requires manual feature engineering, while DL extracts features automatically from raw data','ML uses more data, DL uses less','ML is only for text, DL only for images','DL is just another name for ML, only a marketing term','ML needs a GPU, DL only needs a regular CPU'], jwb:0,
     fb:'Traditional ML needs manual feature engineering; DL automatically learns hierarchical feature representations from raw data through deep layers.' },
   { no:4, dim:'AIL1', bloom:'C2 – Understanding', teks:'A CNN in coffee-bean classification works by:',
-    opts:['Reading text descriptions of symptoms from farmers','Extracting hierarchical visual features from the image (edges → texture → shape → object) via convolution layers','Analyzing temperature & humidity to predict quality','Measuring bean moisture with an infrared sensor'], jwb:1,
+    opts:['Reading text descriptions of symptoms from farmers','Analyzing temperature & humidity to predict quality','Comparing the photo with every image on the internet one by one','Extracting hierarchical visual features from the image (edges → texture → shape → object) via convolution layers','Measuring bean moisture with an infrared sensor'], jwb:3,
     fb:'A CNN extracts visual features hierarchically: from simple edges in early layers to complex patterns (color, shape, texture of beans) in deeper layers.' },
   { no:5, dim:'AIL1', bloom:'C2 – Understanding', teks:'Why do coffee-bean images need preprocessing (resize & pixel normalization) before entering the CNN?',
-    opts:['So files are stored more efficiently','So the photo cannot be read, for security','So image size & pixel value scale are uniform, making training stable and convergence faster','So the image looks more attractive'], jwb:2,
+    opts:['So files are stored more efficiently','So image size & pixel value scale are uniform, making training stable and convergence faster','So the image looks more attractive','So the number of images in the dataset increases automatically','So the photo cannot be read, for security'], jwb:1,
     fb:'Resizing standardizes input dimensions; pixel normalization equalizes value scales so training is stable and converges faster.' },
   { no:6, dim:'AIL1', bloom:'C2 – Understanding', teks:'What is transfer learning in coffee-bean classification?',
-    opts:['Moving model files between computers via USB','Using a pretrained model (e.g., RepViT/ImageNet) as a foundation, then fine-tuning on the smaller coffee dataset','Transferring data from Colab to a local computer','Learning directly from experienced coffee farmers'], jwb:1,
+    opts:['Moving model files between computers via USB','Transferring data from Colab to a local computer','Shifting the computation load from CPU to GPU during training','Learning directly from experienced coffee farmers','Using a pretrained model (e.g., RepViT/ImageNet) as a foundation, then fine-tuning on the smaller coffee dataset'], jwb:4,
     fb:'Transfer learning uses a model already trained on millions of general images as a foundation, then fine-tunes it on the smaller coffee-bean dataset — far more effective than training from scratch.' },
   { no:7, dim:'AIL1', bloom:'C2 – Understanding', teks:'What is overfitting in model training?',
-    opts:['The model finishes training earlier than scheduled','The model uses too much RAM','The model memorizes the training data too well, so accuracy is high on training but low on new data','The model trains too many images so it is slow'], jwb:2,
+    opts:['The model memorizes the training data too well, so accuracy is high on training but low on new data','The model uses too much RAM','The model finishes training earlier than scheduled','The model fails to load because its file size exceeds the limit','The model trains too many images so it is slow'], jwb:0,
     fb:'Overfitting: the model memorizes noise/specific details of the training data instead of general patterns. Solutions: dropout, regularization, data augmentation, early stopping.' },
 
   { no:8, dim:'AIL2', bloom:'C3 – Applying', teks:'Coffee-bean image data has only 200 samples per class. The best strategy to train a CNN:',
-    opts:['Train from scratch because little data is easier','Use transfer learning from a pretrained model, then fine-tune on the coffee data','Do not use a CNN because data is too little','Duplicate images manually by copy-paste'], jwb:1,
+    opts:['Train from scratch because little data is easier','Duplicate images manually by copy-paste','Enlarge each image resolution so it carries more information','Use transfer learning from a pretrained model, then fine-tune on the coffee data','Do not use a CNN because data is too little'], jwb:3,
     fb:'With limited data, transfer learning is best: pretrained visual representations speed up and stabilize training on the small coffee dataset.' },
   { no:9, dim:'AIL2', bloom:'C3 – Applying', teks:'A coffee CNN has 98% training accuracy but 71% validation. The most appropriate step:',
-    opts:['Add layers & neurons to increase capacity','Extend training until training loss reaches zero','Address overfitting: apply dropout, augmentation, early stopping, or regularization','Switch framework from TensorFlow to PyTorch'], jwb:2,
+    opts:['Add layers & neurons to increase capacity','Address overfitting: apply dropout, augmentation, early stopping, or regularization','Extend training until training loss reaches zero','Report the 98% training accuracy as the final result','Switch framework from TensorFlow to PyTorch'], jwb:1,
     fb:'A large training–validation gap signals overfitting. Solutions: dropout, data augmentation, early stopping, L2 regularization, or more data.' },
   { no:10, dim:'AIL2', bloom:'C3 – Applying', teks:'Data augmentation (rotation, flip, zoom, brightness) on coffee-bean images is useful to:',
-    opts:['Convert JPG to PNG format','Increase image resolution','Create variation in the training data so the model is more robust and overfits less','Compress file size'], jwb:2,
+    opts:['Convert JPG to PNG format','Increase image resolution','Create variation in the training data so the model is more robust and overfits less','Compress file size','Remove low-quality images from the dataset'], jwb:2,
     fb:'Augmentation creates artificial variation so the model better tolerates differences in angle/lighting and generalizes better, especially with limited data.' },
   { no:11, dim:'AIL2', bloom:'C3 – Applying', teks:'To evaluate a coffee-type CLASSIFICATION model, the appropriate metrics are:',
-    opts:['RMSE and MAE because they are common in AI','Accuracy, Precision, Recall, and F1-Score because this is a classification task','R² because it measures data variance','MSE because it computes squared differences'], jwb:1,
-    fb:'Classification uses Accuracy, Precision, Recall, F1. RMSE/MAE/R² are for regression (predicting continuous values), not classification.' },
+    opts:['RMSE and MAE because they are common in AI','R² because it measures data variance','Silhouette score because it measures clustering quality','Accuracy, Precision, Recall, and F1-Score because this is a classification task','MSE because it computes squared differences'], jwb:3,
+    fb:'Classification uses Accuracy, Precision, Recall, F1. RMSE/MAE/R² are for regression (predicting continuous values) and Silhouette is for clustering — not classification.' },
   { no:12, dim:'AIL2', bloom:'C3 – Applying', teks:'When building a coffee classification model with Teachable Machine, the mandatory first step is:',
-    opts:['Press Train Model immediately without preparing data','Define the classes to recognize and collect representative image data for each class','Choose the most complex architecture for accuracy','Download a random dataset from the internet without checking it'], jwb:1,
+    opts:['Define the classes to recognize and collect representative image data for each class','Press Train Model immediately without preparing data','Choose the most complex architecture for accuracy','Decide in advance what accuracy figure you want to report','Download a random dataset from the internet without checking it'], jwb:0,
     fb:'Define classes clearly and collect quality, representative data. Data quality matters more than model complexity — garbage in, garbage out.' },
   { no:13, dim:'AIL2', bloom:'C3 – Applying', teks:'Before a certificate is recorded on the blockchain, the coffee-bean photo is hashed with SHA-256 to:',
-    opts:['Reduce the photo file size','Produce a unique 256-bit fingerprint as proof of authenticity and to prevent duplicate certificates','Encrypt the photo so it cannot be opened','Speed up uploading to IPFS'], jwb:1,
+    opts:['Reduce the photo file size','Encrypt the photo so it cannot be opened','Speed up uploading to IPFS','Hide the farm location stored in the photo metadata','Produce a unique 256-bit fingerprint as proof of authenticity and to prevent duplicate certificates'], jwb:4,
     fb:'SHA-256 yields a unique, one-way 256-bit fingerprint. This hash is stored in an on-chain registry to detect identical photos (certificate anti-duplication).' },
 
   { no:14, dim:'AIL3', bloom:'C4 – Analyzing', teks:'Coffee model confusion matrix: TP=95, FP=8, TN=87, FN=10. Compute Precision:',
-    opts:['95 / (95+10) = 90.5%','95 / (95+8) = 92.2%','87 / (87+8) = 91.6%','(95+87) / 200 = 91.0%'], jwb:1,
+    opts:['95 / (95+10) = 90.5%','(95+87) / 200 = 91.0%','95 / (95+8) = 92.2%','87 / (87+8) = 91.6%','95 / (95+8+10) = 84.1%'], jwb:2,
     fb:'Precision = TP/(TP+FP) = 95/103 ≈ 92.2% (of all positive predictions, how many are correct). Recall = TP/(TP+FN) = 90.5%. F1 ≈ 91.3%.' },
   { no:15, dim:'AIL3', bloom:'C5 – Evaluating', teks:'Model A: 90% accuracy, F1 0.88. Model B: 94% accuracy, F1 0.93. Which is better and why?',
-    opts:['Model A, because smaller numbers mean it is more cautious','Model B, because higher accuracy and F1 (more correct predictions & better precision-recall balance)','The same, because the difference is small','Model A, because it uses fewer layers'], jwb:1,
+    opts:['Model A, because smaller numbers mean it is more cautious','Model B, because higher accuracy and F1 (more correct predictions & better precision-recall balance)','The same, because the difference is small','Model A, because it uses fewer layers','They cannot be compared because accuracy and F1 measure different things'], jwb:1,
     fb:'Model B wins: higher accuracy and higher F1 (better precision-recall balance). Higher accuracy & F1 mean a better classification model.' },
   { no:16, dim:'AIL3', bloom:'C5 – Evaluating', teks:'A CNN scores 96% on test data but drops to 65% in the real field. Evaluate the cause:',
-    opts:['The model is too simple, needs more layers','Domain shift: training data (lab conditions) differs from the field (varied lighting, angle, background)','65% is already very good for agriculture','A slow GPU is the problem'], jwb:1,
+    opts:['Domain shift: training data (lab conditions) differs from the field (varied lighting, angle, background)','The model is too simple, needs more layers','The farmer’s phone camera resolution is too high for the model','65% is already very good for agriculture','A slow GPU is the problem'], jwb:0,
     fb:'Domain/distributional shift: field-data distribution differs from training data. Solution: collect data from real field conditions & augment to simulate lighting/angle variation.' },
   { no:17, dim:'AIL3', bloom:'C6 – Creating', teks:'The most comprehensive and trustworthy coffee certification system design is:',
-    opts:['Only a CNN to classify coffee beans','An integrated system: CNN classification + Grad-CAM (explanation) + SHA-256 anti-duplication + IPFS storage + immutable NFT certificate on the blockchain','Only a photo database searched manually','Only NFT recording without classification'], jwb:1,
+    opts:['Only a CNN to classify coffee beans','Only a photo database searched manually','Only Grad-CAM to display a heatmap without classification','An integrated system: CNN classification + Grad-CAM (explanation) + SHA-256 anti-duplication + IPFS storage + immutable NFT certificate on the blockchain','Only NFT recording without classification'], jwb:3,
     fb:'The best system combines classification (CNN), auditable explanation (Grad-CAM), authenticity (SHA-256 + IPFS content-addressing), and a tamper-proof certificate (NFT/blockchain).' },
   { no:18, dim:'AIL3', bloom:'C5 – Evaluating', teks:'Why is it important to store the AI explanation (Grad-CAM, probability distribution, entropy) immutably on blockchain/IPFS?',
-    opts:['So the certificate looks longer','So the AI decision can be audited and cannot be altered, making it accountable & trustworthy','So the model runs faster','So gas fees are cheaper'], jwb:1,
+    opts:['So the certificate looks longer','So gas fees are cheaper','So the AI decision can be audited and cannot be altered, making it accountable & trustworthy','So the model runs faster','So the model can be retrained directly from data on the blockchain'], jwb:2,
     fb:'Storing the explanation immutably makes the AI decision verifiable & auditable anytime — the essence of Explainable + Verifiable AI.' },
   { no:19, dim:'AIL3', bloom:'C6 – Creating', teks:'A valid experiment design comparing RepViT vs MobileNet for coffee classification must:',
-    opts:['Compare only final accuracy without a train/test split','Use the same dataset & split, identical preprocessing, the same metrics, and multiple runs for stability','Pick the model with the visually smoothest graph','Use a different dataset for each model to be fair'], jwb:1,
+    opts:['Compare only final accuracy without a train/test split','Run the experiment only once because deep-learning results are always identical','Pick the model with the visually smoothest graph','Use a different dataset for each model to be fair','Use the same dataset & split, identical preprocessing, the same metrics, and multiple runs for stability'], jwb:4,
     fb:'A valid comparison: identical dataset & split, same preprocessing, consistent metrics, and multiple runs (DL is stochastic). Different datasets per model = experimental bias.' },
 
   { no:20, dim:'AIL4', bloom:'C5 – Ethics', teks:'A CNN is trained with 90% of data from only one coffee-producing region. The problem that arises:',
-    opts:['No problem, uniform data is more consistent','The model is biased toward one region and may be inaccurate/unfair in other regions with different conditions','The model trains faster','The model cannot be deployed due to licensing'], jwb:1,
+    opts:['No problem, uniform data is more consistent','The model is biased toward one region and may be inaccurate/unfair in other regions with different conditions','The model trains faster','It is enough to fix it by increasing the number of training epochs','The model cannot be deployed due to licensing'], jwb:1,
     fb:'Training-data bias is a critical ethical issue. Non-representative data yields unfair performance for unrepresented regions. AI fairness requires inclusive data.' },
   { no:21, dim:'AIL4', bloom:'C5 – Ethics', teks:'An AI sets the coffee purchase price from farmers but cannot explain why. The relevant ethical issue:',
-    opts:['No problem because AI is always more accurate','Lack of transparency (explainability) — farmers deserve an explanation; AI decisions must be auditable & explainable (this is where Grad-CAM/XAI helps)','Only a technical speed problem','Farmers do not need to understand how AI works'], jwb:1,
+    opts:['No problem because AI is always more accurate','Farmers do not need to understand how AI works','It is enough to show a confidence score without any other explanation','Lack of transparency (explainability) — farmers deserve an explanation; AI decisions must be auditable & explainable (this is where Grad-CAM/XAI helps)','Only a technical speed problem'], jwb:3,
     fb:'Explainability & transparency are principles of responsible AI. Financially impactful decisions must be explainable & auditable — not a black box.' },
   { no:22, dim:'AIL4', bloom:'C5 – Ethics', teks:'IoT sensors in a coffee farm accidentally record farmers’ daily activities, then used for surveillance. The problem:',
-    opts:['No problem because the farm belongs to the company','Privacy violation — data collected without informed consent for surveillance; use must match the original purpose','Useful for schedule optimization so it is justified','Only a problem if data leaks to third parties'], jwb:1,
+    opts:['Privacy violation — data collected without informed consent for surveillance; use must match the original purpose','No problem because the farm belongs to the company','Useful for schedule optimization so it is justified','Only a problem if data leaks to third parties','No problem as long as the recordings are deleted after one year'], jwb:0,
     fb:'Principles of data minimization & purpose limitation: collect only what is needed, use it per the original purpose, and obtain informed consent. Hidden surveillance = privacy violation.' },
   { no:23, dim:'AIL4', bloom:'C5 – Ethics', teks:'An AI recommends excessive pesticide, and the farmer follows blindly. Who is responsible for the impact?',
-    opts:['Only the AI developer','Only the farmer','Distributed responsibility: developer (model validation), farmer (critical thinking), regulator (standards) — AI does not remove human responsibility','No one, because the AI decided'], jwb:2,
+    opts:['Only the AI developer','Only the farmer','Only the cloud provider where the model runs','No one, because the AI decided','Distributed responsibility: developer (model validation), farmer (critical thinking), regulator (standards) — AI does not remove human responsibility'], jwb:4,
     fb:'Accountability in AI is distributed. “The AI said so” is not a justification to shed moral responsibility.' },
   { no:24, dim:'AIL4', bloom:'C5 – Ethics', teks:'Small farmers’ farm photos are used to train a commercial AI model without compensation/consent. The relevant issue:',
-    opts:['Normal, public data is free to use','Fairness & data ownership — data sources deserve consent/compensation; exploiting vulnerable communities for commercial gain is unethical (NFT certificates can give attribution/ownership to farmers)','Only an issue if human faces appear','No problem as long as the source is cited in publications'], jwb:1,
+    opts:['Normal, public data is free to use','Only an issue if human faces appear','Fairness & data ownership — data sources deserve consent/compensation; exploiting vulnerable communities for commercial gain is unethical (NFT certificates can give attribution/ownership to farmers)','No problem as long as the source is cited in publications','Only an issue if the model is sold abroad'], jwb:2,
     fb:'Data justice: source communities deserve proportional benefit. NFT certificates can give attribution & ownership to farmers — aligning technology with fairness.' },
   { no:25, dim:'AIL4', bloom:'C5 – Ethics', teks:'The government plans to replace all human extension workers with AI for coffee cultivation. Evaluate the ethics:',
-    opts:['Right, because AI is objective, consistent, and needs no salary','It must be critiqued: AI cannot replace empathy & local context; risk of a digital divide for older farmers; AI can err & cannot bear moral responsibility','Fine as long as it is tested for one month','No problem as long as it is built by a competent team'], jwb:1,
+    opts:['Right, because AI is objective, consistent, and needs no salary','It must be critiqued: AI cannot replace empathy & local context; risk of a digital divide for older farmers; AI can err & cannot bear moral responsibility','Fine as long as it is tested for one month','No problem as long as it is built by a competent team','Right, as long as the former extension workers become app operators'], jwb:1,
     fb:'Total replacement raises issues: digital divide, loss of human connection & trust, an accountability gap, and large impact on food security if the AI errs.' },
 ]
 
@@ -335,6 +340,10 @@ const AILI_CH = {
   id: { title: '🤖 Kuis AI Literacy (AILI) — 25 Soal', ctx: 'Konteks: CNN + Blockchain untuk sertifikasi Kopi Arabika Web3 · Framework Ng et al. (2021), 4 dimensi AI literacy.', progress: 'Progress', prev: '← Sebelumnya', next: 'Selanjutnya →', see: '🎯 Lihat Hasil', ok: '✓ Benar! ', no: '✗ Belum tepat. ', correctAns: 'jawaban benar', dimScore: 'Skor per Dimensi AI Literacy', recap: 'Rekap Jawaban', th: ['No', 'Dim', 'Bloom', 'Anda', 'Kunci', 'Status'], interpH: 'Interpretasi (AILI)', interp: ['🌟 85–100% — Sangat Tinggi: mahir di semua dimensi.', '✅ 70–84% — Tinggi: paham baik, perkuat dimensi terlemah.', '⚠️ 55–69% — Sedang: dasar ada, perdalam konsep & etika AI.', '📚 <55% — Rendah: perlu pembelajaran lebih intensif.'], restart: '🔄 Ulangi Kuis dari Awal', levels: { a: 'Sangat Tinggi 🌟', b: 'Tinggi ✅', c: 'Sedang ⚠️', d: 'Rendah — Perlu Penguatan 📚' }, ngHead: '📈 Pantau Kemajuanmu Sendiri', ngSub: 'Kerjakan kuis ini SEBELUM belajar, lalu ulangi SESUDAH belajar. Sistem menghitung peningkatanmu memakai rumus N-gain. Boleh diulang sesukamu — acuannya tetap pengerjaan "sebelum" yang pertama dan "sesudah" yang terakhir.', ngSimpanPre: '💾 Simpan sebagai SEBELUM belajar', ngSimpanPost: '💾 Simpan sebagai SESUDAH belajar', ngPre: 'Sebelum', ngPost: 'Sesudah', ngTersimpan: (f, sk) => `✓ Skor ${sk} tersimpan sebagai "${f} belajar".`, ngBelum: 'N-gain muncul setelah kamu punya minimal satu skor "sebelum" dan satu skor "sesudah".', ngKat: { tinggi: 'Peningkatan Tinggi 🌟', sedang: 'Peningkatan Sedang ✅', rendah: 'Peningkatan Rendah 📚' }, ngRinci: (pre, post, maks) => `dari ${pre}/${maks} menjadi ${post}/${maks}`, ngHapus: '🗑️ Hapus riwayat skor', ngPrivasi: '🔒 Riwayat ini tersimpan di peramban perangkatmu sendiri dan tidak dikirim ke mana pun.' },
   en: { title: '🤖 AI Literacy Quiz (AILI) — 25 Questions', ctx: 'Context: CNN + Blockchain for Kopi Arabika Web3 certification · Framework: Ng et al. (2021), 4 AI-literacy dimensions.', progress: 'Progress', prev: '← Previous', next: 'Next →', see: '🎯 See Results', ok: '✓ Correct! ', no: '✗ Not quite. ', correctAns: 'correct answers', dimScore: 'Score per AI Literacy Dimension', recap: 'Answer Recap', th: ['No', 'Dim', 'Bloom', 'You', 'Key', 'Status'], interpH: 'Interpretation (AILI)', interp: ['🌟 85–100% — Very High: mastery in all dimensions.', '✅ 70–84% — High: good understanding, strengthen the weakest dimension.', '⚠️ 55–69% — Medium: basics present, deepen concepts & AI ethics.', '📚 <55% — Low: needs more intensive learning.'], restart: '🔄 Restart Quiz', levels: { a: 'Very High 🌟', b: 'High ✅', c: 'Medium ⚠️', d: 'Low — Needs Strengthening 📚' }, ngHead: '📈 Track Your Own Progress', ngSub: 'Take this quiz BEFORE studying, then again AFTER. The system computes your improvement using the N-gain formula. Retake as often as you like — the reference stays your FIRST "before" and your LATEST "after".', ngSimpanPre: '💾 Save as BEFORE studying', ngSimpanPost: '💾 Save as AFTER studying', ngPre: 'Before', ngPost: 'After', ngTersimpan: (f, sk) => `✓ Score ${sk} saved as "${f} studying".`, ngBelum: 'N-gain appears once you have at least one "before" score and one "after" score.', ngKat: { tinggi: 'High Gain 🌟', sedang: 'Medium Gain ✅', rendah: 'Low Gain 📚' }, ngRinci: (pre, post, maks) => `from ${pre}/${maks} to ${post}/${maks}`, ngHapus: '🗑️ Clear score history', ngPrivasi: '🔒 This history is stored in your own browser and is never sent anywhere.' },
 }
+
+// Label opsi A–E. Satu sumber, dipakai kartu soal maupun tabel rekap, supaya
+// menambah/mengurangi opsi tidak menyisakan huruf yang tidak sinkron.
+const HURUF = 'ABCDE'
 
 // ── Riwayat skor kuis, disimpan di peramban mahasiswa sendiri ──
 // TIDAK dikirim ke mana pun. Ini alat LATIHAN; data penelitian yang sahih
@@ -413,13 +422,14 @@ function QuizAILI({ lang }) {
           <table className="aili-table">
             <thead><tr>{C.th.map((h, i) => <th key={i}>{h}</th>)}</tr></thead>
             <tbody>
-              {SOAL_AILI.map((q, i) => {
+              {/* Pakai Q, bukan SOAL_AILI, supaya label Bloom ikut bahasa yang dipilih */}
+              {Q.map((q, i) => {
                 const b = ans[i] === q.jwb
                 return (
                   <tr key={i}>
                     <td>{q.no}</td><td>{q.dim}</td><td>{q.bloom}</td>
-                    <td style={{ textAlign: 'center' }}>{ans[i] != null ? 'ABCD'[ans[i]] : '–'}</td>
-                    <td style={{ textAlign: 'center' }}>{'ABCD'[q.jwb]}</td>
+                    <td style={{ textAlign: 'center' }}>{ans[i] != null ? HURUF[ans[i]] : '–'}</td>
+                    <td style={{ textAlign: 'center' }}>{HURUF[q.jwb]}</td>
                     <td><span className={b ? 'aili-b' : 'aili-s'}>{b ? '✓' : '✗'}</span></td>
                   </tr>
                 )
@@ -509,7 +519,7 @@ function QuizAILI({ lang }) {
             if (a != null) { if (j === s.jwb) cls += ' correct'; else if (j === a) cls += ' wrong' }
             return (
               <button key={j} className={cls} disabled={a != null} onClick={() => pilih(j)}>
-                <span className="aili-letter">{'ABCD'[j]}</span><span>{o}</span>
+                <span className="aili-letter">{HURUF[j]}</span><span>{o}</span>
               </button>
             )
           })}
