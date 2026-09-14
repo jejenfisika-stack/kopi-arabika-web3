@@ -125,7 +125,7 @@ const CARA_PAKAI = [
 // Tech stack (nama tetap, deskripsi dwibahasa)
 // ============================================================
 const TECH = [
-  { e:'🤖', name:'RepViT-M1.1', desc:{ id:'CNN CVPR 2024, akurasi 99.28%', en:'CNN · CVPR 2024 · 99.28% accuracy' } },
+  { e:'🤖', name:'RepViT-M1.1', desc:{ id:'CNN CVPR 2024, akurasi 99.78%', en:'CNN · CVPR 2024 · 99.78% accuracy' } },
   { e:'⛓️', name:'Polygon Amoy', desc:{ id:'Blockchain testnet, standar ERC-721', en:'Testnet blockchain · ERC-721 standard' } },
   { e:'📦', name:'Pinata IPFS', desc:{ id:'Penyimpanan gambar terdesentralisasi', en:'Decentralized image storage' } },
   { e:'🦊', name:'MetaMask', desc:{ id:'Dompet Web3 & tanda tangan transaksi', en:'Web3 wallet & transaction signing' } },
@@ -162,9 +162,9 @@ const LAYERS = [
            en:'Transactions are cryptographically signed by MetaMask; the private key never leaves the user’s device. Supports permissionless minting with an audit trail.' },
     code:'ECDSA signature · private key never leaves device' },
   { title:{ id:'Deteksi OOD (AI)', en:'OOD Detection (AI)' },
-    desc:{ id:'Validasi 3 lapis: kelas "Non-Coffee" eksplisit, ambang confidence <79,57%, dan entropy >1,50. Test accuracy 99.28%, OOD recall 98.0%.',
-           en:'3-layer validation: an explicit "Non-Coffee" class, a confidence threshold <79.57%, and entropy >1.50. Test accuracy 99.28%, OOD recall 98.0%.' },
-    code:'Non-Coffee / conf<79.57% / entropy>1.50 → REJECTED' },
+    desc:{ id:'Validasi 3 lapis: kelas "Non-Coffee" eksplisit, ambang confidence <72%, dan entropy >1,50. Test accuracy 99.78%, OOD recall 98.7%.',
+           en:'3-layer validation: an explicit "Non-Coffee" class, a confidence threshold <72%, and entropy >1.50. Test accuracy 99.78%, OOD recall 98.7%.' },
+    code:'Non-Coffee / conf<72% / entropy>1.50 → REJECTED' },
 ]
 
 // ============================================================
@@ -592,8 +592,8 @@ export default function HomePage() {
     }
 
     // Jaring pengaman KEDUA di sisi peramban, sengaja lebih longgar daripada
-    // ambang utama di model (CONFIDENCE_THRESHOLD = 0,7957). Model sudah menolak
-    // di bawah 79,57%; cek ini hanya menangkap keluaran ganjil yang lolos parsing.
+    // ambang utama di model (CONFIDENCE_THRESHOLD = 0,72). Model sudah menolak
+    // di bawah 72%; cek ini hanya menangkap keluaran ganjil yang lolos parsing.
     if (confidence > 0 && confidence < 40) {
       return {
         bukan_kopi: true,
@@ -1014,7 +1014,7 @@ export default function HomePage() {
           <h2>{t.heroTitle}</h2>
           <p className="sub">{t.heroSub}</p>
           <div className="badges">
-            <span className="badge2">🏆 RepViT-M1.1 · 6-Class · 99.28%</span>
+            <span className="badge2">🏆 RepViT-M1.1 · 6-Class · 99.78%</span>
             <span className="badge2">⛓️ Polygon Amoy</span>
             <span className="badge2">📦 IPFS Pinata</span>
           </div>

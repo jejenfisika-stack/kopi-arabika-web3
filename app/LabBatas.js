@@ -4,7 +4,7 @@
 // Lab Uji Batas Model
 // Mahasiswa menabrak batas model secara terukur: satu foto diberi
 // transformasi terkendali, lalu dilihat pada titik mana prediksinya patah
-// atau penolakan OOD menyala (ambang: confidence < 79,57%, entropi > 1,50).
+// atau penolakan OOD menyala (ambang: confidence < 72%, entropi > 1,50).
 //
 // BEDA dari Lab Blockchain & Lab Konvolusi: lab ini MEMANGGIL model,
 // jadi tiap pengujian memakai satu panggilan ke Hugging Face Space.
@@ -13,10 +13,8 @@
 import { useState, useRef } from 'react'
 import { klasifikasiFile } from './lib/klasifikasiHF'
 
-const AMBANG_CONF = 79.57   // %  — CONFIDENCE_THRESHOLD 0.7957 di app.py
+const AMBANG_CONF = 72      // %  — CONFIDENCE_THRESHOLD 0.72 di app.py
 const AMBANG_ENTROPI = 1.50 // ln — ENTROPY_THRESHOLD di app.py
-const CONF_ID = AMBANG_CONF.toFixed(2).replace('.', ',')    // "79,57"
-const CONF_EN = AMBANG_CONF.toFixed(2)                       // "79.57"
 const ENT_ID = AMBANG_ENTROPI.toFixed(2).replace('.', ',')  // "1,50"
 const ENT_EN = AMBANG_ENTROPI.toFixed(2)                     // "1.50"
 const SISI = 512            // semua citra disamakan ukurannya agar adil
@@ -48,7 +46,7 @@ const CH = {
     hematHead: '⚠️ Hemat pemakaian',
     hemat: 'Berbeda dari Lab Blockchain dan Lab Konvolusi yang berjalan penuh di peramban, lab ini memanggil model sungguhan. Satu pengujian sama dengan satu panggilan. Untuk kelas besar, sebaiknya diperagakan dosen atau dikerjakan berkelompok.',
     ambangHead: 'Ambang penolakan model',
-    ambangTxt: `Model menolak citra bila keyakinan tertinggi di bawah ${CONF_ID}% atau entropi di atas ${ENT_ID} (maksimum untuk 6 kelas adalah 1,791). Cobalah membuat model menabrak salah satunya.`,
+    ambangTxt: `Model menolak citra bila keyakinan tertinggi di bawah ${AMBANG_CONF}% atau entropi di atas ${ENT_ID} (maksimum untuk 6 kelas adalah 1,791). Cobalah membuat model menabrak salah satunya.`,
     unggah: '📁 Pilih foto biji kopi',
     gantiFoto: '🔁 Ganti foto',
     baseline: '▶️ Uji Baseline (foto asli)',
@@ -100,7 +98,7 @@ const CH = {
     hematHead: '⚠️ Use sparingly',
     hemat: 'Unlike the Blockchain and Convolution labs which run entirely in the browser, this lab calls the real model. One test equals one call. For large classes, demonstrate it from the front or have students work in groups.',
     ambangHead: 'Model rejection thresholds',
-    ambangTxt: `The model refuses an image when the top confidence falls below ${CONF_EN}% or the entropy rises above ${ENT_EN} (the maximum for 6 classes is 1.791). Try to make the model hit one of them.`,
+    ambangTxt: `The model refuses an image when the top confidence falls below ${AMBANG_CONF}% or the entropy rises above ${ENT_EN} (the maximum for 6 classes is 1.791). Try to make the model hit one of them.`,
     unggah: '📁 Choose a coffee bean photo',
     gantiFoto: '🔁 Change photo',
     baseline: '▶️ Test Baseline (original photo)',
@@ -253,7 +251,7 @@ export default function LabBatas({ lang }) {
     const L = [c.docJudul, c.docSub, '',
       `${c.nama}: ${nama || '-'}`, `${c.nim}: ${nim || '-'}`,
       `${c.docWaktu}: ${new Date().toLocaleString(lang === 'en' ? 'en-GB' : 'id-ID')}`, '',
-      `${c.ambangHead}: confidence < ${lang === 'en' ? CONF_EN : CONF_ID}% ${lang === 'en' ? 'or' : 'atau'} ${lang === 'en' ? 'entropy' : 'entropi'} > ${lang === 'en' ? ENT_EN : ENT_ID}`, '',
+      `${c.ambangHead}: confidence < ${AMBANG_CONF}% ${lang === 'en' ? 'or' : 'atau'} ${lang === 'en' ? 'entropy' : 'entropi'} > ${lang === 'en' ? ENT_EN : ENT_ID}`, '',
       '--- ' + c.tabelHead.toUpperCase() + ' ---']
     baris.forEach(b => {
       const st = statusBaris(b)
