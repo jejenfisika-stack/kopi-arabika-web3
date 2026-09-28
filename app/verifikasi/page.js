@@ -6,6 +6,20 @@ import QRCode from 'qrcode'
 
 const PINATA_GATEWAY = 'rose-casual-warbler-710.mypinata.cloud'
 
+// Tingkat keyakinan model disimpan di blockchain sebagai kunci berbahasa
+// Inggris. Sertifikat yang di-mint sebelum penamaan diperbaiki menyimpan nilai
+// lama ('Premium', 'Grade A', ...) dan TIDAK bisa diubah — nilai itu sengaja
+// ditampilkan apa adanya, karena memang itulah yang tercatat di rantai.
+const TIER_LABEL = {
+  'Very High': { id: 'Sangat Tinggi', en: 'Very High' },
+  'High':      { id: 'Tinggi',        en: 'High' },
+  'Moderate':  { id: 'Sedang',        en: 'Moderate' },
+  'Low':       { id: 'Rendah',        en: 'Low' },
+}
+function labelTier(nilai, lang) {
+  return TIER_LABEL[nilai]?.[lang] || nilai
+}
+
 const T = {
   id: {
     title: '🔎 Verifikasi Sertifikat Kopi',
@@ -15,7 +29,7 @@ const T = {
     checking: 'Membaca blockchain...',
     back: '← Kembali ke Beranda',
     certTitle: 'Sertifikat Terverifikasi On-Chain',
-    fJenis: 'Jenis Kopi', fGrade: 'Grade', fConf: 'Confidence CNN', fPetani: 'Nama Petani',
+    fJenis: 'Jenis Kopi', fGrade: 'Tingkat Keyakinan Model', fConf: 'Confidence CNN', fPetani: 'Nama Petani',
     fLokasi: 'Lokasi Kebun', fTanggal: 'Tanggal Sertifikasi', fHash: 'Sidik Jari Foto (SHA-256)',
     fEntropy: 'Entropy XAI', fToken: 'Token ID',
     foto: 'Foto biji kopi', gradcam: 'Grad-CAM (fokus model)',
@@ -34,7 +48,7 @@ const T = {
     checking: 'Reading the blockchain...',
     back: '← Back to Home',
     certTitle: 'On-Chain Verified Certificate',
-    fJenis: 'Coffee Type', fGrade: 'Grade', fConf: 'CNN Confidence', fPetani: 'Farmer Name',
+    fJenis: 'Coffee Type', fGrade: 'Confidence Tier', fConf: 'CNN Confidence', fPetani: 'Farmer Name',
     fLokasi: 'Farm Location', fTanggal: 'Certification Date', fHash: 'Photo Fingerprint (SHA-256)',
     fEntropy: 'XAI Entropy', fToken: 'Token ID',
     foto: 'Coffee bean photo', gradcam: 'Grad-CAM (model focus)',
@@ -167,7 +181,7 @@ function VerifikasiInner() {
 
               <div className="verif-fields">
                 <div className="hasil-row"><span className="lbl">{t.fJenis}</span><span className="val">{cert.jenisKopi.replace(/_/g, ' ')}</span></div>
-                <div className="hasil-row"><span className="lbl">{t.fGrade}</span><span className="val">{cert.grade}</span></div>
+                <div className="hasil-row"><span className="lbl">{t.fGrade}</span><span className="val">{labelTier(cert.grade, lang)}</span></div>
                 <div className="hasil-row"><span className="lbl">{t.fConf}</span><span className="val">{cert.confidence}%</span></div>
                 <div className="hasil-row"><span className="lbl">{t.fPetani}</span><span className="val">{cert.namaPetani}</span></div>
                 <div className="hasil-row"><span className="lbl">{t.fLokasi}</span><span className="val">{cert.lokasiKebun}</span></div>

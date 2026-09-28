@@ -48,7 +48,11 @@ function uraiKeluaran(text) {
   const tolak = /tidak dapat diklasifikasi|bukan biji kopi|non[-\s]?coffee|ditolak|rejected/i.test(text)
   const jenis = (text.match(/JENIS KOPI\s*:\s*(.+)/i)?.[1] || '').trim()
   const confidence = parseFloat(text.match(/CONFIDENCE\s*:\s*([\d.]+)%/i)?.[1]) || 0
-  let grade = (text.match(/GRADE\s*:\s*([A-Za-z][A-Za-z\s]+)/i)?.[1] || '').replace(/[^\w\s]/g, '').trim()
+  // Menerima label baru ("CONFIDENCE TIER") maupun lama ("GRADE"), sama seperti
+  // pengurai di page.js, supaya situs dan HF Space boleh diperbarui terpisah.
+  let grade = ((text.match(/CONFIDENCE\s*TIER\s*:\s*([A-Za-z][A-Za-z\s]+)/i) ||
+                text.match(/GRADE\s*:\s*([A-Za-z][A-Za-z\s]+)/i))?.[1] || '')
+                .replace(/[^\w\s]/g, '').trim()
 
   const probs = ekstrakProbs(text)
   const { entropy, uncertainty } = hitungEntropi(probs)

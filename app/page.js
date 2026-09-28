@@ -67,11 +67,32 @@ const CONTRACT_ABI = [
   },
 ]
 
+// Tingkat keyakinan model. Empat kunci pertama dipakai sejak penamaan diperbaiki;
+// empat berikutnya penamaan lama yang WAJIB dipertahankan karena sertifikat yang
+// sudah ter-mint menyimpannya permanen di blockchain dan tidak bisa diubah.
 const GRADE_STYLE = {
-  'Premium': { bg:'#FEF9C3', border:'#EAB308', text:'#713F12', emoji:'🏆' },
-  'Grade A': { bg:'#EFF6FF', border:'#3B82F6', text:'#1E3A8A', emoji:'⭐' },
-  'Grade B': { bg:'#F0FDF4', border:'#22C55E', text:'#14532D', emoji:'✅' },
-  'Grade C': { bg:'#F9FAFB', border:'#9CA3AF', text:'#374151', emoji:'⚠️' },
+  'Very High': { bg:'#FEF9C3', border:'#EAB308', text:'#713F12', emoji:'🏆' },
+  'High':      { bg:'#EFF6FF', border:'#3B82F6', text:'#1E3A8A', emoji:'⭐' },
+  'Moderate':  { bg:'#F0FDF4', border:'#22C55E', text:'#14532D', emoji:'✅' },
+  'Low':       { bg:'#F9FAFB', border:'#9CA3AF', text:'#374151', emoji:'⚠️' },
+  'Premium':   { bg:'#FEF9C3', border:'#EAB308', text:'#713F12', emoji:'🏆' },
+  'Grade A':   { bg:'#EFF6FF', border:'#3B82F6', text:'#1E3A8A', emoji:'⭐' },
+  'Grade B':   { bg:'#F0FDF4', border:'#22C55E', text:'#14532D', emoji:'✅' },
+  'Grade C':   { bg:'#F9FAFB', border:'#9CA3AF', text:'#374151', emoji:'⚠️' },
+}
+
+// Nilai tingkat keyakinan disimpan di blockchain dalam bahasa Inggris sebagai
+// kunci yang stabil, lalu diterjemahkan di sini untuk tampilan. Nilai penamaan
+// lama tidak ada di tabel ini sehingga ditampilkan apa adanya — itu memang yang
+// tercatat di sertifikatnya.
+const TIER_LABEL = {
+  'Very High': { id:'Sangat Tinggi', en:'Very High' },
+  'High':      { id:'Tinggi',        en:'High' },
+  'Moderate':  { id:'Sedang',        en:'Moderate' },
+  'Low':       { id:'Rendah',        en:'Low' },
+}
+function labelTier(nilai, lang) {
+  return TIER_LABEL[nilai]?.[lang] || nilai
 }
 
 // ============================================================
@@ -111,8 +132,8 @@ const CARA_PAKAI = [
     isi:{ id:'Masukkan nama petani dan lokasi kebun. Data ini akan tercatat dalam sertifikat NFT di blockchain.',
           en:'Enter the farmer name and farm location. This data is recorded in the NFT certificate on the blockchain.' } },
   { judul:{ id:'Klasifikasi CNN', en:'CNN Classification' },
-    isi:{ id:'Klik tombol klasifikasi. Model AI RepViT-M1.1 mengidentifikasi jenis dan grade kopi dalam hitungan detik.',
-          en:'Click the classify button. The RepViT-M1.1 AI model identifies the coffee type and grade in seconds.' } },
+    isi:{ id:'Klik tombol klasifikasi. Model AI RepViT-M1.1 mengidentifikasi varietas kopi beserta tingkat keyakinannya dalam hitungan detik.',
+          en:'Click the classify button. The RepViT-M1.1 AI model identifies the coffee variety and its confidence tier in seconds.' } },
   { judul:{ id:'Mint NFT', en:'Mint NFT' },
     isi:{ id:'Klik "Mint NFT". MetaMask terbuka untuk konfirmasi transaksi ke blockchain Polygon Amoy.',
           en:'Click "Mint NFT". MetaMask opens to confirm the transaction to the Polygon Amoy blockchain.' } },
@@ -150,8 +171,8 @@ const LAYERS = [
            en:'A 16×16-pixel average hash is compared using Hamming distance. A distance ≤5 bits flags near-identical photos even when their SHA-256 differs.' },
     code:'pHash(img1) XOR pHash(img2) → distance ≤5 = WARNING ⚠️' },
   { title:{ id:'Sertifikat ERC-721', en:'ERC-721 Certificate' },
-    desc:{ id:'Sertifikat NFT immutable menyimpan jenis kopi, grade, confidence CNN, nama petani, lokasi, timestamp, dan hash foto secara permanen di Polygon Amoy.',
-           en:'An immutable NFT certificate permanently stores the coffee type, grade, CNN confidence, farmer name, location, timestamp, and photo hash on Polygon Amoy.' },
+    desc:{ id:'Sertifikat NFT immutable menyimpan jenis kopi, tingkat keyakinan model, confidence CNN, nama petani, lokasi, timestamp, dan hash foto secara permanen di Polygon Amoy.',
+           en:'An immutable NFT certificate permanently stores the coffee type, confidence tier, CNN confidence, farmer name, location, timestamp, and photo hash on Polygon Amoy.' },
     code:'Token ID #N → ipfs://CID_metadata · immutable' },
   { title:{ id:'IPFS Content-Addressing', en:'IPFS Content-Addressing' },
     desc:{ id:'Foto & metadata disimpan via CID yang dihitung dari isi file. Jika file berubah, CID-nya berubah — manipulasi langsung terdeteksi.',
@@ -175,10 +196,10 @@ const STR = {
     brandSub:'Riset Unggulan · Universitas Jember',
     connect:'🦊 Connect Wallet', connecting:'⏳ Menghubungkan...', disconnect:'Disconnect',
     heroTitle:'Klasifikasi Kopi Arabika dengan AI',
-    heroSub:'5 varietas arabika unggulan terverifikasi AI & tercatat di blockchain. Deteksi jenis & grade kopi secara cepat, transparan, dan terdesentralisasi untuk kopi specialty Nusantara.',
+    heroSub:'5 varietas arabika unggulan terverifikasi AI & tercatat di blockchain. Deteksi varietas kopi secara cepat, transparan, dan terdesentralisasi untuk kopi specialty Nusantara.',
     blkCert:'SERTIFIKAT', waiting:'⏳ Menunggu', verified:'✓ Terverifikasi',
     secClassHead:'Cek Kualitas Biji Kopi dengan AI',
-    secClassSub:'Unggah foto biji kopi arabika — model RepViT akan mengklasifikasikan jenis & grade, dan otomatis menolak gambar yang bukan biji kopi.',
+    secClassSub:'Unggah foto biji kopi arabika — model RepViT akan mengklasifikasikan varietasnya beserta tingkat keyakinan model, dan otomatis menolak gambar yang bukan biji kopi.',
     uploadStrong:'Klik untuk unggah foto', uploadHint:'Dari kamera HP atau galeri · JPG, PNG',
     labelFarmer:'👤 Nama Petani', phFarmer:'Contoh: Pak Ahmad Fauzi',
     labelLoc:'📍 Lokasi Kebun', phLoc:'Contoh: Desa Tugusari, Bondowoso, Jawa Timur',
@@ -194,7 +215,7 @@ const STR = {
     rejGuideTitle:'✅ Panduan foto yang benar:',
     rejGuide:['Foto biji kopi Arabika (belum digiling/diseduh)','Pencahayaan cukup, latar polos, fokus jelas','Ambil dari atas (top-view) lebih baik','Hindari foto minuman/bubuk kopi atau tanaman kopi'],
     rejBtn:'📷 Upload Foto Biji Kopi yang Benar',
-    resConf:'Confidence CNN', resGrade:'Grade Kualitas', resModel:'Model AI',
+    resConf:'Confidence CNN', resGrade:'Tingkat Keyakinan Model', resModel:'Model AI',
     xaiTitle:'🧠 Penjelasan AI (XAI) — Distribusi Probabilitas',
     xaiEntropy:'Entropy (ketidakpastian)', xaiSure:'Sangat yakin', xaiMid:'Cukup yakin', xaiUnsure:'Kurang yakin',
     xaiNote:'Semakin merata probabilitas antar kelas → entropy makin tinggi → model makin ragu. Distribusi & entropy ini ikut tercatat di metadata NFT.',
@@ -228,10 +249,10 @@ const STR = {
     brandSub:'Featured Research · University of Jember',
     connect:'🦊 Connect Wallet', connecting:'⏳ Connecting...', disconnect:'Disconnect',
     heroTitle:'Arabica Coffee Classification with AI',
-    heroSub:'5 premium arabica varieties verified by AI & recorded on the blockchain. Fast, transparent, and decentralized coffee type & grade detection for Indonesian specialty coffee.',
+    heroSub:'5 premium arabica varieties verified by AI & recorded on the blockchain. Fast, transparent, and decentralized coffee variety detection for Indonesian specialty coffee.',
     blkCert:'CERTIFICATE', waiting:'⏳ Pending', verified:'✓ Verified',
     secClassHead:'Check Coffee Bean Quality with AI',
-    secClassSub:'Upload a photo of arabica coffee beans — the RepViT model will classify the type & grade, and automatically reject images that are not coffee beans.',
+    secClassSub:'Upload a photo of arabica coffee beans — the RepViT model will classify the variety and report its confidence tier, and automatically reject images that are not coffee beans.',
     uploadStrong:'Click to upload a photo', uploadHint:'From your phone camera or gallery · JPG, PNG',
     labelFarmer:'👤 Farmer Name', phFarmer:'e.g. Ahmad Fauzi',
     labelLoc:'📍 Farm Location', phLoc:'e.g. Tugusari Village, Bondowoso, East Java',
@@ -247,7 +268,7 @@ const STR = {
     rejGuideTitle:'✅ Correct photo guidelines:',
     rejGuide:['Photo of arabica coffee beans (not ground/brewed)','Good lighting, plain background, clear focus','Top-view shots work best','Avoid photos of coffee drinks/powder or coffee plants'],
     rejBtn:'📷 Upload a Proper Coffee-Bean Photo',
-    resConf:'CNN Confidence', resGrade:'Quality Grade', resModel:'AI Model',
+    resConf:'CNN Confidence', resGrade:'Confidence Tier', resModel:'AI Model',
     xaiTitle:'🧠 AI Explanation (XAI) — Probability Distribution',
     xaiEntropy:'Entropy (uncertainty)', xaiSure:'Very confident', xaiMid:'Fairly confident', xaiUnsure:'Low confidence',
     xaiNote:'The more evenly spread the probabilities → the higher the entropy → the more uncertain the model. This distribution & entropy are also recorded in the NFT metadata.',
@@ -571,21 +592,25 @@ export default function HomePage() {
       text.match(/CONFIDENCE\s*:\s*([\d.]+)%/i) ||
       text.match(/📊 CONFIDENCE\s*:\s*([\d.]+)%/i)
     )
+    // Menerima label BARU ("CONFIDENCE TIER") maupun LAMA ("GRADE") supaya
+    // situs dan Hugging Face Space boleh diperbarui dalam urutan mana pun
+    // tanpa ada jeda di mana nilainya gagal terbaca.
     const gradeMatch = (
-      text.match(/GRADE\s*:\s*([A-Za-z][A-Za-z\s]+)/i) ||
-      text.match(/[🏆⭐✅⚠️]\s*GRADE\s*:\s*([A-Za-z][A-Za-z\s]+)/i)
+      text.match(/CONFIDENCE\s*TIER\s*:\s*([A-Za-z][A-Za-z\s]+)/i) ||
+      text.match(/GRADE\s*:\s*([A-Za-z][A-Za-z\s]+)/i)
     )
 
     const jenis      = jenisMatch?.[1]?.trim() || ''
     const confidence = parseFloat(confMatch?.[1]) || 0
-    let   grade      = gradeMatch?.[1]?.trim()?.replace(/[^\w\s]/g,'').trim() || 'Grade B'
-    if (!GRADE_STYLE[grade]) grade = 'Grade B'
+    let   grade      = gradeMatch?.[1]?.trim()?.replace(/[^\w\s]/g,'').trim() || 'Moderate'
+    if (!GRADE_STYLE[grade]) grade = 'Moderate'
 
     console.log('Parsed → jenis:', jenis, 'conf:', confidence, 'grade:', grade)
 
     if (!jenis && confidence === 0) {
       console.warn('Parsing gagal, raw text:', text.substring(0, 200))
-      const hasPositiveSign = text.includes('Arabica') || text.includes('Arabika') || text.includes('Premium') || text.includes('Grade')
+      const hasPositiveSign = text.includes('Arabica') || text.includes('Arabika') ||
+        text.includes('CONFIDENCE TIER') || text.includes('Premium') || text.includes('Grade')
       if (!hasPositiveSign) {
         return { bukan_kopi: true, alasan: 'Format output tidak dikenali', raw: text }
       }
@@ -962,8 +987,8 @@ export default function HomePage() {
 
   // Safe null check untuk gs — hindari crash saat hasilCNN null
   const gs = (hasilCNN && !hasilCNN.bukan_kopi)
-    ? (GRADE_STYLE[hasilCNN.grade] || GRADE_STYLE['Grade B'])
-    : GRADE_STYLE['Grade B']
+    ? (GRADE_STYLE[hasilCNN.grade] || GRADE_STYLE['Moderate'])
+    : GRADE_STYLE['Moderate']
 
   return (
     <main className="container">
@@ -1014,7 +1039,7 @@ export default function HomePage() {
           <h2>{t.heroTitle}</h2>
           <p className="sub">{t.heroSub}</p>
           <div className="badges">
-            <span className="badge2">🏆 RepViT-M1.1 · 6-Class · 99.78%</span>
+            <span className="badge2">🏆 RepViT-M1.1</span>
             <span className="badge2">⛓️ Polygon Amoy</span>
             <span className="badge2">📦 IPFS Pinata</span>
           </div>
@@ -1114,7 +1139,7 @@ export default function HomePage() {
               </div>
               <div className="hasil-row"><span className="lbl">{t.resConf}</span><span className="val">{hasilCNN.confidence.toFixed(2)}%</span></div>
               <div className="bar-track"><div className="bar-fill" style={{ width: `${hasilCNN.confidence}%`, background: gs.border }} /></div>
-              <div className="hasil-row"><span className="lbl">{t.resGrade}</span><span className="val" style={{ color: gs.text }}>{gs.emoji} {hasilCNN.grade}</span></div>
+              <div className="hasil-row"><span className="lbl">{t.resGrade}</span><span className="val" style={{ color: gs.text }}>{gs.emoji} {labelTier(hasilCNN.grade, lang)}</span></div>
               <div className="hasil-row"><span className="lbl">{t.resModel}</span><span className="val" style={{ fontSize: 12 }}>RepViT-M1.1 (CVPR 2024)</span></div>
 
               {hasilCNN.probs && hasilCNN.probs.length >= 2 && (
