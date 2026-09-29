@@ -692,3 +692,15 @@ html { scroll-behavior: smooth; }
   .ng-rinci { margin-left: 0; width: 100%; }
   .ng-hapus { max-width: none; }
 }
+
+/* ── Bukti ikatan foto ke catatan on-chain (halaman verifikasi) ──
+   Warna sengaja dibedakan tegas: hijau hanya dipakai bila hash benar-benar
+   cocok, merah bila terbukti berbeda, dan abu-abu bila pemeriksaan tidak bisa
+   dilakukan — sebab gagal mengambil berkas bukan bukti sertifikat palsu. */
+.ikatan { margin-top: 10px; border-radius: 12px; padding: 11px 13px; border: 1px solid; }
+.ik-judul { font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+.ik-ket { font-size: 11.5px; line-height: 1.6; margin-top: 5px; opacity: .9; }
+.ik-memeriksa { background: #F8FAFC; border-color: var(--line); color: var(--ink-soft); }
+.ik-cocok     { background: #ECFDF5; border-color: #34D399; color: #15803D; }
+.ik-beda      { background: #FEF2F2; border-color: #FCA5A5; color: #B91C1C; }
+.ik-tak-bisa  { background: #F8FAFC; border-color: var(--line); color: var(--muted); }

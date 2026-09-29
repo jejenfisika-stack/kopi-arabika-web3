@@ -31,6 +31,13 @@ const T = {
     certTitle: 'Sertifikat Terverifikasi On-Chain',
     fJenis: 'Jenis Kopi', fGrade: 'Tingkat Keyakinan Model', fConf: 'Confidence CNN', fPetani: 'Nama Petani',
     fLokasi: 'Lokasi Kebun', fTanggal: 'Tanggal Sertifikasi', fHash: 'Sidik Jari Foto (SHA-256)',
+    ikMemeriksa: 'Memeriksa ikatan foto…',
+    ikCocok: '✓ Foto cocok dengan catatan blockchain',
+    ikCocokKet: 'Foto diambil dari IPFS, dihitung ulang SHA-256-nya di peramban Anda, dan hasilnya sama persis dengan sidik jari yang tercatat on-chain.',
+    ikBeda: '✗ Foto TIDAK cocok dengan catatan blockchain',
+    ikBedaKet: 'Sidik jari foto yang tersimpan di IPFS berbeda dari yang tercatat on-chain. Sertifikat ini tidak konsisten dan tidak boleh dipercaya.',
+    ikTakBisa: '— Ikatan foto belum dapat diperiksa',
+    ikTakBisaKet: 'Foto tidak dapat diambil dari IPFS saat ini. Ini bukan berarti sertifikatnya salah — gerbang penyimpanan mungkin sedang terganggu. Coba lagi nanti.',
     fEntropy: 'Entropy XAI', fToken: 'Token ID',
     foto: 'Foto biji kopi', gradcam: 'Grad-CAM (fokus model)',
     trust: 'Jangan hanya percaya halaman ini — cek silang secara independen:',
@@ -50,6 +57,13 @@ const T = {
     certTitle: 'On-Chain Verified Certificate',
     fJenis: 'Coffee Type', fGrade: 'Confidence Tier', fConf: 'CNN Confidence', fPetani: 'Farmer Name',
     fLokasi: 'Farm Location', fTanggal: 'Certification Date', fHash: 'Photo Fingerprint (SHA-256)',
+    ikMemeriksa: 'Verifying photo binding…',
+    ikCocok: '✓ Photo matches the blockchain record',
+    ikCocokKet: 'The photo was retrieved from IPFS, its SHA-256 recomputed in your own browser, and the result matches the fingerprint recorded on chain exactly.',
+    ikBeda: '✗ Photo does NOT match the blockchain record',
+    ikBedaKet: 'The fingerprint of the photo stored on IPFS differs from the one recorded on chain. This certificate is inconsistent and should not be trusted.',
+    ikTakBisa: '— Photo binding could not be checked',
+    ikTakBisaKet: 'The photo could not be retrieved from IPFS right now. This does not mean the certificate is invalid — the storage gateway may be unavailable. Please try again later.',
     fEntropy: 'XAI Entropy', fToken: 'Token ID',
     foto: 'Coffee bean photo', gradcam: 'Grad-CAM (model focus)',
     trust: 'Do not trust this page alone — cross-check independently:',
@@ -66,6 +80,31 @@ function ipfsToHttp(uri) {
   return uri.startsWith('ipfs://') ? `https://${PINATA_GATEWAY}/ipfs/${uri.slice(7)}` : uri
 }
 
+// ── Pengikatan foto ke catatan on-chain ──
+// Kontrak tidak bisa membuktikan bahwa hash yang tersimpan memang milik fotonya:
+// keduanya masuk sebagai argumen biasa, dan smart contract tidak bisa mengunduh
+// berkas lalu menghitung SHA-256. Pembuktiannya harus dikerjakan di sisi pembaca.
+//
+// Rantainya: CID bersifat content-addressed, jadi mengambil CID itu DIJAMIN
+// mengembalikan berkas yang menghasilkannya. Hitung SHA-256 berkas tersebut,
+// bandingkan dengan hash on-chain — cocok berarti foto benar-benar terikat pada
+// sertifikat, tanpa perlu memercayai penerbit maupun penyedia penyimpanan.
+async function periksaIkatanFoto(cid, hashOnChain) {
+  if (!cid || !hashOnChain) return { status: 'tak-bisa' }
+  try {
+    const r = await fetch(`https://${PINATA_GATEWAY}/ipfs/${cid}`)
+    if (!r.ok) return { status: 'tak-bisa' }
+    const buf = await r.arrayBuffer()
+    const digest = await crypto.subtle.digest('SHA-256', buf)
+    const hitung = [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('')
+    return { status: hitung === String(hashOnChain).toLowerCase() ? 'cocok' : 'beda', hitung }
+  } catch (_) {
+    // Gagal mengambil berkas BUKAN bukti sertifikat palsu — bisa jadi gerbang
+    // IPFS sedang bermasalah. Jangan pernah menampilkannya sebagai tidak cocok.
+    return { status: 'tak-bisa' }
+  }
+}
+
 function VerifikasiInner() {
   const params = useSearchParams()
   const [lang, setLang] = useState('id')
@@ -76,6 +115,7 @@ function VerifikasiInner() {
   const [meta, setMeta] = useState(null)
   const [metaLoading, setMetaLoading] = useState(false)
   const [qrUrl, setQrUrl] = useState('')
+  const [ikatan, setIkatan] = useState(null)   // null | 'memeriksa' | cocok | beda | tak-bisa
   const t = T[lang] || T.id
 
   useEffect(() => {
@@ -92,7 +132,7 @@ function VerifikasiInner() {
   async function cek(idArg) {
     const id = String(idArg ?? input).trim()
     if (!/^\d{1,10}$/.test(id)) { setErr(lang === 'en' ? 'Token ID must be a number.' : 'Token ID harus berupa angka.'); return }
-    setLoading(true); setErr(''); setCert(null); setMeta(null); setQrUrl('')
+    setLoading(true); setErr(''); setCert(null); setMeta(null); setQrUrl(''); setIkatan(null)
     try {
       const res = await fetch(`/api/verifikasi?id=${id}`)
       const data = await res.json()
@@ -104,6 +144,11 @@ function VerifikasiInner() {
         const link = `${window.location.origin}/verifikasi?id=${data.tokenId}`
         setQrUrl(await QRCode.toDataURL(link, { width: 280, margin: 2, color: { dark: '#0F172A', light: '#FFFFFF' } }))
       } catch (_) {}
+
+      // Buktikan foto benar-benar terikat pada catatan on-chain. Dijalankan
+      // tanpa ditunggu agar sertifikat langsung tampil; hasilnya menyusul.
+      setIkatan({ status: 'memeriksa' })
+      periksaIkatanFoto(data.ipfsCID, data.hashFoto).then(setIkatan)
 
       // Metadata (XAI: probabilitas, entropy, gradcam) dari IPFS — opsional
       if (data.metadataURI) {
@@ -191,6 +236,22 @@ function VerifikasiInner() {
                   <div className="k">{t.fHash}</div>
                   <div className="v">{cert.hashFoto}</div>
                 </div>
+
+                {/* Bukti bahwa foto memang terikat pada catatan on-chain,
+                    dihitung di peramban pembaca — bukan diklaim oleh situs. */}
+                {ikatan && (
+                  <div className={`ikatan ik-${ikatan.status}`}>
+                    <div className="ik-judul">
+                      {ikatan.status === 'memeriksa' && <><span className="spinner" /> {t.ikMemeriksa}</>}
+                      {ikatan.status === 'cocok'    && t.ikCocok}
+                      {ikatan.status === 'beda'     && t.ikBeda}
+                      {ikatan.status === 'tak-bisa' && t.ikTakBisa}
+                    </div>
+                    {ikatan.status === 'cocok'    && <div className="ik-ket">{t.ikCocokKet}</div>}
+                    {ikatan.status === 'beda'     && <div className="ik-ket">{t.ikBedaKet}</div>}
+                    {ikatan.status === 'tak-bisa' && <div className="ik-ket">{t.ikTakBisaKet}</div>}
+                  </div>
+                )}
               </div>
             </div>
 
